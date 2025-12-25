@@ -1,8 +1,4 @@
-/* ========================================================================
-   NETLIFY READY — UPDATED JS (FULL FILE)
-   ✔ Keeps your original scripts
-   ✔ Adds ONLY what was missing: hero visuals (image="1|2|3|4") sync with eyebrow loop
-   ======================================================================== */
+// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 // Fade in main-wrapper after page fully loads
@@ -315,7 +311,9 @@ $(window).on("load", function () {
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-          const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+          const line = trigger
+            ? trigger.querySelector(".dropdown--line")
+            : null;
 
           if (list) {
             gsap.set(list, { display: "", height: "", overflow: "" });
@@ -597,7 +595,7 @@ $(window).on("load", function () {
     });
 
     // Add mouseleave listener to each item
-    currentItem.addEventListener("mouseleave", function () {
+    currentItem.addEventListener("mouseleave", function (e) {
       // Small delay to check where the mouse went
       setTimeout(() => {
         // Check if we're hovering over any solution item
@@ -736,7 +734,7 @@ $(window).on("load", function () {
     });
 
     // Add mouseleave listener to each link
-    currentLink.addEventListener("mouseleave", function () {
+    currentLink.addEventListener("mouseleave", function (e) {
       // Small delay to check where the mouse went
       setTimeout(() => {
         // Check if we're hovering over any resource link
@@ -1066,6 +1064,9 @@ $(window).on("load", function () {
     );
     eyebrowElement.innerHTML = textWithSpaces;
 
+    // ✅ Keep aria-label synced (needed for hero image switch)
+    eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+
     // Create initial split
     currentSplit = new SplitText(eyebrowElement, {
       type: "chars",
@@ -1136,6 +1137,9 @@ $(window).on("load", function () {
         // Replace eyebrow content with new text
         eyebrowElement.innerHTML = tempDiv.innerHTML;
 
+        // ✅ Keep aria-label synced (needed for hero image switch)
+        eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+
         // Create new split for the next cycle
         currentSplit = new SplitText(eyebrowElement, {
           type: "chars",
@@ -1155,6 +1159,69 @@ $(window).on("load", function () {
 
   // Start the cycling animation after 2 seconds
   setTimeout(animateTextChange, 2000);
+})();
+
+// --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
+(function () {
+  const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
+  const EYEBROW_SELECTOR = '[animation="eyebrow"]';
+  const VISUAL_SELECTOR = 'img.absolute--img[image]';
+
+  const phrases = [
+    "From field to office",
+    "From data to decision",
+    "From risk to reliability",
+    "From reactive to proactive.",
+  ];
+
+  const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
+  const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
+
+  if (!heroScope || !eyebrowEl) return;
+
+  const heroImgs = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
+  if (!heroImgs.length) return;
+
+  heroImgs.forEach((img) => {
+    img.style.position = img.style.position || "absolute";
+    img.style.inset = img.style.inset || "0";
+    img.style.transition = img.style.transition || "opacity 450ms ease";
+  });
+
+  function forceOpacity(el, value) {
+    el.style.setProperty("opacity", String(value), "important"); // override inline opacity
+  }
+
+  function setActiveByValue(imageValue) {
+    heroImgs.forEach((img) => {
+      const isMatch = img.getAttribute("image") === String(imageValue);
+
+      img.classList.toggle("is-active", isMatch);
+      img.setAttribute("aria-hidden", isMatch ? "false" : "true");
+
+      forceOpacity(img, isMatch ? 1 : 0);
+      img.style.pointerEvents = isMatch ? "auto" : "none";
+    });
+  }
+
+  function syncFromAriaLabel() {
+    const label = (eyebrowEl.getAttribute("aria-label") || "").trim();
+    if (!label) return;
+
+    const idx = phrases.findIndex((p) => p === label);
+    if (idx !== -1) setActiveByValue(idx + 1);
+  }
+
+  // initial
+  syncFromAriaLabel();
+  setActiveByValue(1);
+
+  const observer = new MutationObserver(() => {
+    syncFromAriaLabel();
+  });
+
+  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+  observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
 
 // --------------------- Hover Circle Follow Mouse --------------------- //
@@ -1814,6 +1881,7 @@ $(window).on("load", function () {
       const targetDigit = parseInt(targetString[i]);
       let columnHTML = "";
 
+      // Always create 10 digits, starting from appropriate position
       const startDigit = (targetDigit + 1) % 10;
 
       for (let j = 0; j < 10; j++) {
@@ -2015,68 +2083,4 @@ $(window).on("load", function () {
       });
     });
   });
-})();
-
-/* ========================================================================
-   ✅ ADD-ON (ONLY NEW THING): Sync Hero images with eyebrow loop
-   - Uses your existing custom attribute image="1|2|3|4"
-   - Adds class "is-active" to the matching hero visual
-   - Also exposes window.setHeroImageByIndex(1..n) (optional)
-   ======================================================================== */
-(function () {
-  const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
-  const EYEBROW_SELECTOR = '[animation="eyebrow"]';
-  const VISUAL_SELECTOR = '[image]';
-
-  const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
-  const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
-
-  if (!heroScope || !eyebrowEl) return;
-
-  // Collect hero visuals inside the hero only
-  const heroVisuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
-
-  if (!heroVisuals.length) return;
-
-  function setActiveVisualByValue(value) {
-    heroVisuals.forEach((el) => {
-      const match = el.getAttribute("image") === String(value);
-      el.classList.toggle("is-active", match);
-      el.setAttribute("aria-hidden", match ? "false" : "true");
-    });
-  }
-
-  // Initial state (default to image="1")
-  setActiveVisualByValue("1");
-
-  // Optional global helper if you want a 1-line call from your loop
-  window.setHeroImageByIndex = function (oneBasedIndex) {
-    setActiveVisualByValue(String(oneBasedIndex));
-  };
-
-  // Observe eyebrow changes and sync using data-index if present
-  // (This keeps everything safe even if you don't add the 1-line call)
-  const observer = new MutationObserver(() => {
-    const idxAttr =
-      eyebrowEl.getAttribute("data-index") ||
-      eyebrowEl.getAttribute("data-phrase-index");
-
-    if (idxAttr != null) {
-      const n = parseInt(idxAttr, 10);
-      if (!Number.isNaN(n)) {
-        // idx is assumed 0-based -> convert to 1-based
-        setActiveVisualByValue(n + 1);
-      }
-    }
-  });
-
-  observer.observe(eyebrowEl, { childList: true, subtree: true });
-
-  /* OPTIONAL (recommended for perfect sync):
-     Add ONE line inside your eyebrow loop right after currentIndex changes:
-
-       if (window.setHeroImageByIndex) window.setHeroImageByIndex(currentIndex + 1);
-
-     That’s it.
-  */
 })();

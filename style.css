@@ -1,8 +1,4 @@
-/* ========================================================================
-   NETLIFY READY — UPDATED CSS (FULL FILE)
-   ✔ Keeps your original CSS
-   ✔ Adds ONLY what was missing: hero visuals crossfade for [image="1.."] + .is-active
-   ======================================================================== */
+/* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
 
 body {
   opacity: 0;
@@ -135,6 +131,22 @@ body {
 [animation="eyebrow"] .space {
   display: inline-block;
   white-space: pre;
+}
+
+/* --------------------- ✅ HERO IMAGE SWITCH STYLES --------------------- */
+.section.is--home-hero {
+  position: relative;
+}
+
+.section.is--home-hero img.absolute--img[image] {
+  position: absolute;
+  inset: 0;
+  transition: opacity 450ms ease;
+}
+
+/* Keep class hook (optional) */
+.section.is--home-hero img.absolute--img.is-active {
+  opacity: 1;
 }
 
 /* --------------------- Hover Circle Styles --------------------- */
@@ -329,26 +341,4 @@ body {
   overflow: hidden;
   white-space: nowrap;
   will-change: width;
-}
-
-/* ========================================================================
-   ✅ ADD-ON (ONLY NEW THING): Hero visuals crossfade using [image="1.."] + .is-active
-   - Works for your markup: <img class="absolute--img" image="1"> etc.
-   ======================================================================== */
-
-.section.is--home-hero {
-  position: relative;
-}
-
-/* All hero visuals that use image="X" are hidden by default */
-.section.is--home-hero [image] {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 450ms ease;
-}
-
-/* The active one fades in */
-.section.is--home-hero [image].is-active {
-  opacity: 1;
-  pointer-events: auto;
 }
