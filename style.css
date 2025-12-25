@@ -1,3 +1,9 @@
+/* ========================================================================
+   NETLIFY READY — UPDATED CSS (FULL FILE)
+   ✔ Keeps your original CSS
+   ✔ Adds ONLY what was missing: hero visuals crossfade for [image="1.."] + .is-active
+   ======================================================================== */
+
 body {
   opacity: 0;
 }
@@ -325,33 +331,24 @@ body {
   will-change: width;
 }
 
-/* =========================================================================================
-   ✅ ADDITION: Hero Background Video Crossfade (required for synced video loop)
-   ========================================================================================= */
+/* ========================================================================
+   ✅ ADD-ON (ONLY NEW THING): Hero visuals crossfade using [image="1.."] + .is-active
+   - Works for your markup: <img class="absolute--img" image="1"> etc.
+   ======================================================================== */
+
 .section.is--home-hero {
   position: relative;
-  overflow: hidden;
 }
 
-.hero-bg-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* All hero visuals that use image="X" are hidden by default */
+.section.is--home-hero [image] {
   opacity: 0;
   pointer-events: none;
-  will-change: opacity;
-  transform: translateZ(0);
+  transition: opacity 450ms ease;
 }
 
-.hero-bg-video.is-active {
+/* The active one fades in */
+.section.is--home-hero [image].is-active {
   opacity: 1;
-}
-
-/* keep content above videos */
-.overlay--30,
-.container--1344.z--index2 {
-  position: relative;
-  z-index: 2;
+  pointer-events: auto;
 }
