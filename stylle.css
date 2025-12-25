@@ -1,0 +1,326 @@
+body {
+  opacity: 0;
+}
+
+/* --------------------- Navbar Scroll Styles --------------------- */
+.navbar {
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.navbar--bg {
+  transition: opacity 0.3s ease-in-out;
+  will-change: background-color, border-bottom-color;
+}
+
+/* --------------------- Navbar Dropdown Styles --------------------- */
+.navbar--dropdown {
+  position: relative;
+}
+
+.navbar--dropdown-trigger {
+  cursor: pointer;
+}
+
+@media (min-width: 992px) {
+  .navbar--dropdown-trigger {
+    will-change: color;
+  }
+
+  .navlink .dropdown--line {
+    will-change: width;
+  }
+
+  .dropdown--line {
+    will-change: width;
+  }
+}
+
+.navbar--dropdown-list {
+  overflow: auto;
+  will-change: height;
+}
+
+.btn.is--nav {
+  will-change: background-color, color;
+}
+
+/* --------------------- Navbar Solution Items Hover (Desktop) --------------------- */
+@media (min-width: 992px) {
+  .navbar--solution-item {
+    cursor: pointer;
+    will-change: opacity;
+  }
+
+  .solution--svg-item {
+    will-change: opacity, transform;
+  }
+
+  .navbar--solution-item .paragraph-small-130 {
+    will-change: opacity, transform;
+  }
+}
+
+/* --------------------- Resource Links Hover (Desktop) --------------------- */
+@media (min-width: 992px) {
+  .resource--link {
+    cursor: pointer;
+    will-change: opacity;
+  }
+
+  .resource--link-svg {
+    will-change: opacity, transform;
+  }
+}
+
+/* --------------------- Mobile Navbar Dropdown Styles --------------------- */
+@media (max-width: 991px) {
+  .navbar--dropdown-trigger {
+    cursor: pointer;
+  }
+
+  .navbar--dropdown-list {
+    will-change: transform;
+  }
+
+  .navbar--dropdown-bg {
+    will-change: opacity;
+  }
+
+  .navbar--goback {
+    cursor: pointer;
+  }
+}
+
+/* --------------------- Mobile Hamburger Menu Styles --------------------- */
+@media (max-width: 991px) {
+  .menu--trigger {
+    cursor: pointer;
+  }
+
+  .menu--open,
+  .menu--close {
+    will-change: opacity;
+  }
+
+  .navbar-menu--inner {
+    will-change: transform;
+  }
+
+  [animate="navbar"] {
+    will-change: opacity, transform;
+  }
+}
+
+/* --------------------- Eyebrow Animation Styles --------------------- */
+[animation="eyebrow"] {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+[animation="eyebrow"] .char {
+  display: inline-block;
+  letter-spacing: 0.05em;
+  will-change: transform, opacity;
+}
+
+[animation="eyebrow"] .space {
+  display: inline-block;
+  white-space: pre;
+}
+
+/* --------------------- Hover Circle Styles --------------------- */
+.trusted--logo-parent {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover--circle {
+  position: absolute;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.8);
+  will-change: transform, opacity;
+  top: 0;
+  left: 0;
+}
+
+.lines {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover--circle.is--100 {
+  transform: scale(1);
+}
+
+/* --------------------- Offer Slide Styles --------------------- */
+@media (min-width: 992px) {
+  .offer--slide {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .offer--slide-icon {
+    will-change: transform, opacity;
+  }
+
+  .offer--slide-content {
+    will-change: opacity;
+  }
+}
+
+@media (max-width: 991px) {
+  .offer-slider-btn {
+    cursor: pointer;
+  }
+
+  .offer-slider-btn.swiper-button-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .offers-slider {
+    transition: margin 0.5s ease-in-out;
+  }
+
+  .offers-slider.is--first {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .offers-slider.is--middle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .offers-slider.is--last {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .offers-slider .swiper-slide {
+    width: 78.66vw;
+  }
+}
+
+/* --------------------- How It Works Scroll Animation Styles --------------------- */
+@media (min-width: 992px) {
+  .howitworks--content {
+    will-change: opacity;
+  }
+
+  .howitworks--response {
+    overflow: hidden;
+    will-change: height;
+  }
+
+  .howitworks--line {
+    will-change: width;
+  }
+
+  .howitworks--img {
+    will-change: transform;
+  }
+
+  .howitworks--img--inner {
+    will-change: transform, filter;
+  }
+}
+
+@media (max-width: 991px) {
+  .howitworks--content {
+    opacity: 1 !important;
+  }
+
+  .howitworks--response {
+    height: auto !important;
+  }
+
+  .howitworks--line {
+    width: 100% !important;
+  }
+
+  .howitworks--img {
+    transform: none !important;
+  }
+
+  .howitworks--img--inner {
+    transform: none !important;
+  }
+}
+
+/* --------------------- What Offers Hover Circle Styles --------------------- */
+.relative.is--whatworks {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover--circle.is--what {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+}
+
+/* --------------------- Number Counter Animation Styles --------------------- */
+.number--count {
+  display: inline-flex;
+}
+
+.digit-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.digit {
+  display: inline-block;
+}
+
+.digit-column {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.digit-item {
+  display: block;
+  line-height: 1;
+}
+
+/* --------------------- Footer Accordion (Mobile) --------------------- */
+@media (max-width: 991px) {
+  .footer--title-parent {
+    cursor: pointer;
+  }
+
+  .footer--inner {
+    overflow: hidden;
+  }
+
+  .footer-title-icon {
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+}
+
+/* --------------------- Button Hover Animation Styles --------------------- */
+.btn {
+  cursor: pointer;
+}
+
+.hover--close,
+.hover--open {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  will-change: width;
+}
