@@ -177,7 +177,7 @@ $(window).on("load", function () {
 
     if (navbarBg) {
       gsap.to(navbarBg, {
-        backgroundColor: "", // Reset to original
+        backgroundColor: "",
         borderBottomColor: "",
         duration: 0.3,
         ease: "power4.out",
@@ -185,7 +185,7 @@ $(window).on("load", function () {
     }
 
     gsap.to(navbar, {
-      color: "", // Reset to original
+      color: "",
       duration: 0.3,
       ease: "power4.out",
     });
@@ -205,24 +205,18 @@ $(window).on("load", function () {
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     if (!trigger) return;
 
-    // Mouseenter on trigger
     trigger.addEventListener("mouseenter", function () {
-      // Only work on desktop screens
       if (window.innerWidth < 992) return;
-
-      // If this dropdown is already active, don't do anything
       if (activeDropdown === dropdown) return;
 
       const isNewDropdown = activeDropdown !== null;
       const isFirstOpen = activeDropdown === null;
 
-      // Close previously active dropdown if it exists
       if (activeDropdown && activeDropdown !== dropdown) {
         closeDropdown(activeDropdown);
         resetDropdownItems(activeDropdown);
       }
 
-      // Open current dropdown (with animation only if it's the first open or a new dropdown)
       openDropdown(dropdown, isFirstOpen || isNewDropdown);
       activateNavbarStyle();
       activeDropdown = dropdown;
@@ -234,16 +228,13 @@ $(window).on("load", function () {
   navlinks.forEach((navlink) => {
     const line = navlink.querySelector(".dropdown--line");
 
-    // Initialize line
     if (line) {
       gsap.set(line, { width: "0%" });
     }
 
     navlink.addEventListener("mouseenter", function () {
-      // Only work on desktop screens
       if (window.innerWidth < 992) return;
 
-      // Close active dropdown if hovering over a navlink
       if (activeDropdown) {
         closeDropdown(activeDropdown);
         resetDropdownItems(activeDropdown);
@@ -251,7 +242,6 @@ $(window).on("load", function () {
         deactivateNavbarStyle();
       }
 
-      // Animate line in
       if (line) {
         gsap.to(line, {
           width: "100%",
@@ -262,10 +252,8 @@ $(window).on("load", function () {
     });
 
     navlink.addEventListener("mouseleave", function () {
-      // Only work on desktop screens
       if (window.innerWidth < 992) return;
 
-      // Animate line out
       if (line) {
         gsap.to(line, {
           width: "0%",
@@ -278,22 +266,18 @@ $(window).on("load", function () {
 
   // Close dropdown when hovering out of navbar (desktop only)
   navbar.addEventListener("mouseleave", function () {
-    // Only work on desktop screens
     if (window.innerWidth < 992) return;
 
     if (activeDropdown) {
       closeDropdown(activeDropdown);
-      // Reset items when fully leaving navbar
       resetDropdownItems(activeDropdown);
       activeDropdown = null;
     }
     deactivateNavbarStyle();
   });
 
-  // Initialize on load
   initDesktopDropdowns();
 
-  // Reinitialize on resize
   let wasDesktop = window.innerWidth >= 992;
   window.addEventListener("resize", function () {
     const isDesktop = window.innerWidth >= 992;
@@ -305,13 +289,10 @@ $(window).on("load", function () {
         initDesktopDropdowns();
         activeDropdown = null;
       } else {
-        // Reset on mobile
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-          const line = trigger
-            ? trigger.querySelector(".dropdown--line")
-            : null;
+          const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
           if (list) {
             gsap.set(list, { display: "", height: "", overflow: "" });
@@ -348,7 +329,6 @@ $(window).on("load", function () {
 
     if (!trigger || !list) return;
 
-    // Initialize on mobile
     function initMobileDropdown() {
       if (window.innerWidth >= 992) return;
       gsap.set(list, { display: "none", x: "100vw" });
@@ -357,7 +337,6 @@ $(window).on("load", function () {
       }
     }
 
-    // Open dropdown
     function openDropdown() {
       gsap.set(list, { display: "flex", x: "100vw" });
       gsap.to(list, {
@@ -366,7 +345,6 @@ $(window).on("load", function () {
         ease: "power4.out",
       });
 
-      // Animate background
       if (bg) {
         gsap.to(bg, {
           opacity: 1,
@@ -375,12 +353,10 @@ $(window).on("load", function () {
         });
       }
 
-      // Track active dropdown
       activeDropdown = dropdown;
       activeCloseFunction = closeDropdown;
     }
 
-    // Close dropdown
     function closeDropdown() {
       gsap.to(list, {
         x: "100vw",
@@ -391,7 +367,6 @@ $(window).on("load", function () {
         },
       });
 
-      // Animate background out
       if (bg) {
         gsap.to(bg, {
           opacity: 0,
@@ -400,14 +375,12 @@ $(window).on("load", function () {
         });
       }
 
-      // Clear active dropdown
       if (activeDropdown === dropdown) {
         activeDropdown = null;
         activeCloseFunction = null;
       }
     }
 
-    // Trigger click handler (mobile only)
     trigger.addEventListener("click", function (e) {
       if (window.innerWidth >= 992) return;
       e.preventDefault();
@@ -415,7 +388,6 @@ $(window).on("load", function () {
       openDropdown();
     });
 
-    // Go back button handler
     if (goBack) {
       goBack.addEventListener("click", function (e) {
         if (window.innerWidth >= 992) return;
@@ -425,10 +397,8 @@ $(window).on("load", function () {
       });
     }
 
-    // Initialize
     initMobileDropdown();
 
-    // Reinitialize on resize
     let wasMobile = window.innerWidth < 992;
     window.addEventListener("resize", function () {
       const isMobile = window.innerWidth < 992;
@@ -439,7 +409,6 @@ $(window).on("load", function () {
         if (isMobile) {
           initMobileDropdown();
         } else {
-          // Reset on desktop
           gsap.set(list, { display: "", x: "0vw" });
           if (bg) {
             gsap.set(bg, { opacity: "" });
@@ -449,7 +418,6 @@ $(window).on("load", function () {
     });
   });
 
-  // Expose function to close active dropdown
   window.closeMobileDropdown = function () {
     if (activeCloseFunction) {
       activeCloseFunction();
@@ -459,168 +427,87 @@ $(window).on("load", function () {
 
 // --------------------- Navbar Solution Items Hover (Desktop) --------------------- //
 (function () {
-  // Only run on screens above 992px
   if (window.innerWidth <= 992) return;
 
   const solutionItems = document.querySelectorAll(".navbar--solution-item");
-
   if (solutionItems.length === 0) return;
 
-  // Find the parent container of all solution items
   const parentContainer = solutionItems[0].parentElement;
-
   if (!parentContainer) return;
 
-  // Initialize all items
   solutionItems.forEach((item) => {
     const svgItem = item.querySelector(".solution--svg-item");
     const paragraph = item.querySelector(".paragraph-small-130");
 
-    if (svgItem) {
-      gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
-    }
-    if (paragraph) {
-      gsap.set(paragraph, { opacity: 1, x: "0rem" });
-    }
+    if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
+    if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
   });
 
-  // Track the currently hovered item
   let currentlyHovered = null;
 
-  // Function to reset all items to default state
   function resetAllItems() {
     solutionItems.forEach((item) => {
-      gsap.to(item, {
-        opacity: 1,
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(item, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
       const svgItem = item.querySelector(".solution--svg-item");
       const paragraph = item.querySelector(".paragraph-small-130");
 
       if (svgItem) {
-        gsap.to(svgItem, {
-          opacity: 0,
-          x: "-1.5rem",
-          duration: 0.3,
-          ease: "power4.out",
-        });
+        gsap.to(svgItem, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
       }
 
       if (paragraph) {
-        gsap.to(paragraph, {
-          opacity: 1,
-          x: "0rem",
-          duration: 0.3,
-          ease: "power4.out",
-        });
+        gsap.to(paragraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
       }
     });
 
     currentlyHovered = null;
   }
 
-  // Add mouseenter listeners to each item
   solutionItems.forEach((currentItem) => {
     const currentSvg = currentItem.querySelector(".solution--svg-item");
     const currentParagraph = currentItem.querySelector(".paragraph-small-130");
 
     currentItem.addEventListener("mouseenter", function () {
-      // If there was a previously hovered item, reset it
       if (currentlyHovered && currentlyHovered !== currentItem) {
         const prevSvg = currentlyHovered.querySelector(".solution--svg-item");
-        const prevParagraph = currentlyHovered.querySelector(
-          ".paragraph-small-130"
-        );
+        const prevParagraph = currentlyHovered.querySelector(".paragraph-small-130");
 
-        if (prevSvg) {
-          gsap.to(prevSvg, {
-            opacity: 0,
-            x: "-1.5rem",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
-
-        if (prevParagraph) {
-          gsap.to(prevParagraph, {
-            opacity: 1,
-            x: "0rem",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
+        if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
+        if (prevParagraph) gsap.to(prevParagraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
       }
 
-      // Fade out other items and reset current item to full opacity
       solutionItems.forEach((item) => {
-        if (item !== currentItem) {
-          gsap.to(item, {
-            opacity: 0.3,
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        } else {
-          gsap.to(item, {
-            opacity: 1,
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
+        gsap.to(item, {
+          opacity: item !== currentItem ? 0.3 : 1,
+          duration: 0.3,
+          ease: "power4.out",
+        });
       });
 
-      // Show SVG and hide paragraph for current item
-      if (currentSvg) {
-        gsap.to(currentSvg, {
-          opacity: 1,
-          x: "0rem",
-          duration: 0.3,
-          ease: "power4.out",
-        });
-      }
-
-      if (currentParagraph) {
-        gsap.to(currentParagraph, {
-          opacity: 0,
-          x: "1.5rem",
-          duration: 0.3,
-          ease: "power4.out",
-        });
-      }
+      if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
 
-    // Add mouseleave listener to each item
-    currentItem.addEventListener("mouseleave", function (e) {
-      // Small delay to check where the mouse went
+    currentItem.addEventListener("mouseleave", function () {
       setTimeout(() => {
-        // Check if we're hovering over any solution item
         let hoveringItem = false;
         solutionItems.forEach((item) => {
-          if (item.matches(":hover")) {
-            hoveringItem = true;
-          }
+          if (item.matches(":hover")) hoveringItem = true;
         });
-
-        // If not hovering any item, reset
-        if (!hoveringItem) {
-          resetAllItems();
-        }
+        if (!hoveringItem) resetAllItems();
       }, 10);
     });
   });
 
-  // Add mouseleave to the parent container
   parentContainer.addEventListener("mouseleave", function () {
     resetAllItems();
   });
 
-  // Handle window resize
   window.addEventListener("resize", function () {
     if (window.innerWidth <= 992) {
-      // Reset everything on mobile
       solutionItems.forEach((item) => {
         gsap.set(item, { opacity: 1 });
         const svgItem = item.querySelector(".solution--svg-item");
@@ -635,131 +522,71 @@ $(window).on("load", function () {
 
 // --------------------- Resource Links Hover (Desktop) --------------------- //
 (function () {
-  // Only run on screens above 992px
   if (window.innerWidth <= 992) return;
 
   const resourceLinks = document.querySelectorAll(".resource--link");
-
   if (resourceLinks.length === 0) return;
 
-  // Find the parent container of all resource links
   const parentContainer = resourceLinks[0].parentElement;
-
   if (!parentContainer) return;
 
-  // Initialize all items
   resourceLinks.forEach((link) => {
     const svg = link.querySelector(".resource--link-svg");
-    if (svg) {
-      gsap.set(svg, { opacity: 0, x: "-1.5rem" });
-    }
+    if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
   });
 
-  // Track the currently hovered link
   let currentlyHovered = null;
 
-  // Function to reset all links to default state
   function resetAllLinks() {
     resourceLinks.forEach((link) => {
-      gsap.to(link, {
-        opacity: 1,
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(link, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
       const svg = link.querySelector(".resource--link-svg");
-
-      if (svg) {
-        gsap.to(svg, {
-          opacity: 0,
-          x: "-1.5rem",
-          duration: 0.3,
-          ease: "power4.out",
-        });
-      }
+      if (svg) gsap.to(svg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
     });
 
     currentlyHovered = null;
   }
 
-  // Add mouseenter listeners to each link
   resourceLinks.forEach((currentLink) => {
     const currentSvg = currentLink.querySelector(".resource--link-svg");
 
     currentLink.addEventListener("mouseenter", function () {
-      // If there was a previously hovered link, reset it
       if (currentlyHovered && currentlyHovered !== currentLink) {
         const prevSvg = currentlyHovered.querySelector(".resource--link-svg");
-
-        if (prevSvg) {
-          gsap.to(prevSvg, {
-            opacity: 0,
-            x: "-1.5rem",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
+        if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
       }
 
-      // Fade out other links and reset current link to full opacity
       resourceLinks.forEach((link) => {
-        if (link !== currentLink) {
-          gsap.to(link, {
-            opacity: 0.3,
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        } else {
-          gsap.to(link, {
-            opacity: 1,
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
-      });
-
-      // Show SVG for current link
-      if (currentSvg) {
-        gsap.to(currentSvg, {
-          opacity: 1,
-          x: "0rem",
+        gsap.to(link, {
+          opacity: link !== currentLink ? 0.3 : 1,
           duration: 0.3,
           ease: "power4.out",
         });
-      }
+      });
+
+      if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentLink;
     });
 
-    // Add mouseleave listener to each link
-    currentLink.addEventListener("mouseleave", function (e) {
-      // Small delay to check where the mouse went
+    currentLink.addEventListener("mouseleave", function () {
       setTimeout(() => {
-        // Check if we're hovering over any resource link
         let hoveringLink = false;
         resourceLinks.forEach((link) => {
-          if (link.matches(":hover")) {
-            hoveringLink = true;
-          }
+          if (link.matches(":hover")) hoveringLink = true;
         });
-
-        // If not hovering any link, reset
-        if (!hoveringLink) {
-          resetAllLinks();
-        }
+        if (!hoveringLink) resetAllLinks();
       }, 10);
     });
   });
 
-  // Add mouseleave to the parent container
   parentContainer.addEventListener("mouseleave", function () {
     resetAllLinks();
   });
 
-  // Handle window resize
   window.addEventListener("resize", function () {
     if (window.innerWidth <= 992) {
-      // Reset everything on mobile
       resourceLinks.forEach((link) => {
         gsap.set(link, { opacity: 1 });
         const svg = link.querySelector(".resource--link-svg");
@@ -794,7 +621,6 @@ $(window).on("load", function () {
   console.log("Mobile menu initialized");
   let isMenuOpen = false;
 
-  // Initialize menu elements
   function initializeMobileMenu() {
     if (window.innerWidth >= 992) return;
 
@@ -805,37 +631,18 @@ $(window).on("load", function () {
     gsap.set(menuItems, { opacity: 0, y: "1rem" });
   }
 
-  // Open menu
   function openMenu() {
     const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
-    // Disable scroll
     document.body.style.overflow = "hidden";
 
-    // Animate menu open icon
-    gsap.to(menuOpen, {
-      opacity: 0,
-      duration: 0.3,
-      ease: "power4.out",
-    });
+    gsap.to(menuOpen, { opacity: 0, duration: 0.3, ease: "power4.out" });
+    gsap.to(menuClose, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
-    // Animate menu close icon
-    gsap.to(menuClose, {
-      opacity: 1,
-      duration: 0.3,
-      ease: "power4.out",
-    });
-
-    // Set display to flex and animate from right
     gsap.set(menuInner, { display: "flex", x: "100vw" });
-    gsap.to(menuInner, {
-      x: "0vw",
-      duration: 0.5,
-      ease: "power4.out",
-    });
+    gsap.to(menuInner, { x: "0vw", duration: 0.5, ease: "power4.out" });
 
-    // Stagger animate menu items
     gsap.to(menuItems, {
       opacity: 1,
       y: "0rem",
@@ -845,14 +652,8 @@ $(window).on("load", function () {
       delay: 0.2,
     });
 
-    // Animate navbar color
-    gsap.to(navbar, {
-      color: "#040a44",
-      duration: 0.3,
-      ease: "power4.out",
-    });
+    gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
 
-    // Animate navbar background
     if (navbarBg) {
       gsap.to(navbarBg, {
         backgroundColor: "rgba(242, 243, 246, 0.6)",
@@ -861,7 +662,6 @@ $(window).on("load", function () {
       });
     }
 
-    // Animate nav buttons
     navButtons.forEach((btn) => {
       gsap.to(btn, {
         backgroundColor: "#040a44",
@@ -874,98 +674,55 @@ $(window).on("load", function () {
     isMenuOpen = true;
   }
 
-  // Close menu
   function closeMenu() {
     const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
-    // Re-enable scroll
     document.body.style.overflow = "";
 
-    // Animate menu close icon
-    gsap.to(menuClose, {
-      opacity: 0,
-      duration: 0.3,
-      ease: "power4.out",
-    });
+    gsap.to(menuClose, { opacity: 0, duration: 0.3, ease: "power4.out" });
+    gsap.to(menuOpen, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
-    // Animate menu open icon
-    gsap.to(menuOpen, {
-      opacity: 1,
-      duration: 0.3,
-      ease: "power4.out",
-    });
-
-    // Animate menu out
     gsap.to(menuInner, {
       x: "100vw",
       duration: 0.5,
       ease: "power4.out",
-      onComplete: () => {
-        gsap.set(menuInner, { display: "none" });
-      },
+      onComplete: () => gsap.set(menuInner, { display: "none" }),
     });
 
-    // Reset menu items
     gsap.set(menuItems, { opacity: 0, y: "1rem" });
 
-    // Revert navbar color
-    gsap.to(navbar, {
-      color: "",
-      duration: 0.3,
-      ease: "power4.out",
-    });
+    gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
 
-    // Revert navbar background
     if (navbarBg) {
-      gsap.to(navbarBg, {
-        backgroundColor: "",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(navbarBg, { backgroundColor: "", duration: 0.3, ease: "power4.out" });
     }
 
-    // Revert nav buttons
     navButtons.forEach((btn) => {
-      gsap.to(btn, {
-        backgroundColor: "",
-        color: "",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
     });
 
     isMenuOpen = false;
   }
 
-  // Click handler
   menuTrigger.addEventListener("click", function () {
     console.log("Menu trigger clicked, screen width:", window.innerWidth);
 
-    // Only work on mobile screens
     if (window.innerWidth >= 992) {
       console.log("Screen too wide for mobile menu");
       return;
     }
 
-    // Close any open dropdown first
     if (typeof window.closeMobileDropdown === "function") {
       window.closeMobileDropdown();
     }
 
-    if (isMenuOpen) {
-      console.log("Closing menu");
-      closeMenu();
-    } else {
-      console.log("Opening menu");
-      openMenu();
-    }
+    if (isMenuOpen) closeMenu();
+    else openMenu();
   });
 
-  // Initialize on load
   initializeMobileMenu();
 
-  // Reinitialize on resize
   let wasMobile = window.innerWidth < 992;
   window.addEventListener("resize", function () {
     const isMobile = window.innerWidth < 992;
@@ -977,13 +734,12 @@ $(window).on("load", function () {
         initializeMobileMenu();
         isMenuOpen = false;
       } else {
-        // Reset everything on desktop
         gsap.set(menuOpen, { opacity: 1 });
         gsap.set(menuClose, { opacity: 0 });
         gsap.set(menuInner, { display: "", x: "0vw" });
         const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
         gsap.set(menuItems, { opacity: 1, y: "0rem" });
-        document.body.style.overflow = ""; // Re-enable scroll on desktop
+        document.body.style.overflow = "";
         isMenuOpen = false;
       }
     }
@@ -993,34 +749,26 @@ $(window).on("load", function () {
 // --------------------- Navbar Scroll Behavior --------------------- //
 (function () {
   const navbar = document.querySelector(".navbar");
-
   if (!navbar) return;
 
   let lastScrollY = window.scrollY;
   let isScrollingDown = false;
-  const scrollThreshold = window.innerHeight * 0.25; // 25vh
+  const scrollThreshold = window.innerHeight * 0.25;
 
   function handleNavbarScroll() {
     const currentScrollY = window.scrollY;
     isScrollingDown = currentScrollY > lastScrollY;
 
-    // Navbar visibility logic
     if (currentScrollY < scrollThreshold) {
-      // Always show navbar at the top
       navbar.style.transform = "translateY(0)";
     } else {
-      // After 25vh: hide on scroll down, show on scroll up
-      if (isScrollingDown) {
-        navbar.style.transform = "translateY(-100%)";
-      } else {
-        navbar.style.transform = "translateY(0)";
-      }
+      if (isScrollingDown) navbar.style.transform = "translateY(-100%)";
+      else navbar.style.transform = "translateY(0)";
     }
 
     lastScrollY = currentScrollY;
   }
 
-  // Throttle scroll events for better performance
   let ticking = false;
   window.addEventListener("scroll", function () {
     if (!ticking) {
@@ -1032,139 +780,203 @@ $(window).on("load", function () {
     }
   });
 
-  // Initialize on load
   handleNavbarScroll();
 })();
 
-// --------------------- Eyebrow Text Cycling Animation --------------------- //
+/* =========================================================================================
+   ✅ UPDATED: Eyebrow Text Cycling + Sync Hero Background Video (SIMULTANEOUS)
+   Supports:
+   - Option A: 4 separate videos (data-hero-video="0..3" OR class .hero-bg-video x4)
+   - Option B: 1 long video (data-hero-master-video="true") + cue points (timestamps)
+   ========================================================================================= */
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
-
-  if (!eyebrowElement) return;
+  const heroSection = document.querySelector(".section.is--home-hero");
+  if (!eyebrowElement || !heroSection) return;
 
   const phrases = [
     "From field to office",
     "From data to decision",
     "From risk to reliability",
     "From reactive to proactive.",
-
   ];
+
+  // --- VIDEO CONFIG ---
+  // Option B (single long video): set the timestamps (seconds) where each phrase should start
+  // Example: [0, 4, 8, 12]
+  const MASTER_VIDEO_CUES = [0, 4, 8, 12];
+
+  // Decide mode automatically:
+  const masterVideo = heroSection.querySelector(".hero-bg-video[data-hero-master-video='true']");
+  const multiVideosByData = heroSection.querySelectorAll(".hero-bg-video[data-hero-video]");
+  const multiVideosByClass = heroSection.querySelectorAll(".hero-bg-video");
+
+  const isMasterMode = !!masterVideo;
+  const multiVideos =
+    multiVideosByData.length ? multiVideosByData : (multiVideosByClass.length > 1 ? multiVideosByClass : null);
+
+  const hasMulti = !!multiVideos && multiVideos.length > 0;
 
   let currentIndex = 0;
   let isAnimating = false;
 
-  let currentSplit = null;
-
-  // Initialize the first phrase with space spans
-  function initializeText() {
-    const textWithSpaces = phrases[currentIndex].replace(
-      / /g,
-      '<span class="space"> </span>'
-    );
-    eyebrowElement.innerHTML = textWithSpaces;
-
-    // Create initial split
-    currentSplit = new SplitText(eyebrowElement, {
-      type: "chars",
-      charsClass: "char",
-    });
+  function safePlay(videoEl) {
+    if (!videoEl) return;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.preload = "auto";
+    const p = videoEl.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
   }
 
-  function animateTextChange() {
+  function safePause(videoEl) {
+    if (!videoEl) return;
+    try {
+      videoEl.pause();
+    } catch (e) {}
+  }
+
+  // ---------- MULTI VIDEO MODE (4 separate videos) ----------
+  function initMultiVideos() {
+    if (!hasMulti) return;
+
+    // Sort by data-hero-video if present
+    const arr = Array.from(multiVideos);
+    const sorted = arr.every((v) => v.hasAttribute("data-hero-video"))
+      ? arr.sort((a, b) => parseInt(a.getAttribute("data-hero-video"), 10) - parseInt(b.getAttribute("data-hero-video"), 10))
+      : arr;
+
+    // Replace reference with sorted list (stable)
+    window.__heroVideos = sorted;
+
+    sorted.forEach((v, i) => {
+      v.muted = true;
+      v.playsInline = true;
+      v.loop = true;
+      v.preload = "auto";
+
+      v.classList.toggle("is-active", i === 0);
+      gsap.set(v, { opacity: i === 0 ? 1 : 0 });
+      try { v.load(); } catch (e) {}
+    });
+
+    safePlay(sorted[0]);
+  }
+
+  function crossfadeTo(index) {
+    if (!hasMulti) return;
+    const videosList = window.__heroVideos || Array.from(multiVideos);
+    const nextVideo = videosList[index];
+    if (!nextVideo) return;
+
+    const currentVideo =
+      heroSection.querySelector(".hero-bg-video.is-active") || videosList[currentIndex];
+
+    if (currentVideo === nextVideo) return;
+
+    // start next
+    try { nextVideo.currentTime = 0; } catch (e) {}
+    safePlay(nextVideo);
+
+    nextVideo.classList.add("is-active");
+
+    gsap.to(currentVideo, {
+      opacity: 0,
+      duration: 0.45,
+      ease: "power2.out",
+      onComplete: () => {
+        currentVideo.classList.remove("is-active");
+        safePause(currentVideo);
+      },
+    });
+
+    gsap.to(nextVideo, { opacity: 1, duration: 0.45, ease: "power2.out" });
+  }
+
+  // ---------- MASTER VIDEO MODE (one long video) ----------
+  function initMasterVideo() {
+    if (!isMasterMode) return;
+    masterVideo.muted = true;
+    masterVideo.playsInline = true;
+    masterVideo.preload = "auto";
+    masterVideo.loop = true; // tu peux laisser true si ta vidéo est parfaitement bouclée
+    gsap.set(masterVideo, { opacity: 1 });
+    safePlay(masterVideo);
+  }
+
+  function seekMasterTo(index) {
+    if (!isMasterMode) return;
+    const t = MASTER_VIDEO_CUES[index] ?? 0;
+    try {
+      masterVideo.currentTime = t;
+    } catch (e) {}
+    safePlay(masterVideo);
+  }
+
+  // ---------- TEXT (simple fade-up/down) ----------
+  function setText(index) {
+    eyebrowElement.innerHTML = phrases[index].replace(/ /g, '<span class="space"> </span>');
+  }
+
+  function animateTextAndVideo() {
     if (isAnimating) return;
     isAnimating = true;
 
-    // If there's an existing split, use it, otherwise create one
-    if (!currentSplit) {
-      currentSplit = new SplitText(eyebrowElement, {
-        type: "chars",
-        charsClass: "char",
-      });
+    const nextIndex = (currentIndex + 1) % phrases.length;
+
+    // ✅ VIDEO change happens at the SAME time as text loop
+    if (isMasterMode) {
+      seekMasterTo(nextIndex);
+    } else if (hasMulti) {
+      crossfadeTo(nextIndex);
     }
 
-    const oldChars = currentSplit.chars;
-
-    // Animate out (move up -100%)
-    gsap.to(oldChars, {
-      yPercent: -100,
+    gsap.to(eyebrowElement, {
       opacity: 0,
-      stagger: 0.03,
-      duration: 0.4,
-      ease: "power2.out",
-    });
-
-    // Prepare new text while old one is animating out
-    // Create a temporary container for the new text
-    const tempDiv = document.createElement("div");
-    tempDiv.style.position = "absolute";
-    tempDiv.style.top = "0";
-    tempDiv.style.left = "0";
-    tempDiv.style.width = "100%";
-
-    currentIndex = (currentIndex + 1) % phrases.length;
-    const textWithSpaces = phrases[currentIndex].replace(
-      / /g,
-      '<span class="space"> </span>'
-    );
-    tempDiv.innerHTML = textWithSpaces;
-    eyebrowElement.appendChild(tempDiv);
-
-    // Split the new text
-    const newSplit = new SplitText(tempDiv, {
-      type: "chars",
-      charsClass: "char",
-    });
-    const newChars = newSplit.chars;
-
-    // Set initial state (below, hidden)
-    gsap.set(newChars, { yPercent: 100, opacity: 0 });
-
-    // Animate in simultaneously (move to 0%)
-    gsap.to(newChars, {
-      yPercent: 0,
-      opacity: 1,
-      stagger: 0.03,
-      duration: 0.4,
+      y: -10,
+      duration: 0.25,
       ease: "power2.out",
       onComplete: () => {
-        // Clean up old split
-        currentSplit.revert();
+        currentIndex = nextIndex;
+        setText(currentIndex);
 
-        // Replace eyebrow content with new text
-        eyebrowElement.innerHTML = tempDiv.innerHTML;
-
-        // Create new split for the next cycle
-        currentSplit = new SplitText(eyebrowElement, {
-          type: "chars",
-          charsClass: "char",
-        });
-
-        isAnimating = false;
-
-        // Wait 2 seconds before next animation
-        setTimeout(animateTextChange, 2000);
+        gsap.fromTo(
+          eyebrowElement,
+          { opacity: 0, y: 10 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.25,
+            ease: "power2.out",
+            onComplete: () => {
+              isAnimating = false;
+              setTimeout(animateTextAndVideo, 2000);
+            },
+          }
+        );
       },
     });
   }
 
-  // Initialize the text on load
-  initializeText();
+  // Init
+  setText(currentIndex);
 
-  // Start the cycling animation after 2 seconds
-  setTimeout(animateTextChange, 2000);
+  if (isMasterMode) initMasterVideo();
+  else initMultiVideos();
+
+  // Start loop after 2s
+  setTimeout(animateTextAndVideo, 2000);
 })();
 
 // --------------------- Hover Circle Follow Mouse --------------------- //
 (function () {
   const gridTrusted = document.querySelector(".grid--trusted");
-
   if (!gridTrusted) return;
 
   const logoParents = gridTrusted.querySelectorAll(".trusted--logo-parent");
 
   logoParents.forEach((parent) => {
     const hoverCircle = parent.querySelector(".hover--circle");
-
     if (!hoverCircle) return;
 
     parent.addEventListener("mousemove", function (e) {
@@ -1172,110 +984,61 @@ $(window).on("load", function () {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Center the circle on the cursor (subtract half the circle size)
-      const circleSize = 10; // 10rem
+      const circleSize = 10;
       const offsetX =
-        x -
-        (circleSize / 2) *
-          parseFloat(getComputedStyle(document.documentElement).fontSize);
+        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
       const offsetY =
-        y -
-        (circleSize / 2) *
-          parseFloat(getComputedStyle(document.documentElement).fontSize);
+        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-      gsap.to(hoverCircle, {
-        x: offsetX,
-        y: offsetY,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
 
     parent.addEventListener("mouseenter", function () {
-      gsap.to(hoverCircle, {
-        opacity: 0.3,
-        scale: 1,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverCircle, { opacity: 0.3, scale: 1, duration: 0.3, ease: "power2.out" });
     });
 
     parent.addEventListener("mouseleave", function () {
-      gsap.to(hoverCircle, {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverCircle, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.out" });
     });
   });
 
-  // Handle .hover--circle.is--100 inside .lines
   const lines = gridTrusted.querySelectorAll(".lines");
-
   lines.forEach((line) => {
     const hoverCircle = line.querySelector(".hover--circle.is--100");
-
     if (!hoverCircle) return;
-
-    // Initially hide the circle
     gsap.set(hoverCircle, { opacity: 0 });
   });
 
-  // Track mouse movement on the entire grid--trusted area
   gridTrusted.addEventListener("mousemove", function (e) {
     lines.forEach((line) => {
       const hoverCircle = line.querySelector(".hover--circle.is--100");
-
       if (!hoverCircle) return;
 
       const rect = line.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Center the circle on the cursor
-      const circleSize = 10; // 10rem
+      const circleSize = 10;
       const offsetX =
-        x -
-        (circleSize / 2) *
-          parseFloat(getComputedStyle(document.documentElement).fontSize);
+        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
       const offsetY =
-        y -
-        (circleSize / 2) *
-          parseFloat(getComputedStyle(document.documentElement).fontSize);
+        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-      gsap.to(hoverCircle, {
-        x: offsetX,
-        y: offsetY,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
   });
 
   gridTrusted.addEventListener("mouseenter", function () {
     lines.forEach((line) => {
       const hoverCircle = line.querySelector(".hover--circle.is--100");
-      if (hoverCircle) {
-        gsap.to(hoverCircle, {
-          opacity: 1,
-          duration: 0.3,
-          ease: "power2.out",
-        });
-      }
+      if (hoverCircle) gsap.to(hoverCircle, { opacity: 1, duration: 0.3, ease: "power2.out" });
     });
   });
 
   gridTrusted.addEventListener("mouseleave", function () {
     lines.forEach((line) => {
       const hoverCircle = line.querySelector(".hover--circle.is--100");
-      if (hoverCircle) {
-        gsap.to(hoverCircle, {
-          opacity: 0,
-          duration: 0.3,
-          ease: "power2.out",
-        });
-      }
+      if (hoverCircle) gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
     });
   });
 })();
@@ -1284,7 +1047,6 @@ $(window).on("load", function () {
 (function () {
   let swiperInstance = null;
 
-  // Desktop hover functionality
   function initOfferSlides() {
     if (window.innerWidth <= 992) return;
 
@@ -1293,67 +1055,28 @@ $(window).on("load", function () {
 
     let activeSlide = null;
 
-    // Function to set a slide as inactive
     function setInactive(slide) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      gsap.to(slide, {
-        opacity: 0.3,
-        duration: 0.2,
-        ease: "power2.out",
-      });
+      gsap.to(slide, { opacity: 0.3, duration: 0.2, ease: "power2.out" });
 
-      if (icon) {
-        gsap.to(icon, {
-          x: "-1rem",
-          opacity: 0,
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      }
-
-      if (content) {
-        gsap.to(content, {
-          opacity: 0,
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      }
+      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out" });
+      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out" });
     }
 
-    // Function to set a slide as active
     function setActive(slide) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      gsap.to(slide, {
-        opacity: 1,
-        duration: 0.2,
-        ease: "power2.out",
-      });
+      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out" });
 
-      if (icon) {
-        gsap.to(icon, {
-          x: "0rem",
-          opacity: 1,
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      }
-
-      if (content) {
-        gsap.to(content, {
-          opacity: 1,
-          duration: 0.2,
-          ease: "power2.out",
-        });
-      }
+      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.2, ease: "power2.out" });
+      if (content) gsap.to(content, { opacity: 1, duration: 0.2, ease: "power2.out" });
 
       activeSlide = slide;
     }
 
-    // Initialize all slides as inactive
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1363,49 +1086,35 @@ $(window).on("load", function () {
       if (content) gsap.set(content, { opacity: 0 });
     });
 
-    // Set first slide as active on load
-    if (offerSlides[0]) {
-      setActive(offerSlides[0]);
-    }
+    if (offerSlides[0]) setActive(offerSlides[0]);
 
-    // Add hover listeners
     offerSlides.forEach((slide) => {
       slide.addEventListener("mouseenter", function () {
-        // If there's an active slide that's not this one, deactivate it
-        if (activeSlide && activeSlide !== slide) {
-          setInactive(activeSlide);
-        }
-
-        // Activate this slide
+        if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
         setActive(slide);
       });
     });
   }
 
-  // Mobile slider functionality
   function initOfferSlider() {
     if (window.innerWidth > 992) return;
 
     const slider = document.querySelector(".offers-slider");
     if (!slider) return;
 
-    // Check if Swiper is available
     if (typeof Swiper === "undefined") {
       console.error("Swiper is not loaded");
       return;
     }
 
-    // Destroy existing instance if it exists
     if (swiperInstance) {
       swiperInstance.destroy(true, true);
       swiperInstance = null;
     }
 
-    // Initialize Swiper
     swiperInstance = new Swiper(".offers-slider", {
       slidesPerView: "auto",
-      spaceBetween:
-        parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25, // 1.25rem
+      spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
       navigation: {
         nextEl: ".offer-slider-btn.is--next",
         prevEl: ".offer-slider-btn.is--prev",
@@ -1423,7 +1132,6 @@ $(window).on("load", function () {
       },
     });
 
-    // Function to update slider margins based on active slide
     function updateSliderMargins(swiper) {
       const sliderEl = document.querySelector(".offers-slider");
       if (!sliderEl) return;
@@ -1431,59 +1139,38 @@ $(window).on("load", function () {
       const isFirstSlide = swiper.activeIndex === 0;
       const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
-      // Remove all classes first
       sliderEl.classList.remove("is--first", "is--middle", "is--last");
 
-      if (isFirstSlide) {
-        sliderEl.classList.add("is--first");
-      } else if (isLastSlide) {
-        sliderEl.classList.add("is--last");
-      } else {
-        sliderEl.classList.add("is--middle");
-      }
+      if (isFirstSlide) sliderEl.classList.add("is--first");
+      else if (isLastSlide) sliderEl.classList.add("is--last");
+      else sliderEl.classList.add("is--middle");
     }
   }
 
   function updateSlideNumbers(swiper) {
-    const currentSlideNumber = document.querySelector(
-      ".slide--number:first-child"
-    );
-    const totalSlideNumber = document.querySelector(
-      ".slide--number:last-child"
-    );
+    const currentSlideNumber = document.querySelector(".slide--number:first-child");
+    const totalSlideNumber = document.querySelector(".slide--number:last-child");
 
-    if (currentSlideNumber) {
-      currentSlideNumber.textContent = swiper.activeIndex + 1;
-    }
-
-    if (totalSlideNumber) {
-      totalSlideNumber.textContent = swiper.slides.length;
-    }
+    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
+    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
-  // Initialize on load
   const isDesktop = window.innerWidth > 992;
-  if (isDesktop) {
-    initOfferSlides();
-  } else {
-    initOfferSlider();
-  }
+  if (isDesktop) initOfferSlides();
+  else initOfferSlider();
 
-  // Reinitialize on resize if crossing the 992px threshold
   let wasDesktop = isDesktop;
   window.addEventListener("resize", function () {
     const isDesktop = window.innerWidth > 992;
     if (isDesktop !== wasDesktop) {
       wasDesktop = isDesktop;
       if (isDesktop) {
-        // Destroy slider and init desktop
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
           swiperInstance = null;
         }
         initOfferSlides();
       } else {
-        // Init mobile slider
         initOfferSlider();
       }
     }
@@ -1492,7 +1179,6 @@ $(window).on("load", function () {
 
 // --------------------- How It Works Scroll Animation --------------------- //
 (function () {
-  // Only run on screens above 992px
   if (window.innerWidth <= 992) return;
 
   const triggersParent = document.querySelector(".howitworks--triggers-parent");
@@ -1501,7 +1187,6 @@ $(window).on("load", function () {
 
   if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
 
-  // Initialize all content and response to inactive state
   parents.forEach((parent) => {
     const content = parent.querySelector(".howitworks--content");
     const response = parent.querySelector(".howitworks--response");
@@ -1512,7 +1197,6 @@ $(window).on("load", function () {
     if (line) gsap.set(line, { width: "0%" });
   });
 
-  // Set initial positions for images using yPercent and y separately
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
   const finalYPercent = [-200, -100, 0];
@@ -1522,22 +1206,16 @@ $(window).on("load", function () {
     const img = parent.querySelector(".howitworks--img");
     if (img) {
       const remInPx =
-        initialYRem[index] *
-        parseFloat(getComputedStyle(document.documentElement).fontSize);
-      gsap.set(img, {
-        yPercent: initialYPercent[index],
-        y: remInPx,
-      });
+        initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
     }
   });
 
-  // Animate all images based on the parent scroll
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (img) {
       const remInPx =
-        finalYRem[index] *
-        parseFloat(getComputedStyle(document.documentElement).fontSize);
+        finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
       gsap.to(img, {
         yPercent: finalYPercent[index],
         y: remInPx,
@@ -1551,11 +1229,8 @@ $(window).on("load", function () {
       });
     }
 
-    // Initialize inner images
     const imgInner = parent.querySelector(".howitworks--img--inner");
-    if (imgInner) {
-      gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
-    }
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
   });
 
   triggers.forEach((trigger, index) => {
@@ -1566,99 +1241,37 @@ $(window).on("load", function () {
     const response = parent.querySelector(".howitworks--response");
     const line = parent.querySelector(".howitworks--line");
 
-    // Timeline for activating this section
-    const activateTimeline = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: trigger,
         start: "top bottom",
         onEnter: () => {
-          // Deactivate previous parent
           if (index > 0 && parents[index - 1]) {
-            const prevContent = parents[index - 1].querySelector(
-              ".howitworks--content"
-            );
-            const prevResponse = parents[index - 1].querySelector(
-              ".howitworks--response"
-            );
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
 
-            if (prevContent) {
-              gsap.to(prevContent, {
-                opacity: 0.3,
-                duration: 0.4,
-                ease: "power2.out",
-              });
-            }
-            if (prevResponse) {
-              gsap.to(prevResponse, {
-                height: 0,
-                duration: 0.4,
-                ease: "power2.out",
-              });
-            }
+            if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
 
-          // Activate current parent
-          if (content) {
-            gsap.to(content, {
-              opacity: 1,
-              duration: 0.4,
-              ease: "power2.out",
-            });
-          }
-          if (response) {
-            gsap.to(response, {
-              height: "auto",
-              duration: 0.4,
-              ease: "power2.out",
-            });
-          }
+          if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
+          if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
         onLeaveBack: () => {
-          // When scrolling back up, deactivate current and reactivate previous
-          if (content) {
-            gsap.to(content, {
-              opacity: 0.3,
-              duration: 0.4,
-              ease: "power2.out",
-            });
-          }
-          if (response) {
-            gsap.to(response, {
-              height: 0,
-              duration: 0.4,
-              ease: "power2.out",
-            });
-          }
+          if (content) gsap.to(content, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+          if (response) gsap.to(response, { height: 0, duration: 0.4, ease: "power2.out" });
 
-          // Reactivate previous
           if (index > 0 && parents[index - 1]) {
-            const prevContent = parents[index - 1].querySelector(
-              ".howitworks--content"
-            );
-            const prevResponse = parents[index - 1].querySelector(
-              ".howitworks--response"
-            );
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
 
-            if (prevContent) {
-              gsap.to(prevContent, {
-                opacity: 1,
-                duration: 0.4,
-                ease: "power2.out",
-              });
-            }
-            if (prevResponse) {
-              gsap.to(prevResponse, {
-                height: "auto",
-                duration: 0.4,
-                ease: "power2.out",
-              });
-            }
+            if (prevContent) gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
           }
         },
       },
     });
 
-    // Separate ScrollTrigger for the line animation
     if (line) {
       gsap.to(line, {
         width: "100%",
@@ -1673,7 +1286,6 @@ $(window).on("load", function () {
     }
   });
 
-  // Animate inner images with specific triggers for each parent
   const section = document.querySelector(".section.is--howworks");
 
   parents.forEach((parent, index) => {
@@ -1681,7 +1293,6 @@ $(window).on("load", function () {
     if (!imgInner) return;
 
     if (index === 0) {
-      // First parent: trigger is .section.is--howworks
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
@@ -1694,8 +1305,6 @@ $(window).on("load", function () {
         },
       });
     } else if (index === 1) {
-      // Second parent: trigger is .howitworks--triggers-parent
-      // top bottom -> top center: blur 10rem to 0rem
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
@@ -1708,8 +1317,6 @@ $(window).on("load", function () {
         },
       });
     } else if (index === 2) {
-      // Third parent: trigger is .howitworks--triggers-parent
-      // center bottom -> bottom bottom: blur 10rem to 0rem
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
@@ -1733,7 +1340,6 @@ $(window).on("load", function () {
 
   if (!section || !container || !hoverCircle) return;
 
-  // Initialize circle as hidden
   gsap.set(hoverCircle, { opacity: 0 });
 
   let mouseX = 0;
@@ -1746,22 +1352,13 @@ $(window).on("load", function () {
   });
 
   section.addEventListener("mouseenter", function () {
-    gsap.to(hoverCircle, {
-      opacity: 0.3,
-      duration: 0.3,
-      ease: "power2.out",
-    });
+    gsap.to(hoverCircle, { opacity: 0.3, duration: 0.3, ease: "power2.out" });
   });
 
   section.addEventListener("mouseleave", function () {
-    gsap.to(hoverCircle, {
-      opacity: 0,
-      duration: 0.3,
-      ease: "power2.out",
-    });
+    gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
   });
 
-  // Smooth follow animation with delay
   gsap.ticker.add(() => {
     gsap.to(hoverCircle, {
       x: mouseX,
@@ -1784,7 +1381,6 @@ $(window).on("load", function () {
     return;
   }
 
-  // Check if ScrollTrigger is available
   if (typeof ScrollTrigger === "undefined") {
     console.error("ScrollTrigger is not loaded");
     return;
@@ -1803,18 +1399,14 @@ $(window).on("load", function () {
       return;
     }
 
-    // Store original content and setup
     counter.setAttribute("data-target", targetNumber);
     const targetString = targetNumber.toString().padStart(digitCount, "0");
 
-    // Build the HTML structure with digit wrappers
     let html = "";
     for (let i = 0; i < digitCount; i++) {
       const targetDigit = parseInt(targetString[i]);
       let columnHTML = "";
 
-      // Always create 10 digits, starting from appropriate position
-      // If target is 9, start from 0; if 8, start from 9; if 7, start from 8, etc.
       const startDigit = (targetDigit + 1) % 10;
 
       for (let j = 0; j < 10; j++) {
@@ -1827,7 +1419,6 @@ $(window).on("load", function () {
 
     counter.innerHTML = html;
 
-    // Create ScrollTrigger for this counter
     ScrollTrigger.create({
       trigger: counter,
       start: "top bottom",
@@ -1836,16 +1427,10 @@ $(window).on("load", function () {
         const columns = counter.querySelectorAll(".digit-column");
 
         columns.forEach((column, index) => {
-          // Always animate 9 steps (to reach the 10th digit which is the target)
           gsap.fromTo(
             column,
             { y: "0em" },
-            {
-              y: "-9em",
-              duration: 2,
-              ease: "power2.out",
-              delay: 0.4 + index * 0.1,
-            }
+            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
           );
         });
       },
@@ -1856,7 +1441,6 @@ $(window).on("load", function () {
 // --------------------- Footer Accordion (Mobile) --------------------- //
 (function () {
   function initFooterAccordion() {
-    // Only run on screens below 992px
     if (window.innerWidth >= 992) return;
 
     const titleParents = document.querySelectorAll(".footer--title-parent");
@@ -1873,79 +1457,36 @@ $(window).on("load", function () {
 
       if (!inner) return;
 
-      // Initialize as closed
       gsap.set(inner, { height: 0, overflow: "hidden" });
       if (icon) gsap.set(icon, { rotation: 0 });
 
-      // Click handler
       titleParent.addEventListener("click", () => {
         const isActive = activeParent === titleParent;
 
-        // Close previously active item
         if (activeParent && activeParent !== titleParent) {
           const prevColumn = activeParent.closest(".footer--column");
           const prevInner = prevColumn.querySelector(".footer--inner");
           const prevIcon = activeParent.querySelector(".footer-title-icon");
 
-          gsap.to(prevInner, {
-            height: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          });
-
-          if (prevIcon) {
-            gsap.to(prevIcon, {
-              rotation: 0,
-              duration: 0.3,
-              ease: "power2.out",
-            });
-          }
+          gsap.to(prevInner, { height: 0, duration: 0.3, ease: "power2.out" });
+          if (prevIcon) gsap.to(prevIcon, { rotation: 0, duration: 0.3, ease: "power2.out" });
         }
 
-        // Toggle current item
         if (isActive) {
-          // Close if already active
-          gsap.to(inner, {
-            height: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          });
-
-          if (icon) {
-            gsap.to(icon, {
-              rotation: 0,
-              duration: 0.3,
-              ease: "power2.out",
-            });
-          }
-
+          gsap.to(inner, { height: 0, duration: 0.3, ease: "power2.out" });
+          if (icon) gsap.to(icon, { rotation: 0, duration: 0.3, ease: "power2.out" });
           activeParent = null;
         } else {
-          // Open
-          gsap.to(inner, {
-            height: "auto",
-            duration: 0.3,
-            ease: "power2.out",
-          });
-
-          if (icon) {
-            gsap.to(icon, {
-              rotation: 180,
-              duration: 0.3,
-              ease: "power2.out",
-            });
-          }
-
+          gsap.to(inner, { height: "auto", duration: 0.3, ease: "power2.out" });
+          if (icon) gsap.to(icon, { rotation: 180, duration: 0.3, ease: "power2.out" });
           activeParent = titleParent;
         }
       });
     });
   }
 
-  // Initialize on load
   initFooterAccordion();
 
-  // Reinitialize on resize
   let wasMobile = window.innerWidth < 992;
   window.addEventListener("resize", () => {
     const isMobile = window.innerWidth < 992;
@@ -1955,17 +1496,11 @@ $(window).on("load", function () {
       if (isMobile) {
         initFooterAccordion();
       } else {
-        // Reset all on desktop
         const footerInners = document.querySelectorAll(".footer--inner");
         const footerIcons = document.querySelectorAll(".footer-title-icon");
 
-        footerInners.forEach((inner) => {
-          gsap.set(inner, { height: "auto", overflow: "visible" });
-        });
-
-        footerIcons.forEach((icon) => {
-          gsap.set(icon, { rotation: 0 });
-        });
+        footerInners.forEach((inner) => gsap.set(inner, { height: "auto", overflow: "visible" }));
+        footerIcons.forEach((icon) => gsap.set(icon, { rotation: 0 }));
       }
     }
   });
@@ -1974,7 +1509,6 @@ $(window).on("load", function () {
 // --------------------- Button Hover Animation --------------------- //
 (function () {
   const buttons = document.querySelectorAll(".btn");
-
   if (buttons.length === 0) return;
 
   buttons.forEach((btn) => {
@@ -1983,38 +1517,17 @@ $(window).on("load", function () {
 
     if (!hoverClose || !hoverOpen) return;
 
-    // Initialize states
     gsap.set(hoverClose, { width: "auto" });
     gsap.set(hoverOpen, { width: 0 });
 
-    // Mouseenter event
     btn.addEventListener("mouseenter", function () {
-      gsap.to(hoverClose, {
-        width: 0,
-        duration: 0.3,
-        ease: "power2.out",
-      });
-
-      gsap.to(hoverOpen, {
-        width: "auto",
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverClose, { width: 0, duration: 0.3, ease: "power2.out" });
+      gsap.to(hoverOpen, { width: "auto", duration: 0.3, ease: "power2.out" });
     });
 
-    // Mouseleave event
     btn.addEventListener("mouseleave", function () {
-      gsap.to(hoverClose, {
-        width: "auto",
-        duration: 0.3,
-        ease: "power2.out",
-      });
-
-      gsap.to(hoverOpen, {
-        width: 0,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      gsap.to(hoverClose, { width: "auto", duration: 0.3, ease: "power2.out" });
+      gsap.to(hoverOpen, { width: 0, duration: 0.3, ease: "power2.out" });
     });
   });
 })();

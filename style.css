@@ -324,3 +324,34 @@ body {
   white-space: nowrap;
   will-change: width;
 }
+
+/* =========================================================================================
+   ✅ ADDITION: Hero Background Video Crossfade (required for synced video loop)
+   ========================================================================================= */
+.section.is--home-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+.hero-bg-video.is-active {
+  opacity: 1;
+}
+
+/* keep content above videos */
+.overlay--30,
+.container--1344.z--index2 {
+  position: relative;
+  z-index: 2;
+}
