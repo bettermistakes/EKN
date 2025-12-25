@@ -1046,6 +1046,8 @@ $(window).on("load", function () {
     "From field to office",
     "From data to decision",
     "From risk to reliability",
+    "From reactive to proactive.",
+
   ];
 
   let currentIndex = 0;
