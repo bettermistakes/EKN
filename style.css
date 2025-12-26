@@ -133,20 +133,29 @@ body {
   white-space: pre;
 }
 
-/* --------------------- ✅ HERO IMAGE SWITCH STYLES --------------------- */
+/* --------------------- ✅ HERO IMAGE SWITCH STYLES (SMOOTH) --------------------- */
 .section.is--home-hero {
   position: relative;
 }
 
+/* Base: all hero imgs are hidden by default */
 .section.is--home-hero img.absolute--img[image] {
   position: absolute;
   inset: 0;
+  opacity: 0;
   transition: opacity 450ms ease;
+  will-change: opacity;
 }
 
-/* Keep class hook (optional) */
+/* Active */
 .section.is--home-hero img.absolute--img.is-active {
   opacity: 1;
+}
+
+/* Optional: reduce flicker on some browsers */
+.section.is--home-hero img.absolute--img[image] {
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* --------------------- Hover Circle Styles --------------------- */
