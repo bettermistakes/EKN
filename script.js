@@ -179,7 +179,7 @@ $(window).on("load", function () {
 
     if (navbarBg) {
       gsap.to(navbarBg, {
-        backgroundColor: "",
+        backgroundColor: "", // Reset to original
         borderBottomColor: "",
         duration: 0.3,
         ease: "power4.out",
@@ -187,7 +187,7 @@ $(window).on("load", function () {
     }
 
     gsap.to(navbar, {
-      color: "",
+      color: "", // Reset to original
       duration: 0.3,
       ease: "power4.out",
     });
@@ -207,6 +207,7 @@ $(window).on("load", function () {
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     if (!trigger) return;
 
+    // Mouseenter on trigger
     trigger.addEventListener("mouseenter", function () {
       if (window.innerWidth < 992) return;
       if (activeDropdown === dropdown) return;
@@ -229,7 +230,6 @@ $(window).on("load", function () {
   const navlinks = navbar.querySelectorAll(".navlink");
   navlinks.forEach((navlink) => {
     const line = navlink.querySelector(".dropdown--line");
-
     if (line) gsap.set(line, { width: "0%" });
 
     navlink.addEventListener("mouseenter", function () {
@@ -253,7 +253,6 @@ $(window).on("load", function () {
 
     navlink.addEventListener("mouseleave", function () {
       if (window.innerWidth < 992) return;
-
       if (line) {
         gsap.to(line, {
           width: "0%",
@@ -468,9 +467,7 @@ $(window).on("load", function () {
     });
   });
 
-  parentContainer.addEventListener("mouseleave", function () {
-    resetAllItems();
-  });
+  parentContainer.addEventListener("mouseleave", resetAllItems);
 
   window.addEventListener("resize", function () {
     if (window.innerWidth <= 992) {
@@ -506,11 +503,9 @@ $(window).on("load", function () {
   function resetAllLinks() {
     resourceLinks.forEach((link) => {
       gsap.to(link, { opacity: 1, duration: 0.3, ease: "power4.out" });
-
       const svg = link.querySelector(".resource--link-svg");
       if (svg) gsap.to(svg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
     });
-
     currentlyHovered = null;
   }
 
@@ -543,9 +538,7 @@ $(window).on("load", function () {
     });
   });
 
-  parentContainer.addEventListener("mouseleave", function () {
-    resetAllLinks();
-  });
+  parentContainer.addEventListener("mouseleave", resetAllLinks);
 
   window.addEventListener("resize", function () {
     if (window.innerWidth <= 992) {
@@ -569,18 +562,9 @@ $(window).on("load", function () {
   const navbarBg = document.querySelector(".navbar--bg");
 
   if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) {
-    console.log("Mobile menu elements not found:", {
-      menuTrigger: !!menuTrigger,
-      menuOpen: !!menuOpen,
-      menuClose: !!menuClose,
-      menuInner: !!menuInner,
-      navbar: !!navbar,
-      navbarBg: !!navbarBg,
-    });
     return;
   }
 
-  console.log("Mobile menu initialized");
   let isMenuOpen = false;
 
   function initializeMobileMenu() {
@@ -659,8 +643,6 @@ $(window).on("load", function () {
   }
 
   menuTrigger.addEventListener("click", function () {
-    console.log("Menu trigger clicked, screen width:", window.innerWidth);
-
     if (window.innerWidth >= 992) return;
 
     if (typeof window.closeMobileDropdown === "function") {
@@ -687,10 +669,8 @@ $(window).on("load", function () {
         gsap.set(menuOpen, { opacity: 1 });
         gsap.set(menuClose, { opacity: 0 });
         gsap.set(menuInner, { display: "", x: "0vw" });
-
         const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
         gsap.set(menuItems, { opacity: 1, y: "0rem" });
-
         document.body.style.overflow = "";
         isMenuOpen = false;
       }
@@ -754,10 +734,7 @@ $(window).on("load", function () {
     eyebrowElement.innerHTML = textWithSpaces;
     eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
 
-    currentSplit = new SplitText(eyebrowElement, {
-      type: "chars",
-      charsClass: "char",
-    });
+    currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
   }
 
   function animateTextChange() {
@@ -896,9 +873,10 @@ $(window).on("load", function () {
       const y = e.clientY - rect.top;
 
       const circleSize = 10; // 10rem
-      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetX = x - (circleSize / 2) * rootFont;
-      const offsetY = y - (circleSize / 2) * rootFont;
+      const offsetX =
+        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetY =
+        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
       gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
@@ -928,10 +906,11 @@ $(window).on("load", function () {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      const circleSize = 10; // 10rem
-      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetX = x - (circleSize / 2) * rootFont;
-      const offsetY = y - (circleSize / 2) * rootFont;
+      const circleSize = 10;
+      const offsetX =
+        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetY =
+        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
       gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
@@ -952,10 +931,11 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (Desktop) — FIXED --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) --------------------- //
 (function () {
   let swiperInstance = null;
 
+  // Desktop hover functionality
   function initOfferSlides() {
     if (window.innerWidth <= 992) return;
 
@@ -964,64 +944,67 @@ $(window).on("load", function () {
 
     let activeSlide = null;
 
+    function applyVisibility(slide, isActive) {
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
+
+      if (icon) {
+        gsap.set(icon, {
+          visibility: isActive ? "visible" : "hidden",
+          pointerEvents: isActive ? "auto" : "none",
+        });
+      }
+
+      if (content) {
+        gsap.set(content, {
+          visibility: isActive ? "visible" : "hidden",
+          pointerEvents: isActive ? "auto" : "none",
+        });
+      }
+    }
+
     function setInactive(slide) {
       slide.classList.remove("is-active");
+      applyVisibility(slide, false);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
       gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
 
-      if (icon) {
-        gsap.to(icon, {
-          x: "-1rem",
-          autoAlpha: 0,
-          duration: 0.25,
-          ease: "power2.out",
-          onComplete: () => gsap.set(icon, { pointerEvents: "none" }),
-        });
-      }
-
-      if (content) {
-        gsap.to(content, {
-          autoAlpha: 0,
-          duration: 0.25,
-          ease: "power2.out",
-          onComplete: () => gsap.set(content, { pointerEvents: "none" }),
-        });
-      }
+      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
+      if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
     }
 
     function setActive(slide) {
       offerSlides.forEach((s) => s.classList.remove("is-active"));
       slide.classList.add("is-active");
+      applyVisibility(slide, true);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
       gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      if (icon) gsap.set(icon, { pointerEvents: "auto" });
-      if (content) gsap.set(content, { pointerEvents: "auto" });
-
-      if (icon) gsap.to(icon, { x: "0rem", autoAlpha: 1, duration: 0.25, ease: "power2.out" });
-      if (content) gsap.to(content, { autoAlpha: 1, duration: 0.25, ease: "power2.out" });
+      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
+      if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
 
       activeSlide = slide;
     }
 
-    // Init default (tout hidden = non-interactif)
+    // Init: inactive but DO NOT change display (keep Webflow original absolute/flex)
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
       gsap.set(slide, { opacity: 0.3 });
-      if (icon) gsap.set(icon, { x: "-1rem", autoAlpha: 0, pointerEvents: "none" });
-      if (content) gsap.set(content, { autoAlpha: 0, pointerEvents: "none" });
+      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
+      if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
     if (offerSlides[0]) setActive(offerSlides[0]);
 
+    // Hover target: the <a> layer
     offerSlides.forEach((slide) => {
       const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
 
@@ -1032,16 +1015,14 @@ $(window).on("load", function () {
     });
   }
 
+  // Mobile slider functionality
   function initOfferSlider() {
     if (window.innerWidth > 992) return;
 
     const slider = document.querySelector(".offers-slider");
     if (!slider) return;
 
-    if (typeof Swiper === "undefined") {
-      console.error("Swiper is not loaded");
-      return;
-    }
+    if (typeof Swiper === "undefined") return;
 
     if (swiperInstance) {
       swiperInstance.destroy(true, true);
@@ -1076,6 +1057,7 @@ $(window).on("load", function () {
       const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
       sliderEl.classList.remove("is--first", "is--middle", "is--last");
+
       if (isFirstSlide) sliderEl.classList.add("is--first");
       else if (isLastSlide) sliderEl.classList.add("is--last");
       else sliderEl.classList.add("is--middle");
@@ -1097,10 +1079,8 @@ $(window).on("load", function () {
   let wasDesktop = isDesktop;
   window.addEventListener("resize", function () {
     const isDesktop = window.innerWidth > 992;
-
     if (isDesktop !== wasDesktop) {
       wasDesktop = isDesktop;
-
       if (isDesktop) {
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
@@ -1155,12 +1135,7 @@ $(window).on("load", function () {
         yPercent: finalYPercent[index],
         y: remInPx,
         ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: triggersParent, start: "top bottom", end: "bottom bottom", scrub: true },
       });
     }
 
@@ -1178,7 +1153,7 @@ $(window).on("load", function () {
 
     gsap.timeline({
       scrollTrigger: {
-        trigger: trigger,
+        trigger,
         start: "top bottom",
         onEnter: () => {
           if (index > 0 && parents[index - 1]) {
@@ -1187,7 +1162,6 @@ $(window).on("load", function () {
             if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
-
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1209,12 +1183,7 @@ $(window).on("load", function () {
       gsap.to(line, {
         width: "100%",
         ease: "none",
-        scrollTrigger: {
-          trigger: trigger,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
+        scrollTrigger: { trigger, start: "top bottom", end: "bottom bottom", scrub: true },
       });
     }
   });
@@ -1230,36 +1199,21 @@ $(window).on("load", function () {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "top center",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: section, start: "top bottom", end: "top center", scrub: true },
       });
     } else if (index === 1) {
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "top center",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: triggersParent, start: "top bottom", end: "top center", scrub: true },
       });
     } else if (index === 2) {
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "center bottom",
-          end: "center center",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: triggersParent, start: "center bottom", end: "center center", scrub: true },
       });
     }
   });
@@ -1270,6 +1224,7 @@ $(window).on("load", function () {
   const section = document.querySelector(".section.is--whatoffers");
   const container = document.querySelector(".relative.is--whatworks");
   const hoverCircle = document.querySelector(".hover--circle.is--what");
+
   if (!section || !container || !hoverCircle) return;
 
   gsap.set(hoverCircle, { opacity: 0 });
@@ -1304,32 +1259,17 @@ $(window).on("load", function () {
 
 // --------------------- Number Counter Animation --------------------- //
 (function () {
-  console.log("Number counter script running...");
   const numberCounters = document.querySelectorAll(".number--count");
-  console.log("Found counters:", numberCounters.length);
+  if (numberCounters.length === 0) return;
 
-  if (numberCounters.length === 0) {
-    console.log("No .number--count elements found");
-    return;
-  }
+  if (typeof ScrollTrigger === "undefined") return;
 
-  if (typeof ScrollTrigger === "undefined") {
-    console.error("ScrollTrigger is not loaded");
-    return;
-  }
-
-  console.log("ScrollTrigger is available");
-
-  numberCounters.forEach((counter, idx) => {
+  numberCounters.forEach((counter) => {
     const originalText = counter.textContent.trim();
-    console.log(`Counter ${idx}: "${originalText}"`);
     const targetNumber = parseInt(originalText);
     const digitCount = originalText.length;
 
-    if (isNaN(targetNumber)) {
-      console.log(`Counter ${idx} is NaN, skipping`);
-      return;
-    }
+    if (isNaN(targetNumber)) return;
 
     counter.setAttribute("data-target", targetNumber);
     const targetString = targetNumber.toString().padStart(digitCount, "0");
@@ -1338,7 +1278,6 @@ $(window).on("load", function () {
     for (let i = 0; i < digitCount; i++) {
       const targetDigit = parseInt(targetString[i]);
       let columnHTML = "";
-
       const startDigit = (targetDigit + 1) % 10;
 
       for (let j = 0; j < 10; j++) {
@@ -1357,17 +1296,11 @@ $(window).on("load", function () {
       once: true,
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
-
         columns.forEach((column, index) => {
           gsap.fromTo(
             column,
             { y: "0em" },
-            {
-              y: "-9em",
-              duration: 2,
-              ease: "power2.out",
-              delay: 0.4 + index * 0.1,
-            }
+            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
           );
         });
       },
@@ -1450,6 +1383,7 @@ $(window).on("load", function () {
   buttons.forEach((btn) => {
     const hoverClose = btn.querySelector(".hover--close");
     const hoverOpen = btn.querySelector(".hover--open");
+
     if (!hoverClose || !hoverOpen) return;
 
     gsap.set(hoverClose, { width: "auto" });
