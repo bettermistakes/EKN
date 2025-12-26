@@ -363,29 +363,3 @@ body {
   will-change: width;
 }
 
-/* --------------------- FIX: Offer slide overlapping --------------------- */
-@media (min-width: 992px) {
-
-  /* Base */
-  .offer--slide-content-parent {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* Only active slide is visible and interactive */
-  .offer--slide.is-active .offer--slide-content-parent {
-    z-index: 5;
-    pointer-events: auto;
-  }
-
-  /* Safety: prevent invisible content from stacking */
-  .offer--slide:not(.is-active) .offer--slide-content {
-    opacity: 0;
-  }
-
-  .offer--slide.is-active .offer--slide-content {
-    opacity: 1;
-  }
-}
