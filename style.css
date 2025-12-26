@@ -1,51 +1,117 @@
 /* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
 
-body { opacity: 0; }
-
-/* --------------------- Navbar Scroll Styles --------------------- */
-.navbar { transition: transform 0.3s ease-in-out; z-index: 1000; }
-.navbar--bg { transition: opacity 0.3s ease-in-out; will-change: background-color, border-bottom-color; }
-
-/* --------------------- Navbar Dropdown Styles --------------------- */
-.navbar--dropdown { position: relative; }
-.navbar--dropdown-trigger { cursor: pointer; }
-
-@media (min-width: 992px) {
-  .navbar--dropdown-trigger { will-change: color; }
-  .navlink .dropdown--line { will-change: width; }
-  .dropdown--line { will-change: width; }
+body {
+  opacity: 0;
 }
 
-.navbar--dropdown-list { overflow: auto; will-change: height; }
-.btn.is--nav { will-change: background-color, color; }
+/* --------------------- Navbar Scroll Styles --------------------- */
+.navbar {
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.navbar--bg {
+  transition: opacity 0.3s ease-in-out;
+  will-change: background-color, border-bottom-color;
+}
+
+/* --------------------- Navbar Dropdown Styles --------------------- */
+.navbar--dropdown {
+  position: relative;
+}
+
+.navbar--dropdown-trigger {
+  cursor: pointer;
+}
+
+@media (min-width: 992px) {
+  .navbar--dropdown-trigger {
+    will-change: color;
+  }
+
+  .navlink .dropdown--line {
+    will-change: width;
+  }
+
+  .dropdown--line {
+    will-change: width;
+  }
+}
+
+.navbar--dropdown-list {
+  overflow: auto;
+  will-change: height;
+}
+
+.btn.is--nav {
+  will-change: background-color, color;
+}
 
 /* --------------------- Navbar Solution Items Hover (Desktop) --------------------- */
 @media (min-width: 992px) {
-  .navbar--solution-item { cursor: pointer; will-change: opacity; }
-  .solution--svg-item { will-change: opacity, transform; }
-  .navbar--solution-item .paragraph-small-130 { will-change: opacity, transform; }
+  .navbar--solution-item {
+    cursor: pointer;
+    will-change: opacity;
+  }
+
+  .solution--svg-item {
+    will-change: opacity, transform;
+  }
+
+  .navbar--solution-item .paragraph-small-130 {
+    will-change: opacity, transform;
+  }
 }
 
 /* --------------------- Resource Links Hover (Desktop) --------------------- */
 @media (min-width: 992px) {
-  .resource--link { cursor: pointer; will-change: opacity; }
-  .resource--link-svg { will-change: opacity, transform; }
+  .resource--link {
+    cursor: pointer;
+    will-change: opacity;
+  }
+
+  .resource--link-svg {
+    will-change: opacity, transform;
+  }
 }
 
 /* --------------------- Mobile Navbar Dropdown Styles --------------------- */
 @media (max-width: 991px) {
-  .navbar--dropdown-trigger { cursor: pointer; }
-  .navbar--dropdown-list { will-change: transform; }
-  .navbar--dropdown-bg { will-change: opacity; }
-  .navbar--goback { cursor: pointer; }
+  .navbar--dropdown-trigger {
+    cursor: pointer;
+  }
+
+  .navbar--dropdown-list {
+    will-change: transform;
+  }
+
+  .navbar--dropdown-bg {
+    will-change: opacity;
+  }
+
+  .navbar--goback {
+    cursor: pointer;
+  }
 }
 
 /* --------------------- Mobile Hamburger Menu Styles --------------------- */
 @media (max-width: 991px) {
-  .menu--trigger { cursor: pointer; }
-  .menu--open, .menu--close { will-change: opacity; }
-  .navbar-menu--inner { will-change: transform; }
-  [animate="navbar"] { will-change: opacity, transform; }
+  .menu--trigger {
+    cursor: pointer;
+  }
+
+  .menu--open,
+  .menu--close {
+    will-change: opacity;
+  }
+
+  .navbar-menu--inner {
+    will-change: transform;
+  }
+
+  [animate="navbar"] {
+    will-change: opacity, transform;
+  }
 }
 
 /* --------------------- Eyebrow Animation Styles --------------------- */
@@ -55,33 +121,48 @@ body { opacity: 0; }
   display: inline-block;
   white-space: nowrap;
 }
+
 [animation="eyebrow"] .char {
   display: inline-block;
   letter-spacing: 0.05em;
   will-change: transform, opacity;
 }
+
 [animation="eyebrow"] .space {
   display: inline-block;
   white-space: pre;
 }
 
 /* --------------------- ✅ HERO IMAGE SWITCH STYLES (SMOOTH) --------------------- */
-.section.is--home-hero { position: relative; }
+.section.is--home-hero {
+  position: relative;
+}
 
+/* Base: all hero imgs are hidden by default */
 .section.is--home-hero img.absolute--img[image] {
   position: absolute;
   inset: 0;
   opacity: 0;
   transition: opacity 450ms ease;
   will-change: opacity;
+}
+
+/* Active */
+.section.is--home-hero img.absolute--img.is-active {
+  opacity: 1;
+}
+
+/* Optional: reduce flicker on some browsers */
+.section.is--home-hero img.absolute--img[image] {
   backface-visibility: hidden;
   transform: translateZ(0);
 }
 
-.section.is--home-hero img.absolute--img.is-active { opacity: 1; }
-
 /* --------------------- Hover Circle Styles --------------------- */
-.trusted--logo-parent { position: relative; overflow: hidden; }
+.trusted--logo-parent {
+  position: relative;
+  overflow: hidden;
+}
 
 .hover--circle {
   position: absolute;
@@ -96,20 +177,30 @@ body { opacity: 0; }
   left: 0;
 }
 
-.lines { position: relative; overflow: hidden; }
-.hover--circle.is--100 { transform: scale(1); }
+.lines {
+  position: relative;
+  overflow: hidden;
+}
 
-/* --------------------- ✅ Offer Slide Styles (DESKTOP - FIXED without breaking inner layout) --------------------- */
+.hover--circle.is--100 {
+  transform: scale(1);
+}
+
+/* --------------------- ✅ Offer Slide Styles (DESKTOP - keep original display/position) --------------------- */
 @media (min-width: 992px) {
   .offer--slide {
     cursor: pointer;
     transition: opacity 0.25s ease;
-    will-change: opacity;
   }
 
+  /* IMPORTANT:
+     DO NOT use display:none/block -> it breaks Webflow original layout (absolute/flex/etc.)
+     We only toggle opacity/visibility/pointer-events.
+  */
   .offer--slide-icon,
   .offer--slide-content {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     will-change: transform, opacity;
   }
@@ -117,60 +208,96 @@ body { opacity: 0; }
   .offer--slide.is-active .offer--slide-icon,
   .offer--slide.is-active .offer--slide-content {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
   }
-
-  .section.is--home-offers .offers-slider { position: relative; }
-  .section.is--home-offers .offer--slide { position: relative; }
-
-  /* ✅ REQUIRED BY YOU: parent is ABSOLUTE + Fill */
-  .section.is--home-offers .offer--slide-content-parent {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-  }
-
-  /* ✅ IMPORTANT: keep internal structure intact */
-  .section.is--home-offers .offer--slide-content {
-    position: relative;
-    inset: auto;
-    z-index: 1;
-  }
-
-  .section.is--home-offers .offer--slide.is-active .offer--slide-content { z-index: 5; }
 }
 
 @media (max-width: 991px) {
-  .offer-slider-btn { cursor: pointer; }
-  .offer-slider-btn.swiper-button-disabled { opacity: 0.5; pointer-events: none; }
+  .offer-slider-btn {
+    cursor: pointer;
+  }
 
-  .offers-slider { transition: margin 0.5s ease-in-out; }
-  .offers-slider.is--first { margin-left: 0; margin-right: 0; }
-  .offers-slider.is--middle { margin-left: auto; margin-right: auto; }
-  .offers-slider.is--last { margin-left: auto; margin-right: 0; }
+  .offer-slider-btn.swiper-button-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
-  .offers-slider .swiper-slide { width: 78.66vw; }
+  .offers-slider {
+    transition: margin 0.5s ease-in-out;
+  }
+
+  .offers-slider.is--first {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .offers-slider.is--middle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .offers-slider.is--last {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .offers-slider .swiper-slide {
+    width: 78.66vw;
+  }
 }
 
 /* --------------------- How It Works Scroll Animation Styles --------------------- */
 @media (min-width: 992px) {
-  .howitworks--content { will-change: opacity; }
-  .howitworks--response { overflow: hidden; will-change: height; }
-  .howitworks--line { will-change: width; }
-  .howitworks--img { will-change: transform; }
-  .howitworks--img--inner { will-change: transform, filter; }
+  .howitworks--content {
+    will-change: opacity;
+  }
+
+  .howitworks--response {
+    overflow: hidden;
+    will-change: height;
+  }
+
+  .howitworks--line {
+    will-change: width;
+  }
+
+  .howitworks--img {
+    will-change: transform;
+  }
+
+  .howitworks--img--inner {
+    will-change: transform, filter;
+  }
 }
 
 @media (max-width: 991px) {
-  .howitworks--content { opacity: 1 !important; }
-  .howitworks--response { height: auto !important; }
-  .howitworks--line { width: 100% !important; }
-  .howitworks--img { transform: none !important; }
-  .howitworks--img--inner { transform: none !important; }
+  .howitworks--content {
+    opacity: 1 !important;
+  }
+
+  .howitworks--response {
+    height: auto !important;
+  }
+
+  .howitworks--line {
+    width: 100% !important;
+  }
+
+  .howitworks--img {
+    transform: none !important;
+  }
+
+  .howitworks--img--inner {
+    transform: none !important;
+  }
 }
 
 /* --------------------- What Offers Hover Circle Styles --------------------- */
-.relative.is--whatworks { position: relative; overflow: hidden; }
+.relative.is--whatworks {
+  position: relative;
+  overflow: hidden;
+}
 
 .hover--circle.is--what {
   position: absolute;
@@ -182,20 +309,56 @@ body { opacity: 0; }
 }
 
 /* --------------------- Number Counter Animation Styles --------------------- */
-.number--count { display: inline-flex; }
-.digit-wrapper { display: inline-block; overflow: hidden; vertical-align: top; }
-.digit-column { display: flex; flex-direction: column; will-change: transform; }
-.digit-item { display: block; line-height: 1; }
+.number--count {
+  display: inline-flex;
+}
+
+.digit-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.digit {
+  display: inline-block;
+}
+
+.digit-column {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.digit-item {
+  display: block;
+  line-height: 1;
+}
 
 /* --------------------- Footer Accordion (Mobile) --------------------- */
 @media (max-width: 991px) {
-  .footer--title-parent { cursor: pointer; }
-  .footer--inner { overflow: hidden; }
-  .footer-title-icon { transition: transform 0.3s ease; will-change: transform; }
+  .footer--title-parent {
+    cursor: pointer;
+  }
+
+  .footer--inner {
+    overflow: hidden;
+  }
+
+  .footer-title-icon {
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
 }
 
 /* --------------------- Button Hover Animation Styles --------------------- */
-.btn { cursor: pointer; }
-.hover--close, .hover--open { display: inline-block; overflow: hidden; white-space: nowrap; will-change: width; }
+.btn {
+  cursor: pointer;
+}
 
-
+.hover--close,
+.hover--open {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  will-change: width;
+}
