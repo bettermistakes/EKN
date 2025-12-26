@@ -980,7 +980,6 @@ $(window).on("load", function () {
     }
 
     function setActive(slide) {
-      // ✅ CRITICAL FIX: force ALL other slides OFF (not just removing class)
       offerSlides.forEach((s) => {
         if (s !== slide) applyOff(s);
       });
@@ -989,7 +988,6 @@ $(window).on("load", function () {
       activeSlide = slide;
     }
 
-    // Init state
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1000,7 +998,6 @@ $(window).on("load", function () {
       slide.classList.remove("is-active");
     });
 
-    // Prefer existing is-active if present, else first
     const preActive = offerSlides.find((s) => s.classList.contains("is-active"));
     setActive(preActive || offerSlides[0]);
 
@@ -1012,7 +1009,6 @@ $(window).on("load", function () {
         setActive(slide);
       });
 
-      // Prevent "#" jump if needed
       hoverTarget.addEventListener("click", function (e) {
         const a = e.target.closest('a[href="#"]');
         if (a) e.preventDefault();
@@ -1406,4 +1402,109 @@ $(window).on("load", function () {
       gsap.to(hoverOpen, { width: 0, duration: 0.3, ease: "power2.out" });
     });
   });
+})();
+
+
+// =================================================================== //
+// ✅ WHAT EKN OFFERS (Solutions) — Sticky stats + persistent hover
+// - Dim siblings on hover
+// - Reveal support copy + arrow
+// - Update right image + big number + label (+ optional link)
+// - Keep last hovered active so CTA stays clickable
+// =================================================================== //
+(function () {
+  if (window.innerWidth < 992) return;
+
+  const section = document.querySelector(".section.is--whatoffers");
+  if (!section) return;
+
+  // ⚠️ IMPORTANT: map these selectors to your real Webflow classes
+  const LIST_SELECTOR = ".whatoffers--list";
+  const ITEM_SELECTOR = ".whatoffers--item";
+  const COPY_SELECTOR = ".whatoffers--copy";
+  const ARROW_SELECTOR = ".whatoffers--arrow";
+
+  const CARD_SELECTOR = ".whatoffers--card";
+  const CARD_IMG_SELECTOR = ".whatoffers--card-img";     // <img> or a div bg
+  const CARD_NUM_SELECTOR = ".whatoffers--card-number";  // "92%"
+  const CARD_LABEL_SELECTOR = ".whatoffers--card-label";  // "Fewer Tower Replacements"
+  const CARD_LINK_SELECTOR = ".whatoffers--card-link";    // optional: <a> Learn more
+
+  const list = section.querySelector(LIST_SELECTOR) || section;
+  const items = Array.from(section.querySelectorAll(ITEM_SELECTOR));
+  const card = section.querySelector(CARD_SELECTOR);
+
+  if (!items.length || !card) return;
+
+  const cardImg = card.querySelector(CARD_IMG_SELECTOR);
+  const cardNum = card.querySelector(CARD_NUM_SELECTOR);
+  const cardLabel = card.querySelector(CARD_LABEL_SELECTOR);
+  const cardLink = card.querySelector(CARD_LINK_SELECTOR);
+
+  let activeItem = null;
+
+  function setDimState(active) {
+    items.forEach((it) => {
+      const isActive = it === active;
+      it.classList.toggle("is-active", isActive);
+      it.classList.toggle("is-dimmed", !isActive);
+    });
+  }
+
+  function updateCardFromItem(item) {
+    // Use data-attributes from each item:
+    // data-img="..." data-num="92%" data-label="..." data-href="/..."
+    const img = item.getAttribute("data-img");
+    const num = item.getAttribute("data-num");
+    const label = item.getAttribute("data-label");
+    const href = item.getAttribute("data-href");
+
+    if (cardImg && img) {
+      // supports <img> OR background div
+      if (cardImg.tagName === "IMG") cardImg.src = img;
+      else cardImg.style.backgroundImage = `url("${img}")`;
+    }
+    if (cardNum && num) cardNum.textContent = num;
+    if (cardLabel && label) cardLabel.textContent = label;
+
+    if (cardLink) {
+      if (href) {
+        cardLink.setAttribute("href", href);
+        cardLink.style.pointerEvents = "auto";
+        cardLink.style.opacity = "1";
+      } else {
+        cardLink.removeAttribute("href");
+      }
+    }
+  }
+
+  function setActive(item) {
+    activeItem = item;
+    setDimState(item);
+    updateCardFromItem(item);
+  }
+
+  // Init: prefer existing .is-active, else first item
+  const preActive = items.find((it) => it.classList.contains("is-active"));
+  setActive(preActive || items[0]);
+
+  // Persistent hover: activate on mouseenter, never reset on mouseleave
+  items.forEach((item) => {
+    item.addEventListener("mouseenter", () => {
+      if (activeItem === item) return;
+      setActive(item);
+    });
+
+    // Optional: click also activates (useful if item is a link)
+    item.addEventListener("click", (e) => {
+      const a = e.target.closest("a");
+      // allow clicking CTA INSIDE card etc — do not block
+      if (a && card.contains(a)) return;
+      setActive(item);
+    });
+  });
+
+  // Keep CTA clickable (no reset on leaving list)
+  // But if you WANT to re-dim everything when leaving the whole section, uncomment:
+  // section.addEventListener("mouseleave", () => setActive(activeItem));
 })();

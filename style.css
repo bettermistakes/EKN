@@ -193,10 +193,6 @@ body {
     transition: opacity 0.25s ease;
   }
 
-  /* IMPORTANT:
-     DO NOT use display:none/block -> it breaks Webflow original layout (absolute/flex/etc.)
-     We only toggle opacity/visibility/pointer-events.
-  */
   .offer--slide-icon,
   .offer--slide-content {
     opacity: 0;
@@ -212,9 +208,6 @@ body {
     pointer-events: auto;
   }
 
-  /* ✅ CRITICAL FIX:
-     Prevent "right content" stacking by ensuring each slide content stays in its own layer,
-     and only the active one is interactable / on top. */
   .section.is--home-offers .offers-slider {
     position: relative;
   }
@@ -223,7 +216,6 @@ body {
     position: relative;
   }
 
-  /* keep the original absolute layout but ensure consistent stacking context */
   .section.is--home-offers .offer--slide-content-parent {
     position: relative;
     z-index: 1;
@@ -388,4 +380,65 @@ body {
   overflow: hidden;
   white-space: nowrap;
   will-change: width;
+}
+
+/* =========================================================
+   ✅ WHAT EKN OFFERS — Maintain screenshot display
+   - Left list dims siblings
+   - Active item shows copy + arrow
+   - Right card stays sticky and clickable
+========================================================= */
+@media (min-width: 992px) {
+  .section.is--whatoffers .whatoffers--right {
+    position: sticky;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Item base state = dim */
+  .section.is--whatoffers .whatoffers--item {
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+    will-change: opacity;
+  }
+
+  .section.is--whatoffers .whatoffers--item.is-dimmed {
+    opacity: 0.35;
+  }
+
+  .section.is--whatoffers .whatoffers--item.is-active {
+    opacity: 1;
+  }
+
+  /* Copy + arrow hidden by default */
+  .section.is--whatoffers .whatoffers--copy,
+  .section.is--whatoffers .whatoffers--arrow {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    will-change: opacity, transform;
+  }
+
+  .section.is--whatoffers .whatoffers--arrow {
+    transform: translateX(-0.4rem);
+  }
+
+  /* Active shows them */
+  .section.is--whatoffers .whatoffers--item.is-active .whatoffers--copy,
+  .section.is--whatoffers .whatoffers--item.is-active .whatoffers--arrow {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .section.is--whatoffers .whatoffers--item.is-active .whatoffers--arrow {
+    transform: translateX(0);
+  }
+
+  /* Nice smoothing for right card swaps */
+  .section.is--whatoffers .whatoffers--card-img {
+    transition: opacity 350ms ease;
+    will-change: opacity;
+  }
 }
