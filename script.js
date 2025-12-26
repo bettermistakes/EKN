@@ -1,4 +1,4 @@
-// ===================== NETLIFY - MAIN.JS (UPDATED - FULL) ===================== //
+// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 // Fade in main-wrapper after page fully loads
@@ -311,9 +311,7 @@ $(window).on("load", function () {
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-          const line = trigger
-            ? trigger.querySelector(".dropdown--line")
-            : null;
+          const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
           if (list) {
             gsap.set(list, { display: "", height: "", overflow: "" });
@@ -465,13 +463,15 @@ $(window).on("load", function () {
   if (window.innerWidth <= 992) return;
 
   const solutionItems = document.querySelectorAll(".navbar--solution-item");
+
   if (solutionItems.length === 0) return;
 
   // Find the parent container of all solution items
   const parentContainer = solutionItems[0].parentElement;
+
   if (!parentContainer) return;
 
-  // Initialize all items (keep your GSAP init)
+  // Initialize all items
   solutionItems.forEach((item) => {
     const svgItem = item.querySelector(".solution--svg-item");
     const paragraph = item.querySelector(".paragraph-small-130");
@@ -516,9 +516,6 @@ $(window).on("load", function () {
           ease: "power4.out",
         });
       }
-
-      // ✅ class reset
-      item.classList.remove("is-active");
     });
 
     currentlyHovered = null;
@@ -533,9 +530,7 @@ $(window).on("load", function () {
       // If there was a previously hovered item, reset it
       if (currentlyHovered && currentlyHovered !== currentItem) {
         const prevSvg = currentlyHovered.querySelector(".solution--svg-item");
-        const prevParagraph = currentlyHovered.querySelector(
-          ".paragraph-small-130"
-        );
+        const prevParagraph = currentlyHovered.querySelector(".paragraph-small-130");
 
         if (prevSvg) {
           gsap.to(prevSvg, {
@@ -564,15 +559,12 @@ $(window).on("load", function () {
             duration: 0.3,
             ease: "power4.out",
           });
-          item.classList.remove("is-active");
         } else {
           gsap.to(item, {
             opacity: 1,
             duration: 0.3,
             ease: "power4.out",
           });
-          // ✅ keep active class for smooth arrow transition (CSS)
-          item.classList.add("is-active");
         }
       });
 
@@ -600,12 +592,17 @@ $(window).on("load", function () {
 
     // Add mouseleave listener to each item
     currentItem.addEventListener("mouseleave", function () {
-      // Keep behavior: reset only when leaving the whole container
-      // (Requirement: stay active until another hover, so we do nothing here)
+      setTimeout(() => {
+        let hoveringItem = false;
+        solutionItems.forEach((item) => {
+          if (item.matches(":hover")) hoveringItem = true;
+        });
+        if (!hoveringItem) resetAllItems();
+      }, 10);
     });
   });
 
-  // Add mouseleave to the parent container (only reset when leaving whole area)
+  // Add mouseleave to the parent container
   parentContainer.addEventListener("mouseleave", function () {
     resetAllItems();
   });
@@ -620,7 +617,6 @@ $(window).on("load", function () {
         const paragraph = item.querySelector(".paragraph-small-130");
         if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
         if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
-        item.classList.remove("is-active");
       });
       currentlyHovered = null;
     }
@@ -633,10 +629,12 @@ $(window).on("load", function () {
   if (window.innerWidth <= 992) return;
 
   const resourceLinks = document.querySelectorAll(".resource--link");
+
   if (resourceLinks.length === 0) return;
 
   // Find the parent container of all resource links
   const parentContainer = resourceLinks[0].parentElement;
+
   if (!parentContainer) return;
 
   // Initialize all items
@@ -669,9 +667,6 @@ $(window).on("load", function () {
           ease: "power4.out",
         });
       }
-
-      // ✅ class reset
-      link.classList.remove("is-active");
     });
 
     currentlyHovered = null;
@@ -704,15 +699,12 @@ $(window).on("load", function () {
             duration: 0.3,
             ease: "power4.out",
           });
-          link.classList.remove("is-active");
         } else {
           gsap.to(link, {
             opacity: 1,
             duration: 0.3,
             ease: "power4.out",
           });
-          // ✅ active class for smooth arrow transition (CSS)
-          link.classList.add("is-active");
         }
       });
 
@@ -729,8 +721,16 @@ $(window).on("load", function () {
       currentlyHovered = currentLink;
     });
 
-    // Keep state until another hover - do nothing on mouseleave
-    currentLink.addEventListener("mouseleave", function () {});
+    // Add mouseleave listener to each link
+    currentLink.addEventListener("mouseleave", function () {
+      setTimeout(() => {
+        let hoveringLink = false;
+        resourceLinks.forEach((link) => {
+          if (link.matches(":hover")) hoveringLink = true;
+        });
+        if (!hoveringLink) resetAllLinks();
+      }, 10);
+    });
   });
 
   // Add mouseleave to the parent container
@@ -746,7 +746,6 @@ $(window).on("load", function () {
         gsap.set(link, { opacity: 1 });
         const svg = link.querySelector(".resource--link-svg");
         if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
-        link.classList.remove("is-active");
       });
       currentlyHovered = null;
     }
@@ -1346,12 +1345,14 @@ $(window).on("load", function () {
 
     // Function to set a slide as inactive
     function setInactive(slide) {
+      slide.classList.remove("is-active");
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
       gsap.to(slide, {
         opacity: 0.3,
-        duration: 0.2,
+        duration: 0.25,
         ease: "power2.out",
       });
 
@@ -1359,7 +1360,7 @@ $(window).on("load", function () {
         gsap.to(icon, {
           x: "-1rem",
           opacity: 0,
-          duration: 0.2,
+          duration: 0.25,
           ease: "power2.out",
         });
       }
@@ -1367,23 +1368,23 @@ $(window).on("load", function () {
       if (content) {
         gsap.to(content, {
           opacity: 0,
-          duration: 0.2,
+          duration: 0.25,
           ease: "power2.out",
         });
       }
-
-      // ✅ keep class in sync for CSS smooth transitions
-      slide.classList.remove("is-active");
     }
 
     // Function to set a slide as active
     function setActive(slide) {
+      offerSlides.forEach((s) => s.classList.remove("is-active"));
+      slide.classList.add("is-active");
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
       gsap.to(slide, {
         opacity: 1,
-        duration: 0.2,
+        duration: 0.25,
         ease: "power2.out",
       });
 
@@ -1391,7 +1392,7 @@ $(window).on("load", function () {
         gsap.to(icon, {
           x: "0rem",
           opacity: 1,
-          duration: 0.2,
+          duration: 0.25,
           ease: "power2.out",
         });
       }
@@ -1399,12 +1400,11 @@ $(window).on("load", function () {
       if (content) {
         gsap.to(content, {
           opacity: 1,
-          duration: 0.2,
+          duration: 0.25,
           ease: "power2.out",
         });
       }
 
-      slide.classList.add("is-active");
       activeSlide = slide;
     }
 
@@ -1416,8 +1416,6 @@ $(window).on("load", function () {
       gsap.set(slide, { opacity: 0.3 });
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
-
-      slide.classList.remove("is-active");
     });
 
     // Set first slide as active on load
@@ -1425,20 +1423,17 @@ $(window).on("load", function () {
       setActive(offerSlides[0]);
     }
 
-    // Add hover listeners
+    // ✅ IMPORTANT FIX:
+    // Hover must listen on the <a> (offer--slide-titles) because it's the real hovered layer.
     offerSlides.forEach((slide) => {
-      slide.addEventListener("mouseenter", function () {
-        // If there's an active slide that's not this one, deactivate it
+      const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
+
+      hoverTarget.addEventListener("mouseenter", function () {
         if (activeSlide && activeSlide !== slide) {
           setInactive(activeSlide);
         }
-
-        // Activate this slide
         setActive(slide);
       });
-
-      // Requirement: stay active until another hover => do nothing on leave
-      slide.addEventListener("mouseleave", function () {});
     });
   }
 
@@ -1505,12 +1500,8 @@ $(window).on("load", function () {
   }
 
   function updateSlideNumbers(swiper) {
-    const currentSlideNumber = document.querySelector(
-      ".slide--number:first-child"
-    );
-    const totalSlideNumber = document.querySelector(
-      ".slide--number:last-child"
-    );
+    const currentSlideNumber = document.querySelector(".slide--number:first-child");
+    const totalSlideNumber = document.querySelector(".slide--number:last-child");
 
     if (currentSlideNumber) {
       currentSlideNumber.textContent = swiper.activeIndex + 1;
@@ -1634,84 +1625,44 @@ $(window).on("load", function () {
         onEnter: () => {
           // Deactivate previous parent
           if (index > 0 && parents[index - 1]) {
-            const prevContent = parents[index - 1].querySelector(
-              ".howitworks--content"
-            );
-            const prevResponse = parents[index - 1].querySelector(
-              ".howitworks--response"
-            );
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
 
             if (prevContent) {
-              gsap.to(prevContent, {
-                opacity: 0.3,
-                duration: 0.4,
-                ease: "power2.out",
-              });
+              gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             }
             if (prevResponse) {
-              gsap.to(prevResponse, {
-                height: 0,
-                duration: 0.4,
-                ease: "power2.out",
-              });
+              gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
             }
           }
 
           // Activate current parent
           if (content) {
-            gsap.to(content, {
-              opacity: 1,
-              duration: 0.4,
-              ease: "power2.out",
-            });
+            gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           }
           if (response) {
-            gsap.to(response, {
-              height: "auto",
-              duration: 0.4,
-              ease: "power2.out",
-            });
+            gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
           }
         },
         onLeaveBack: () => {
           // When scrolling back up, deactivate current and reactivate previous
           if (content) {
-            gsap.to(content, {
-              opacity: 0.3,
-              duration: 0.4,
-              ease: "power2.out",
-            });
+            gsap.to(content, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
           }
           if (response) {
-            gsap.to(response, {
-              height: 0,
-              duration: 0.4,
-              ease: "power2.out",
-            });
+            gsap.to(response, { height: 0, duration: 0.4, ease: "power2.out" });
           }
 
           // Reactivate previous
           if (index > 0 && parents[index - 1]) {
-            const prevContent = parents[index - 1].querySelector(
-              ".howitworks--content"
-            );
-            const prevResponse = parents[index - 1].querySelector(
-              ".howitworks--response"
-            );
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
 
             if (prevContent) {
-              gsap.to(prevContent, {
-                opacity: 1,
-                duration: 0.4,
-                ease: "power2.out",
-              });
+              gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
             }
             if (prevResponse) {
-              gsap.to(prevResponse, {
-                height: "auto",
-                duration: 0.4,
-                ease: "power2.out",
-              });
+              gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
             }
           }
         },

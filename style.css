@@ -1,4 +1,4 @@
-/* ===================== NETLIFY - MAIN.CSS (UPDATED - FULL) ===================== */
+/* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
 
 body {
   opacity: 0;
@@ -72,32 +72,6 @@ body {
 
   .resource--link-svg {
     will-change: opacity, transform;
-  }
-}
-
-/* --------------------- ✅ Smooth arrows appear/disappear (Desktop) --------------------- */
-@media (min-width: 992px) {
-  .solution--svg-item,
-  .resource--link-svg,
-  .offer--slide-icon {
-    opacity: 0;
-    transform: translateX(-0.75rem);
-    transition: opacity 280ms ease, transform 280ms ease;
-    will-change: opacity, transform;
-    pointer-events: none;
-  }
-
-  .navbar--solution-item.is-active .solution--svg-item,
-  .resource--link.is-active .resource--link-svg,
-  .offer--slide.is-active .offer--slide-icon {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .navbar--solution-item,
-  .resource--link,
-  .offer--slide {
-    transition: opacity 280ms ease;
   }
 }
 
@@ -207,7 +181,7 @@ body {
 @media (min-width: 992px) {
   .offer--slide {
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.25s ease;
   }
 
   .offer--slide-icon {
@@ -216,6 +190,20 @@ body {
 
   .offer--slide-content {
     will-change: opacity;
+  }
+
+  /* ✅ FIX: force arrow visibility even if GSAP sets inline styles */
+  .offer--slide-icon {
+    opacity: 0 !important;
+    transform: translateX(-1rem) !important;
+    transition: opacity 280ms ease, transform 280ms ease;
+    pointer-events: none;
+  }
+
+  .offer--slide:hover .offer--slide-icon,
+  .offer--slide.is-active .offer--slide-icon {
+    opacity: 1 !important;
+    transform: translateX(0rem) !important;
   }
 }
 
