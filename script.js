@@ -311,9 +311,7 @@ $(window).on("load", function () {
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-          const line = trigger
-            ? trigger.querySelector(".dropdown--line")
-            : null;
+          const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
           if (list) {
             gsap.set(list, { display: "", height: "", overflow: "" });
@@ -1390,6 +1388,8 @@ $(window).on("load", function () {
           ease: "power2.out",
         });
       }
+
+      slide.classList.remove("is-active");
     }
 
     // Function to set a slide as active
@@ -1420,7 +1420,14 @@ $(window).on("load", function () {
         });
       }
 
+      // ✅ persistent active state
+      offerSlides.forEach((s) => s.classList.remove("is-active"));
+      slide.classList.add("is-active");
+
       activeSlide = slide;
+
+      // ✅ optional: sync main visual & big number if hooks exist
+      syncOffersGlobalUI(slide);
     }
 
     // Initialize all slides as inactive
@@ -1438,15 +1445,12 @@ $(window).on("load", function () {
       setActive(offerSlides[0]);
     }
 
-    // Add hover listeners
+    // Add hover listeners (mouseenter only -> do NOT reset on leave)
     offerSlides.forEach((slide) => {
       slide.addEventListener("mouseenter", function () {
-        // If there's an active slide that's not this one, deactivate it
         if (activeSlide && activeSlide !== slide) {
           setInactive(activeSlide);
         }
-
-        // Activate this slide
         setActive(slide);
       });
     });
@@ -1528,6 +1532,40 @@ $(window).on("load", function () {
 
     if (totalSlideNumber) {
       totalSlideNumber.textContent = swiper.slides.length;
+    }
+  }
+
+  // ✅ Optional global UI sync (main image + big number)
+  // Works only if you add hooks in your section:
+  // - [data-offers-main] containing imgs with [data-offers-image="1..N"]
+  // - [data-offers-number] element for the big number
+  function syncOffersGlobalUI(activeSlide) {
+    try {
+      const section = activeSlide.closest(".section.is--home-offers") || document;
+
+      // Determine index from DOM order
+      const slides = Array.from(section.querySelectorAll(".offer--slide"));
+      const idx = Math.max(0, slides.indexOf(activeSlide));
+      const humanIndex = idx + 1;
+
+      // Big number
+      const bigNumberEl = section.querySelector("[data-offers-number]");
+      if (bigNumberEl) {
+        bigNumberEl.textContent = String(humanIndex).padStart(2, "0");
+      }
+
+      // Main visual images
+      const main = section.querySelector("[data-offers-main]");
+      if (main) {
+        const imgs = Array.from(main.querySelectorAll("[data-offers-image]"));
+        imgs.forEach((img) => {
+          const isMatch = img.getAttribute("data-offers-image") === String(humanIndex);
+          img.classList.toggle("is-active", isMatch);
+          img.setAttribute("aria-hidden", isMatch ? "false" : "true");
+        });
+      }
+    } catch (e) {
+      // silent
     }
   }
 
@@ -2083,4 +2121,20 @@ $(window).on("load", function () {
       });
     });
   });
+})();
+
+// ===================== ✅ ADD-ON: Sticky active behavior for offers + safe CTA hover ===================== //
+// (No reset on leaving a slide; state stays until another slide is hovered.)
+(function () {
+  if (window.innerWidth <= 992) return;
+
+  const section = document.querySelector(".section.is--home-offers");
+  if (!section) return;
+
+  const slides = Array.from(section.querySelectorAll(".offer--slide"));
+  if (!slides.length) return;
+
+  // Keep active even when hovering the right column / CTA
+  // No-op: active state is already persistent (we purposely do not reset it)
+  // This block exists just as a safe hook if you add future logic.
 })();
