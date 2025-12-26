@@ -1,4 +1,4 @@
-// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
+// ===================== NETLIFY - MAIN.JS (UPDATED - FULL) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 // Fade in main-wrapper after page fully loads
@@ -311,7 +311,9 @@ $(window).on("load", function () {
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-          const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+          const line = trigger
+            ? trigger.querySelector(".dropdown--line")
+            : null;
 
           if (list) {
             gsap.set(list, { display: "", height: "", overflow: "" });
@@ -463,15 +465,13 @@ $(window).on("load", function () {
   if (window.innerWidth <= 992) return;
 
   const solutionItems = document.querySelectorAll(".navbar--solution-item");
-
   if (solutionItems.length === 0) return;
 
   // Find the parent container of all solution items
   const parentContainer = solutionItems[0].parentElement;
-
   if (!parentContainer) return;
 
-  // Initialize all items
+  // Initialize all items (keep your GSAP init)
   solutionItems.forEach((item) => {
     const svgItem = item.querySelector(".solution--svg-item");
     const paragraph = item.querySelector(".paragraph-small-130");
@@ -516,6 +516,9 @@ $(window).on("load", function () {
           ease: "power4.out",
         });
       }
+
+      // ✅ class reset
+      item.classList.remove("is-active");
     });
 
     currentlyHovered = null;
@@ -561,12 +564,15 @@ $(window).on("load", function () {
             duration: 0.3,
             ease: "power4.out",
           });
+          item.classList.remove("is-active");
         } else {
           gsap.to(item, {
             opacity: 1,
             duration: 0.3,
             ease: "power4.out",
           });
+          // ✅ keep active class for smooth arrow transition (CSS)
+          item.classList.add("is-active");
         }
       });
 
@@ -593,26 +599,13 @@ $(window).on("load", function () {
     });
 
     // Add mouseleave listener to each item
-    currentItem.addEventListener("mouseleave", function (e) {
-      // Small delay to check where the mouse went
-      setTimeout(() => {
-        // Check if we're hovering over any solution item
-        let hoveringItem = false;
-        solutionItems.forEach((item) => {
-          if (item.matches(":hover")) {
-            hoveringItem = true;
-          }
-        });
-
-        // If not hovering any item, reset
-        if (!hoveringItem) {
-          resetAllItems();
-        }
-      }, 10);
+    currentItem.addEventListener("mouseleave", function () {
+      // Keep behavior: reset only when leaving the whole container
+      // (Requirement: stay active until another hover, so we do nothing here)
     });
   });
 
-  // Add mouseleave to the parent container
+  // Add mouseleave to the parent container (only reset when leaving whole area)
   parentContainer.addEventListener("mouseleave", function () {
     resetAllItems();
   });
@@ -627,6 +620,7 @@ $(window).on("load", function () {
         const paragraph = item.querySelector(".paragraph-small-130");
         if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
         if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
+        item.classList.remove("is-active");
       });
       currentlyHovered = null;
     }
@@ -639,12 +633,10 @@ $(window).on("load", function () {
   if (window.innerWidth <= 992) return;
 
   const resourceLinks = document.querySelectorAll(".resource--link");
-
   if (resourceLinks.length === 0) return;
 
   // Find the parent container of all resource links
   const parentContainer = resourceLinks[0].parentElement;
-
   if (!parentContainer) return;
 
   // Initialize all items
@@ -677,6 +669,9 @@ $(window).on("load", function () {
           ease: "power4.out",
         });
       }
+
+      // ✅ class reset
+      link.classList.remove("is-active");
     });
 
     currentlyHovered = null;
@@ -709,12 +704,15 @@ $(window).on("load", function () {
             duration: 0.3,
             ease: "power4.out",
           });
+          link.classList.remove("is-active");
         } else {
           gsap.to(link, {
             opacity: 1,
             duration: 0.3,
             ease: "power4.out",
           });
+          // ✅ active class for smooth arrow transition (CSS)
+          link.classList.add("is-active");
         }
       });
 
@@ -731,24 +729,8 @@ $(window).on("load", function () {
       currentlyHovered = currentLink;
     });
 
-    // Add mouseleave listener to each link
-    currentLink.addEventListener("mouseleave", function (e) {
-      // Small delay to check where the mouse went
-      setTimeout(() => {
-        // Check if we're hovering over any resource link
-        let hoveringLink = false;
-        resourceLinks.forEach((link) => {
-          if (link.matches(":hover")) {
-            hoveringLink = true;
-          }
-        });
-
-        // If not hovering any link, reset
-        if (!hoveringLink) {
-          resetAllLinks();
-        }
-      }, 10);
-    });
+    // Keep state until another hover - do nothing on mouseleave
+    currentLink.addEventListener("mouseleave", function () {});
   });
 
   // Add mouseleave to the parent container
@@ -764,6 +746,7 @@ $(window).on("load", function () {
         gsap.set(link, { opacity: 1 });
         const svg = link.querySelector(".resource--link-svg");
         if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
+        link.classList.remove("is-active");
       });
       currentlyHovered = null;
     }
@@ -1389,6 +1372,7 @@ $(window).on("load", function () {
         });
       }
 
+      // ✅ keep class in sync for CSS smooth transitions
       slide.classList.remove("is-active");
     }
 
@@ -1420,14 +1404,8 @@ $(window).on("load", function () {
         });
       }
 
-      // ✅ persistent active state
-      offerSlides.forEach((s) => s.classList.remove("is-active"));
       slide.classList.add("is-active");
-
       activeSlide = slide;
-
-      // ✅ optional: sync main visual & big number if hooks exist
-      syncOffersGlobalUI(slide);
     }
 
     // Initialize all slides as inactive
@@ -1438,6 +1416,8 @@ $(window).on("load", function () {
       gsap.set(slide, { opacity: 0.3 });
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
+
+      slide.classList.remove("is-active");
     });
 
     // Set first slide as active on load
@@ -1445,14 +1425,20 @@ $(window).on("load", function () {
       setActive(offerSlides[0]);
     }
 
-    // Add hover listeners (mouseenter only -> do NOT reset on leave)
+    // Add hover listeners
     offerSlides.forEach((slide) => {
       slide.addEventListener("mouseenter", function () {
+        // If there's an active slide that's not this one, deactivate it
         if (activeSlide && activeSlide !== slide) {
           setInactive(activeSlide);
         }
+
+        // Activate this slide
         setActive(slide);
       });
+
+      // Requirement: stay active until another hover => do nothing on leave
+      slide.addEventListener("mouseleave", function () {});
     });
   }
 
@@ -1532,40 +1518,6 @@ $(window).on("load", function () {
 
     if (totalSlideNumber) {
       totalSlideNumber.textContent = swiper.slides.length;
-    }
-  }
-
-  // ✅ Optional global UI sync (main image + big number)
-  // Works only if you add hooks in your section:
-  // - [data-offers-main] containing imgs with [data-offers-image="1..N"]
-  // - [data-offers-number] element for the big number
-  function syncOffersGlobalUI(activeSlide) {
-    try {
-      const section = activeSlide.closest(".section.is--home-offers") || document;
-
-      // Determine index from DOM order
-      const slides = Array.from(section.querySelectorAll(".offer--slide"));
-      const idx = Math.max(0, slides.indexOf(activeSlide));
-      const humanIndex = idx + 1;
-
-      // Big number
-      const bigNumberEl = section.querySelector("[data-offers-number]");
-      if (bigNumberEl) {
-        bigNumberEl.textContent = String(humanIndex).padStart(2, "0");
-      }
-
-      // Main visual images
-      const main = section.querySelector("[data-offers-main]");
-      if (main) {
-        const imgs = Array.from(main.querySelectorAll("[data-offers-image]"));
-        imgs.forEach((img) => {
-          const isMatch = img.getAttribute("data-offers-image") === String(humanIndex);
-          img.classList.toggle("is-active", isMatch);
-          img.setAttribute("aria-hidden", isMatch ? "false" : "true");
-        });
-      }
-    } catch (e) {
-      // silent
     }
   }
 
@@ -2121,20 +2073,4 @@ $(window).on("load", function () {
       });
     });
   });
-})();
-
-// ===================== ✅ ADD-ON: Sticky active behavior for offers + safe CTA hover ===================== //
-// (No reset on leaving a slide; state stays until another slide is hovered.)
-(function () {
-  if (window.innerWidth <= 992) return;
-
-  const section = document.querySelector(".section.is--home-offers");
-  if (!section) return;
-
-  const slides = Array.from(section.querySelectorAll(".offer--slide"));
-  if (!slides.length) return;
-
-  // Keep active even when hovering the right column / CTA
-  // No-op: active state is already persistent (we purposely do not reset it)
-  // This block exists just as a safe hook if you add future logic.
 })();

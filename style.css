@@ -1,4 +1,4 @@
-/* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
+/* ===================== NETLIFY - MAIN.CSS (UPDATED - FULL) ===================== */
 
 body {
   opacity: 0;
@@ -72,6 +72,32 @@ body {
 
   .resource--link-svg {
     will-change: opacity, transform;
+  }
+}
+
+/* --------------------- ✅ Smooth arrows appear/disappear (Desktop) --------------------- */
+@media (min-width: 992px) {
+  .solution--svg-item,
+  .resource--link-svg,
+  .offer--slide-icon {
+    opacity: 0;
+    transform: translateX(-0.75rem);
+    transition: opacity 280ms ease, transform 280ms ease;
+    will-change: opacity, transform;
+    pointer-events: none;
+  }
+
+  .navbar--solution-item.is-active .solution--svg-item,
+  .resource--link.is-active .resource--link-svg,
+  .offer--slide.is-active .offer--slide-icon {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .navbar--solution-item,
+  .resource--link,
+  .offer--slide {
+    transition: opacity 280ms ease;
   }
 }
 
@@ -190,38 +216,6 @@ body {
 
   .offer--slide-content {
     will-change: opacity;
-  }
-
-  /* ✅ Sticky centered right column (pagination / CTA / stats container) */
-  .offer--slider-pagination-btns {
-    position: sticky;
-    top: 50vh;
-    transform: translateY(-50%);
-    align-self: start;
-    z-index: 5;
-  }
-
-  /* Optional: if you want a clearer "locked" state */
-  .offer--slide.is-active {
-    opacity: 1 !important;
-  }
-
-  /* ✅ Optional global main-visual hooks (only if you add the data attrs) */
-  .section.is--home-offers [data-offers-main] {
-    position: relative;
-  }
-
-  .section.is--home-offers [data-offers-main] [data-offers-image] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 450ms ease;
-    pointer-events: none;
-  }
-
-  .section.is--home-offers [data-offers-main] [data-offers-image].is-active {
-    opacity: 1;
-    pointer-events: auto;
   }
 }
 
