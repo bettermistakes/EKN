@@ -363,3 +363,12 @@ body {
   will-change: width;
 }
 
+@media (min-width: 992px) {
+  .offer--slide-content-parent {
+    z-index: 1;
+  }
+
+  .offer--slide.is-active .offer--slide-content-parent {
+    z-index: 5;
+  }
+}
