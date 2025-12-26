@@ -211,6 +211,33 @@ body {
     visibility: visible;
     pointer-events: auto;
   }
+
+  /* ✅ CRITICAL FIX:
+     Prevent "right content" stacking by ensuring each slide content stays in its own layer,
+     and only the active one is interactable / on top. */
+  .section.is--home-offers .offers-slider {
+    position: relative;
+  }
+
+  .section.is--home-offers .offer--slide {
+    position: relative;
+  }
+
+  /* keep the original absolute layout but ensure consistent stacking context */
+  .section.is--home-offers .offer--slide-content-parent {
+    position: relative;
+    z-index: 1;
+  }
+
+  .section.is--home-offers .offer--slide-content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .section.is--home-offers .offer--slide.is-active .offer--slide-content {
+    z-index: 5;
+  }
 }
 
 @media (max-width: 991px) {

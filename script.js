@@ -179,7 +179,7 @@ $(window).on("load", function () {
 
     if (navbarBg) {
       gsap.to(navbarBg, {
-        backgroundColor: "", // Reset to original
+        backgroundColor: "",
         borderBottomColor: "",
         duration: 0.3,
         ease: "power4.out",
@@ -187,7 +187,7 @@ $(window).on("load", function () {
     }
 
     gsap.to(navbar, {
-      color: "", // Reset to original
+      color: "",
       duration: 0.3,
       ease: "power4.out",
     });
@@ -207,7 +207,6 @@ $(window).on("load", function () {
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     if (!trigger) return;
 
-    // Mouseenter on trigger
     trigger.addEventListener("mouseenter", function () {
       if (window.innerWidth < 992) return;
       if (activeDropdown === dropdown) return;
@@ -401,7 +400,7 @@ $(window).on("load", function () {
 
 // --------------------- Navbar Solution Items Hover (Desktop) --------------------- //
 (function () {
-  if (window.innerWidth <= 992) return;
+  if (window.innerWidth < 992) return;
 
   const solutionItems = document.querySelectorAll(".navbar--solution-item");
   if (solutionItems.length === 0) return;
@@ -470,7 +469,7 @@ $(window).on("load", function () {
   parentContainer.addEventListener("mouseleave", resetAllItems);
 
   window.addEventListener("resize", function () {
-    if (window.innerWidth <= 992) {
+    if (window.innerWidth < 992) {
       solutionItems.forEach((item) => {
         gsap.set(item, { opacity: 1 });
         const svgItem = item.querySelector(".solution--svg-item");
@@ -485,7 +484,7 @@ $(window).on("load", function () {
 
 // --------------------- Resource Links Hover (Desktop) --------------------- //
 (function () {
-  if (window.innerWidth <= 992) return;
+  if (window.innerWidth < 992) return;
 
   const resourceLinks = document.querySelectorAll(".resource--link");
   if (resourceLinks.length === 0) return;
@@ -541,7 +540,7 @@ $(window).on("load", function () {
   parentContainer.addEventListener("mouseleave", resetAllLinks);
 
   window.addEventListener("resize", function () {
-    if (window.innerWidth <= 992) {
+    if (window.innerWidth < 992) {
       resourceLinks.forEach((link) => {
         gsap.set(link, { opacity: 1 });
         const svg = link.querySelector(".resource--link-svg");
@@ -937,62 +936,60 @@ $(window).on("load", function () {
 
   // Desktop hover functionality
   function initOfferSlides() {
-    if (window.innerWidth <= 992) return;
+    if (window.innerWidth < 992) return;
 
-    const offerSlides = document.querySelectorAll(".offer--slide");
+    const offerSlides = Array.from(document.querySelectorAll(".offer--slide"));
     if (offerSlides.length === 0) return;
 
     let activeSlide = null;
 
-    function applyVisibility(slide, isActive) {
+    function applyOff(slide) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      if (icon) {
-        gsap.set(icon, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
-      }
+      slide.classList.remove("is-active");
 
+      gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+
+      if (icon) {
+        gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+        gsap.set(icon, { visibility: "hidden", pointerEvents: "none" });
+      }
       if (content) {
-        gsap.set(content, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
+        gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+        gsap.set(content, { visibility: "hidden", pointerEvents: "none" });
       }
     }
 
-    function setInactive(slide) {
-      slide.classList.remove("is-active");
-      applyVisibility(slide, false);
-
+    function applyOn(slide) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
+      slide.classList.add("is-active");
 
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
+      gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+
+      if (icon) {
+        gsap.set(icon, { visibility: "visible", pointerEvents: "auto" });
+        gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      }
+      if (content) {
+        gsap.set(content, { visibility: "visible", pointerEvents: "auto" });
+        gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      }
     }
 
     function setActive(slide) {
-      offerSlides.forEach((s) => s.classList.remove("is-active"));
-      slide.classList.add("is-active");
-      applyVisibility(slide, true);
+      // ✅ CRITICAL FIX: force ALL other slides OFF (not just removing class)
+      offerSlides.forEach((s) => {
+        if (s !== slide) applyOff(s);
+      });
 
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
-      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
-      if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
+      applyOn(slide);
       activeSlide = slide;
     }
 
-    // Init: inactive but DO NOT change display (keep Webflow original absolute/flex)
+    // Init state
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1000,16 +997,25 @@ $(window).on("load", function () {
       gsap.set(slide, { opacity: 0.3 });
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
       if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
+      slide.classList.remove("is-active");
     });
 
-    if (offerSlides[0]) setActive(offerSlides[0]);
+    // Prefer existing is-active if present, else first
+    const preActive = offerSlides.find((s) => s.classList.contains("is-active"));
+    setActive(preActive || offerSlides[0]);
 
-    // Hover target: the <a> layer
     offerSlides.forEach((slide) => {
       const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
 
       hoverTarget.addEventListener("mouseenter", function () {
-        if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
+        if (activeSlide === slide) return;
+        setActive(slide);
+      });
+
+      // Prevent "#" jump if needed
+      hoverTarget.addEventListener("click", function (e) {
+        const a = e.target.closest('a[href="#"]');
+        if (a) e.preventDefault();
         setActive(slide);
       });
     });
@@ -1017,7 +1023,7 @@ $(window).on("load", function () {
 
   // Mobile slider functionality
   function initOfferSlider() {
-    if (window.innerWidth > 992) return;
+    if (window.innerWidth >= 992) return;
 
     const slider = document.querySelector(".offers-slider");
     if (!slider) return;
@@ -1072,15 +1078,16 @@ $(window).on("load", function () {
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
-  const isDesktop = window.innerWidth > 992;
-  if (isDesktop) initOfferSlides();
+  const desktopNow = window.innerWidth >= 992;
+  if (desktopNow) initOfferSlides();
   else initOfferSlider();
 
-  let wasDesktop = isDesktop;
+  let wasDesktop = desktopNow;
   window.addEventListener("resize", function () {
-    const isDesktop = window.innerWidth > 992;
+    const isDesktop = window.innerWidth >= 992;
     if (isDesktop !== wasDesktop) {
       wasDesktop = isDesktop;
+
       if (isDesktop) {
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
@@ -1096,7 +1103,7 @@ $(window).on("load", function () {
 
 // --------------------- How It Works Scroll Animation --------------------- //
 (function () {
-  if (window.innerWidth <= 992) return;
+  if (window.innerWidth < 992) return;
 
   const triggersParent = document.querySelector(".howitworks--triggers-parent");
   const triggers = document.querySelectorAll(".howitworks--trigger");
