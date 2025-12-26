@@ -947,20 +947,15 @@ $(window).on("load", function () {
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      if (icon) {
-        gsap.set(icon, {
+      [icon, content, paragraph].forEach((el) => {
+        if (!el) return;
+        gsap.set(el, {
           visibility: isActive ? "visible" : "hidden",
           pointerEvents: isActive ? "auto" : "none",
         });
-      }
-
-      if (content) {
-        gsap.set(content, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
-      }
+      });
     }
 
     function setInactive(slide) {
@@ -969,11 +964,13 @@ $(window).on("load", function () {
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
 
       if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
+      if (paragraph) gsap.to(paragraph, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
     }
 
     function setActive(slide) {
@@ -983,23 +980,28 @@ $(window).on("load", function () {
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
 
       if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
+      if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
       activeSlide = slide;
     }
 
-    // Init: inactive but DO NOT change display (keep Webflow original absolute/flex)
+    // Init (inactive)
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.set(slide, { opacity: 0.3 });
+
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
       if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
+      if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
     if (offerSlides[0]) setActive(offerSlides[0]);
