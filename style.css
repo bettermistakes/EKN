@@ -210,6 +210,12 @@ body {
     display: block;
     pointer-events: auto;
   }
+
+  /* ✅ ADD: arrow/icon stays visible when active/hovered (no conflict with your display:none logic) */
+  .offer--slide.is-active .offer--slide-icon {
+    opacity: 1 !important;
+    transform: translateX(0rem) !important;
+  }
 }
 
 @media (max-width: 991px) {
