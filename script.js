@@ -1,1364 +1,1468 @@
-// ===================== NETLIFY - MAIN.JS (FINAL / SAFE) ===================== //
+// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
+
+// --------------------- Loading Animation --------------------- //
+// Fade in main-wrapper after page fully loads
+$(window).on("load", function () {
+  $("body").animate({ opacity: 1 }, 200);
+});
+
+// --------------------- Navbar Dropdown Animation (Desktop) --------------------- //
 (function () {
-  // Prevent double init (Webflow interactions / PJAX / Barba etc.)
-  if (window.__NETLIFY_MAIN_JS_INIT__) return;
-  window.__NETLIFY_MAIN_JS_INIT__ = true;
+  const navbar = document.querySelector(".navbar");
+  const navbarBg = document.querySelector(".navbar--bg");
+  const dropdowns = document.querySelectorAll(".navbar--dropdown");
 
-  // Helpers
-  const hasGSAP = () => typeof window.gsap !== "undefined";
-  const hasScrollTrigger = () => typeof window.ScrollTrigger !== "undefined";
-  const hasSplitText = () => typeof window.SplitText !== "undefined";
-  const hasSwiper = () => typeof window.Swiper !== "undefined";
-  const $ = window.jQuery;
+  if (!navbar || dropdowns.length === 0) return;
 
-  function onReady(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
-  }
+  let activeDropdown = null;
 
-  // --------------------- Loading Animation --------------------- //
-  // Fade in main-wrapper after page fully loads
-  if ($) {
-    $(window).on("load", function () {
-      $("body").animate({ opacity: 1 }, 200);
+  // Initialize all dropdown lists and items (desktop only)
+  function initDesktopDropdowns() {
+    if (window.innerWidth < 992) return;
+
+    dropdowns.forEach((dropdown) => {
+      const list = dropdown.querySelector(".navbar--dropdown-list");
+      const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
+      const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
+      if (list) {
+        gsap.set(list, {
+          display: "none",
+          height: 0,
+          overflow: "hidden",
+        });
+
+        // Initialize dropdown items
+        const items = list.querySelectorAll('[animate="dropdownnav"]');
+        gsap.set(items, {
+          opacity: 0,
+          y: "1rem",
+        });
+      }
+
+      // Initialize line
+      if (line) {
+        gsap.set(line, { width: "0%" });
+      }
     });
-  } else {
-    // fallback (no jQuery)
-    window.addEventListener(
-      "load",
-      function () {
-        document.body.style.transition = "opacity 200ms ease";
-        document.body.style.opacity = "1";
-      },
-      { once: true }
-    );
   }
 
-  onReady(function () {
-    // If GSAP exists but ScrollTrigger not registered yet, try to register.
-    if (hasGSAP() && hasScrollTrigger() && gsap && ScrollTrigger) {
-      try {
-        gsap.registerPlugin(ScrollTrigger);
-      } catch (e) {}
+  // Function to close a dropdown
+  function closeDropdown(dropdown) {
+    const list = dropdown.querySelector(".navbar--dropdown-list");
+    const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
+    const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
+    if (!list) return;
+
+    gsap.to(list, {
+      height: 0,
+      duration: 0.3,
+      ease: "power4.out",
+      onComplete: () => {
+        gsap.set(list, { display: "none" });
+      },
+    });
+
+    // Revert trigger color
+    if (trigger) {
+      gsap.to(trigger, {
+        color: "",
+        duration: 0.3,
+        ease: "power4.out",
+      });
     }
 
-    // --------------------- Navbar Dropdown Animation (Desktop) --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+    // Animate line out
+    if (line) {
+      gsap.to(line, {
+        width: "0%",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    }
+  }
 
-      const navbar = document.querySelector(".navbar");
-      const navbarBg = document.querySelector(".navbar--bg");
-      const dropdowns = document.querySelectorAll(".navbar--dropdown");
+  // Function to open a dropdown
+  function openDropdown(dropdown, animate = false) {
+    const list = dropdown.querySelector(".navbar--dropdown-list");
+    const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
+    const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
-      if (!navbar || dropdowns.length === 0) return;
+    if (!list) return;
 
-      let activeDropdown = null;
+    // First set display to flex with height 0
+    gsap.set(list, { display: "flex", height: 0 });
 
-      function initDesktopDropdowns() {
-        if (window.innerWidth < 992) return;
+    // Then animate height to auto
+    gsap.to(list, {
+      height: "auto",
+      duration: 0.3,
+      ease: "power4.out",
+    });
 
+    // Animate dropdown items with stagger if requested
+    if (animate) {
+      const items = list.querySelectorAll('[animate="dropdownnav"]');
+      gsap.to(items, {
+        opacity: 1,
+        y: "0rem",
+        duration: 0.4,
+        ease: "power4.out",
+        stagger: 0.05,
+      });
+    }
+
+    // Animate trigger color
+    if (trigger) {
+      gsap.to(trigger, {
+        color: "#0133F6",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    }
+
+    // Animate line in
+    if (line) {
+      gsap.to(line, {
+        width: "100%",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    }
+  }
+
+  // Function to reset dropdown items
+  function resetDropdownItems(dropdown) {
+    const list = dropdown.querySelector(".navbar--dropdown-list");
+    if (!list) return;
+
+    const items = list.querySelectorAll('[animate="dropdownnav"]');
+    gsap.set(items, {
+      opacity: 0,
+      y: "1rem",
+    });
+  }
+
+  // Function to activate navbar style
+  function activateNavbarStyle() {
+    const navButtons = navbar.querySelectorAll(".btn.is--nav");
+
+    if (navbarBg) {
+      gsap.to(navbarBg, {
+        backgroundColor: "#F2F3F6",
+        borderBottomColor: "#C0C2D0",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    }
+
+    gsap.to(navbar, {
+      color: "#040A44",
+      duration: 0.3,
+      ease: "power4.out",
+    });
+
+    navButtons.forEach((btn) => {
+      gsap.to(btn, {
+        backgroundColor: "#040A44",
+        color: "#F2F3F6",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    });
+  }
+
+  // Function to deactivate navbar style
+  function deactivateNavbarStyle() {
+    const navButtons = navbar.querySelectorAll(".btn.is--nav");
+
+    if (navbarBg) {
+      gsap.to(navbarBg, {
+        backgroundColor: "",
+        borderBottomColor: "",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    }
+
+    gsap.to(navbar, {
+      color: "",
+      duration: 0.3,
+      ease: "power4.out",
+    });
+
+    navButtons.forEach((btn) => {
+      gsap.to(btn, {
+        backgroundColor: "",
+        color: "",
+        duration: 0.3,
+        ease: "power4.out",
+      });
+    });
+  }
+
+  // Add hover listeners to each dropdown (desktop only)
+  dropdowns.forEach((dropdown) => {
+    const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
+    if (!trigger) return;
+
+    trigger.addEventListener("mouseenter", function () {
+      if (window.innerWidth < 992) return;
+      if (activeDropdown === dropdown) return;
+
+      const isNewDropdown = activeDropdown !== null;
+      const isFirstOpen = activeDropdown === null;
+
+      if (activeDropdown && activeDropdown !== dropdown) {
+        closeDropdown(activeDropdown);
+        resetDropdownItems(activeDropdown);
+      }
+
+      openDropdown(dropdown, isFirstOpen || isNewDropdown);
+      activateNavbarStyle();
+      activeDropdown = dropdown;
+    });
+  });
+
+  // Add hover listeners to .navlink elements (desktop only)
+  const navlinks = navbar.querySelectorAll(".navlink");
+  navlinks.forEach((navlink) => {
+    const line = navlink.querySelector(".dropdown--line");
+
+    if (line) gsap.set(line, { width: "0%" });
+
+    navlink.addEventListener("mouseenter", function () {
+      if (window.innerWidth < 992) return;
+
+      if (activeDropdown) {
+        closeDropdown(activeDropdown);
+        resetDropdownItems(activeDropdown);
+        activeDropdown = null;
+        deactivateNavbarStyle();
+      }
+
+      if (line) {
+        gsap.to(line, {
+          width: "100%",
+          duration: 0.3,
+          ease: "power4.out",
+        });
+      }
+    });
+
+    navlink.addEventListener("mouseleave", function () {
+      if (window.innerWidth < 992) return;
+
+      if (line) {
+        gsap.to(line, {
+          width: "0%",
+          duration: 0.3,
+          ease: "power4.out",
+        });
+      }
+    });
+  });
+
+  // Close dropdown when hovering out of navbar (desktop only)
+  navbar.addEventListener("mouseleave", function () {
+    if (window.innerWidth < 992) return;
+
+    if (activeDropdown) {
+      closeDropdown(activeDropdown);
+      resetDropdownItems(activeDropdown);
+      activeDropdown = null;
+    }
+    deactivateNavbarStyle();
+  });
+
+  initDesktopDropdowns();
+
+  let wasDesktop = window.innerWidth >= 992;
+  window.addEventListener("resize", function () {
+    const isDesktop = window.innerWidth >= 992;
+
+    if (isDesktop !== wasDesktop) {
+      wasDesktop = isDesktop;
+
+      if (isDesktop) {
+        initDesktopDropdowns();
+        activeDropdown = null;
+      } else {
         dropdowns.forEach((dropdown) => {
           const list = dropdown.querySelector(".navbar--dropdown-list");
           const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
           const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
           if (list) {
-            gsap.set(list, { display: "none", height: 0, overflow: "hidden" });
-
+            gsap.set(list, { display: "", height: "", overflow: "" });
             const items = list.querySelectorAll('[animate="dropdownnav"]');
-            gsap.set(items, { opacity: 0, y: "1rem" });
+            gsap.set(items, { opacity: "", y: "" });
           }
-
-          if (line) gsap.set(line, { width: "0%" });
+          if (trigger) gsap.set(trigger, { color: "" });
+          if (line) gsap.set(line, { width: "" });
         });
+        activeDropdown = null;
+      }
+    }
+  });
+})();
+
+// --------------------- Mobile Navbar Dropdown Animation --------------------- //
+(function () {
+  const dropdowns = document.querySelectorAll(".navbar--dropdown");
+  if (dropdowns.length === 0) return;
+
+  let activeDropdown = null;
+  let activeCloseFunction = null;
+
+  dropdowns.forEach((dropdown) => {
+    const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
+    const list = dropdown.querySelector(".navbar--dropdown-list");
+    const bg = dropdown.querySelector(".navbar--dropdown-bg");
+    const goBack = list ? list.querySelector(".navbar--goback") : null;
+
+    if (!trigger || !list) return;
+
+    function initMobileDropdown() {
+      if (window.innerWidth >= 992) return;
+      gsap.set(list, { display: "none", x: "100vw" });
+      if (bg) gsap.set(bg, { opacity: 0 });
+    }
+
+    function openDropdown() {
+      gsap.set(list, { display: "flex", x: "100vw" });
+      gsap.to(list, { x: "0vw", duration: 0.5, ease: "power4.out" });
+
+      if (bg) {
+        gsap.to(bg, { opacity: 1, duration: 0.5, ease: "power4.out" });
       }
 
-      function closeDropdown(dropdown) {
-        const list = dropdown.querySelector(".navbar--dropdown-list");
-        const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-        const line = trigger ? trigger.querySelector(".dropdown--line") : null;
-        if (!list) return;
+      activeDropdown = dropdown;
+      activeCloseFunction = closeDropdown;
+    }
 
-        gsap.to(list, {
-          height: 0,
-          duration: 0.3,
-          ease: "power4.out",
-          onComplete: () => gsap.set(list, { display: "none" }),
-        });
-
-        if (trigger) gsap.to(trigger, { color: "", duration: 0.3, ease: "power4.out" });
-        if (line) gsap.to(line, { width: "0%", duration: 0.3, ease: "power4.out" });
-      }
-
-      function openDropdown(dropdown, animate = false) {
-        const list = dropdown.querySelector(".navbar--dropdown-list");
-        const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-        const line = trigger ? trigger.querySelector(".dropdown--line") : null;
-        if (!list) return;
-
-        gsap.set(list, { display: "flex", height: 0 });
-
-        gsap.to(list, { height: "auto", duration: 0.3, ease: "power4.out" });
-
-        if (animate) {
-          const items = list.querySelectorAll('[animate="dropdownnav"]');
-          gsap.to(items, {
-            opacity: 1,
-            y: "0rem",
-            duration: 0.4,
-            ease: "power4.out",
-            stagger: 0.05,
-          });
-        }
-
-        if (trigger) gsap.to(trigger, { color: "#0133F6", duration: 0.3, ease: "power4.out" });
-        if (line) gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
-      }
-
-      function resetDropdownItems(dropdown) {
-        const list = dropdown.querySelector(".navbar--dropdown-list");
-        if (!list) return;
-        const items = list.querySelectorAll('[animate="dropdownnav"]');
-        gsap.set(items, { opacity: 0, y: "1rem" });
-      }
-
-      function activateNavbarStyle() {
-        const navButtons = navbar.querySelectorAll(".btn.is--nav");
-
-        if (navbarBg) {
-          gsap.to(navbarBg, {
-            backgroundColor: "#F2F3F6",
-            borderBottomColor: "#C0C2D0",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
-
-        gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
-
-        navButtons.forEach((btn) => {
-          gsap.to(btn, {
-            backgroundColor: "#040A44",
-            color: "#F2F3F6",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        });
-      }
-
-      function deactivateNavbarStyle() {
-        const navButtons = navbar.querySelectorAll(".btn.is--nav");
-
-        if (navbarBg) {
-          gsap.to(navbarBg, {
-            backgroundColor: "",
-            borderBottomColor: "",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
-
-        gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
-        navButtons.forEach((btn) => {
-          gsap.to(btn, {
-            backgroundColor: "",
-            color: "",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        });
-      }
-
-      dropdowns.forEach((dropdown) => {
-        const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-        if (!trigger) return;
-
-        trigger.addEventListener("mouseenter", function () {
-          if (window.innerWidth < 992) return;
-          if (activeDropdown === dropdown) return;
-
-          const isNewDropdown = activeDropdown !== null;
-          const isFirstOpen = activeDropdown === null;
-
-          if (activeDropdown && activeDropdown !== dropdown) {
-            closeDropdown(activeDropdown);
-            resetDropdownItems(activeDropdown);
-          }
-
-          openDropdown(dropdown, isFirstOpen || isNewDropdown);
-          activateNavbarStyle();
-          activeDropdown = dropdown;
-        });
+    function closeDropdown() {
+      gsap.to(list, {
+        x: "100vw",
+        duration: 0.5,
+        ease: "power4.out",
+        onComplete: () => gsap.set(list, { display: "none" }),
       });
 
-      const navlinks = navbar.querySelectorAll(".navlink");
-      navlinks.forEach((navlink) => {
-        const line = navlink.querySelector(".dropdown--line");
-        if (line) gsap.set(line, { width: "0%" });
+      if (bg) {
+        gsap.to(bg, { opacity: 0, duration: 0.5, ease: "power4.out" });
+      }
 
-        navlink.addEventListener("mouseenter", function () {
-          if (window.innerWidth < 992) return;
+      if (activeDropdown === dropdown) {
+        activeDropdown = null;
+        activeCloseFunction = null;
+      }
+    }
 
-          if (activeDropdown) {
-            closeDropdown(activeDropdown);
-            resetDropdownItems(activeDropdown);
-            activeDropdown = null;
-            deactivateNavbarStyle();
-          }
+    trigger.addEventListener("click", function (e) {
+      if (window.innerWidth >= 992) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openDropdown();
+    });
 
-          if (line) gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
-        });
-
-        navlink.addEventListener("mouseleave", function () {
-          if (window.innerWidth < 992) return;
-          if (line) gsap.to(line, { width: "0%", duration: 0.3, ease: "power4.out" });
-        });
+    if (goBack) {
+      goBack.addEventListener("click", function (e) {
+        if (window.innerWidth >= 992) return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeDropdown();
       });
+    }
 
-      navbar.addEventListener("mouseleave", function () {
-        if (window.innerWidth < 992) return;
+    initMobileDropdown();
 
-        if (activeDropdown) {
-          closeDropdown(activeDropdown);
-          resetDropdownItems(activeDropdown);
-          activeDropdown = null;
+    let wasMobile = window.innerWidth < 992;
+    window.addEventListener("resize", function () {
+      const isMobile = window.innerWidth < 992;
+
+      if (isMobile !== wasMobile) {
+        wasMobile = isMobile;
+
+        if (isMobile) {
+          initMobileDropdown();
+        } else {
+          gsap.set(list, { display: "", x: "0vw" });
+          if (bg) gsap.set(bg, { opacity: "" });
         }
-        deactivateNavbarStyle();
-      });
+      }
+    });
+  });
 
-      initDesktopDropdowns();
+  window.closeMobileDropdown = function () {
+    if (activeCloseFunction) activeCloseFunction();
+  };
+})();
 
-      let wasDesktop = window.innerWidth >= 992;
-      window.addEventListener("resize", function () {
-        const isDesktop = window.innerWidth >= 992;
-        if (isDesktop !== wasDesktop) {
-          wasDesktop = isDesktop;
+// --------------------- Navbar Solution Items Hover (Desktop) --------------------- //
+(function () {
+  if (window.innerWidth <= 992) return;
 
-          if (isDesktop) {
-            initDesktopDropdowns();
-            activeDropdown = null;
-          } else {
-            dropdowns.forEach((dropdown) => {
-              const list = dropdown.querySelector(".navbar--dropdown-list");
-              const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-              const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+  const solutionItems = document.querySelectorAll(".navbar--solution-item");
+  if (solutionItems.length === 0) return;
 
-              if (list) {
-                gsap.set(list, { display: "", height: "", overflow: "" });
-                const items = list.querySelectorAll('[animate="dropdownnav"]');
-                gsap.set(items, { opacity: "", y: "" });
-              }
-              if (trigger) gsap.set(trigger, { color: "" });
-              if (line) gsap.set(line, { width: "" });
-            });
-            activeDropdown = null;
-          }
-        }
-      });
-    })();
+  const parentContainer = solutionItems[0].parentElement;
+  if (!parentContainer) return;
 
-    // --------------------- Mobile Navbar Dropdown Animation --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+  solutionItems.forEach((item) => {
+    const svgItem = item.querySelector(".solution--svg-item");
+    const paragraph = item.querySelector(".paragraph-small-130");
 
-      const dropdowns = document.querySelectorAll(".navbar--dropdown");
-      if (dropdowns.length === 0) return;
+    if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
+    if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
+  });
 
-      let activeDropdown = null;
-      let activeCloseFunction = null;
+  let currentlyHovered = null;
 
-      dropdowns.forEach((dropdown) => {
-        const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
-        const list = dropdown.querySelector(".navbar--dropdown-list");
-        const bg = dropdown.querySelector(".navbar--dropdown-bg");
-        const goBack = list ? list.querySelector(".navbar--goback") : null;
+  function resetAllItems() {
+    solutionItems.forEach((item) => {
+      gsap.to(item, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
-        if (!trigger || !list) return;
+      const svgItem = item.querySelector(".solution--svg-item");
+      const paragraph = item.querySelector(".paragraph-small-130");
 
-        function initMobileDropdown() {
-          if (window.innerWidth >= 992) return;
-          gsap.set(list, { display: "none", x: "100vw" });
-          if (bg) gsap.set(bg, { opacity: 0 });
-        }
+      if (svgItem) gsap.to(svgItem, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
+      if (paragraph) gsap.to(paragraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+    });
 
-        function openDropdown() {
-          gsap.set(list, { display: "flex", x: "100vw" });
-          gsap.to(list, { x: "0vw", duration: 0.5, ease: "power4.out" });
+    currentlyHovered = null;
+  }
 
-          if (bg) gsap.to(bg, { opacity: 1, duration: 0.5, ease: "power4.out" });
+  solutionItems.forEach((currentItem) => {
+    const currentSvg = currentItem.querySelector(".solution--svg-item");
+    const currentParagraph = currentItem.querySelector(".paragraph-small-130");
 
-          activeDropdown = dropdown;
-          activeCloseFunction = closeDropdown;
-        }
+    currentItem.addEventListener("mouseenter", function () {
+      if (currentlyHovered && currentlyHovered !== currentItem) {
+        const prevSvg = currentlyHovered.querySelector(".solution--svg-item");
+        const prevParagraph = currentlyHovered.querySelector(".paragraph-small-130");
 
-        function closeDropdown() {
-          gsap.to(list, {
-            x: "100vw",
-            duration: 0.5,
-            ease: "power4.out",
-            onComplete: () => gsap.set(list, { display: "none" }),
-          });
-
-          if (bg) gsap.to(bg, { opacity: 0, duration: 0.5, ease: "power4.out" });
-
-          if (activeDropdown === dropdown) {
-            activeDropdown = null;
-            activeCloseFunction = null;
-          }
-        }
-
-        trigger.addEventListener("click", function (e) {
-          if (window.innerWidth >= 992) return;
-          e.preventDefault();
-          e.stopPropagation();
-          openDropdown();
-        });
-
-        if (goBack) {
-          goBack.addEventListener("click", function (e) {
-            if (window.innerWidth >= 992) return;
-            e.preventDefault();
-            e.stopPropagation();
-            closeDropdown();
-          });
-        }
-
-        initMobileDropdown();
-
-        let wasMobile = window.innerWidth < 992;
-        window.addEventListener("resize", function () {
-          const isMobile = window.innerWidth < 992;
-          if (isMobile !== wasMobile) {
-            wasMobile = isMobile;
-
-            if (isMobile) {
-              initMobileDropdown();
-            } else {
-              gsap.set(list, { display: "", x: "0vw" });
-              if (bg) gsap.set(bg, { opacity: "" });
-            }
-          }
-        });
-      });
-
-      window.closeMobileDropdown = function () {
-        if (activeCloseFunction) activeCloseFunction();
-      };
-    })();
-
-    // --------------------- Navbar Solution Items Hover (Desktop) --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
-      if (window.innerWidth <= 992) return;
-
-      const solutionItems = document.querySelectorAll(".navbar--solution-item");
-      if (solutionItems.length === 0) return;
-
-      const parentContainer = solutionItems[0].parentElement;
-      if (!parentContainer) return;
+        if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
+        if (prevParagraph) gsap.to(prevParagraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+      }
 
       solutionItems.forEach((item) => {
+        gsap.to(item, { opacity: item !== currentItem ? 0.3 : 1, duration: 0.3, ease: "power4.out" });
+      });
+
+      if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+
+      currentlyHovered = currentItem;
+    });
+
+    currentItem.addEventListener("mouseleave", function () {
+      setTimeout(() => {
+        let hoveringItem = false;
+        solutionItems.forEach((item) => {
+          if (item.matches(":hover")) hoveringItem = true;
+        });
+        if (!hoveringItem) resetAllItems();
+      }, 10);
+    });
+  });
+
+  parentContainer.addEventListener("mouseleave", function () {
+    resetAllItems();
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.innerWidth <= 992) {
+      solutionItems.forEach((item) => {
+        gsap.set(item, { opacity: 1 });
         const svgItem = item.querySelector(".solution--svg-item");
         const paragraph = item.querySelector(".paragraph-small-130");
         if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
         if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
       });
+      currentlyHovered = null;
+    }
+  });
+})();
 
-      let currentlyHovered = null;
+// --------------------- Resource Links Hover (Desktop) --------------------- //
+(function () {
+  if (window.innerWidth <= 992) return;
 
-      function resetAllItems() {
-        solutionItems.forEach((item) => {
-          gsap.to(item, { opacity: 1, duration: 0.3, ease: "power4.out" });
+  const resourceLinks = document.querySelectorAll(".resource--link");
+  if (resourceLinks.length === 0) return;
 
-          const svgItem = item.querySelector(".solution--svg-item");
-          const paragraph = item.querySelector(".paragraph-small-130");
+  const parentContainer = resourceLinks[0].parentElement;
+  if (!parentContainer) return;
 
-          if (svgItem) gsap.to(svgItem, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
-          if (paragraph) gsap.to(paragraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-        });
+  resourceLinks.forEach((link) => {
+    const svg = link.querySelector(".resource--link-svg");
+    if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
+  });
 
-        currentlyHovered = null;
+  let currentlyHovered = null;
+
+  function resetAllLinks() {
+    resourceLinks.forEach((link) => {
+      gsap.to(link, { opacity: 1, duration: 0.3, ease: "power4.out" });
+
+      const svg = link.querySelector(".resource--link-svg");
+      if (svg) gsap.to(svg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
+    });
+
+    currentlyHovered = null;
+  }
+
+  resourceLinks.forEach((currentLink) => {
+    const currentSvg = currentLink.querySelector(".resource--link-svg");
+
+    currentLink.addEventListener("mouseenter", function () {
+      if (currentlyHovered && currentlyHovered !== currentLink) {
+        const prevSvg = currentlyHovered.querySelector(".resource--link-svg");
+        if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
       }
 
-      solutionItems.forEach((currentItem) => {
-        const currentSvg = currentItem.querySelector(".solution--svg-item");
-        const currentParagraph = currentItem.querySelector(".paragraph-small-130");
-
-        currentItem.addEventListener("mouseenter", function () {
-          if (currentlyHovered && currentlyHovered !== currentItem) {
-            const prevSvg = currentlyHovered.querySelector(".solution--svg-item");
-            const prevParagraph = currentlyHovered.querySelector(".paragraph-small-130");
-
-            if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
-            if (prevParagraph) gsap.to(prevParagraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-          }
-
-          solutionItems.forEach((item) => {
-            gsap.to(item, {
-              opacity: item !== currentItem ? 0.3 : 1,
-              duration: 0.3,
-              ease: "power4.out",
-            });
-          });
-
-          if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-          if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
-
-          currentlyHovered = currentItem;
-        });
-
-        currentItem.addEventListener("mouseleave", function () {
-          setTimeout(() => {
-            let hoveringItem = false;
-            solutionItems.forEach((item) => {
-              if (item.matches(":hover")) hoveringItem = true;
-            });
-            if (!hoveringItem) resetAllItems();
-          }, 10);
-        });
-      });
-
-      parentContainer.addEventListener("mouseleave", resetAllItems);
-
-      window.addEventListener("resize", function () {
-        if (window.innerWidth <= 992) {
-          solutionItems.forEach((item) => {
-            gsap.set(item, { opacity: 1 });
-            const svgItem = item.querySelector(".solution--svg-item");
-            const paragraph = item.querySelector(".paragraph-small-130");
-            if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
-            if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
-          });
-          currentlyHovered = null;
-        }
-      });
-    })();
-
-    // --------------------- Resource Links Hover (Desktop) --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
-      if (window.innerWidth <= 992) return;
-
-      const resourceLinks = document.querySelectorAll(".resource--link");
-      if (resourceLinks.length === 0) return;
-
-      const parentContainer = resourceLinks[0].parentElement;
-      if (!parentContainer) return;
-
       resourceLinks.forEach((link) => {
+        gsap.to(link, { opacity: link !== currentLink ? 0.3 : 1, duration: 0.3, ease: "power4.out" });
+      });
+
+      if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+
+      currentlyHovered = currentLink;
+    });
+
+    currentLink.addEventListener("mouseleave", function () {
+      setTimeout(() => {
+        let hoveringLink = false;
+        resourceLinks.forEach((link) => {
+          if (link.matches(":hover")) hoveringLink = true;
+        });
+        if (!hoveringLink) resetAllLinks();
+      }, 10);
+    });
+  });
+
+  parentContainer.addEventListener("mouseleave", function () {
+    resetAllLinks();
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.innerWidth <= 992) {
+      resourceLinks.forEach((link) => {
+        gsap.set(link, { opacity: 1 });
         const svg = link.querySelector(".resource--link-svg");
         if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
       });
+      currentlyHovered = null;
+    }
+  });
+})();
 
-      let currentlyHovered = null;
+// --------------------- Mobile Hamburger Menu Animation --------------------- //
+(function () {
+  const menuTrigger = document.querySelector(".menu--trigger");
+  const menuOpen = document.querySelector(".menu--open");
+  const menuClose = document.querySelector(".menu--close");
+  const menuInner = document.querySelector(".navbar-menu--inner");
+  const navbar = document.querySelector(".navbar");
+  const navbarBg = document.querySelector(".navbar--bg");
 
-      function resetAllLinks() {
-        resourceLinks.forEach((link) => {
-          gsap.to(link, { opacity: 1, duration: 0.3, ease: "power4.out" });
-          const svg = link.querySelector(".resource--link-svg");
-          if (svg) gsap.to(svg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
-        });
-        currentlyHovered = null;
-      }
+  if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) {
+    console.log("Mobile menu elements not found:", {
+      menuTrigger: !!menuTrigger,
+      menuOpen: !!menuOpen,
+      menuClose: !!menuClose,
+      menuInner: !!menuInner,
+      navbar: !!navbar,
+      navbarBg: !!navbarBg,
+    });
+    return;
+  }
 
-      resourceLinks.forEach((currentLink) => {
-        const currentSvg = currentLink.querySelector(".resource--link-svg");
+  console.log("Mobile menu initialized");
+  let isMenuOpen = false;
 
-        currentLink.addEventListener("mouseenter", function () {
-          if (currentlyHovered && currentlyHovered !== currentLink) {
-            const prevSvg = currentlyHovered.querySelector(".resource--link-svg");
-            if (prevSvg) gsap.to(prevSvg, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
-          }
+  function initializeMobileMenu() {
+    if (window.innerWidth >= 992) return;
 
-          resourceLinks.forEach((link) => {
-            gsap.to(link, {
-              opacity: link !== currentLink ? 0.3 : 1,
-              duration: 0.3,
-              ease: "power4.out",
-            });
-          });
+    gsap.set(menuClose, { opacity: 0 });
+    gsap.set(menuInner, { display: "none", x: "100vw" });
 
-          if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
+    const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
+    gsap.set(menuItems, { opacity: 0, y: "1rem" });
+  }
 
-          currentlyHovered = currentLink;
-        });
+  function openMenu() {
+    const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
+    const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
-        currentLink.addEventListener("mouseleave", function () {
-          setTimeout(() => {
-            let hoveringLink = false;
-            resourceLinks.forEach((link) => {
-              if (link.matches(":hover")) hoveringLink = true;
-            });
-            if (!hoveringLink) resetAllLinks();
-          }, 10);
-        });
-      });
+    document.body.style.overflow = "hidden";
 
-      parentContainer.addEventListener("mouseleave", resetAllLinks);
+    gsap.to(menuOpen, { opacity: 0, duration: 0.3, ease: "power4.out" });
+    gsap.to(menuClose, { opacity: 1, duration: 0.3, ease: "power4.out" });
 
-      window.addEventListener("resize", function () {
-        if (window.innerWidth <= 992) {
-          resourceLinks.forEach((link) => {
-            gsap.set(link, { opacity: 1 });
-            const svg = link.querySelector(".resource--link-svg");
-            if (svg) gsap.set(svg, { opacity: 0, x: "-1.5rem" });
-          });
-          currentlyHovered = null;
-        }
-      });
-    })();
+    gsap.set(menuInner, { display: "flex", x: "100vw" });
+    gsap.to(menuInner, { x: "0vw", duration: 0.5, ease: "power4.out" });
 
-    // --------------------- Mobile Hamburger Menu Animation --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+    gsap.to(menuItems, {
+      opacity: 1,
+      y: "0rem",
+      duration: 0.4,
+      ease: "power4.out",
+      stagger: 0.05,
+      delay: 0.2,
+    });
 
-      const menuTrigger = document.querySelector(".menu--trigger");
-      const menuOpen = document.querySelector(".menu--open");
-      const menuClose = document.querySelector(".menu--close");
-      const menuInner = document.querySelector(".navbar-menu--inner");
-      const navbar = document.querySelector(".navbar");
-      const navbarBg = document.querySelector(".navbar--bg");
+    gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
 
-      if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) return;
+    if (navbarBg) {
+      gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
+    }
 
-      let isMenuOpen = false;
+    navButtons.forEach((btn) => {
+      gsap.to(btn, { backgroundColor: "#040a44", color: "#f2f3f6", duration: 0.3, ease: "power4.out" });
+    });
 
-      function initializeMobileMenu() {
-        if (window.innerWidth >= 992) return;
+    isMenuOpen = true;
+  }
 
+  function closeMenu() {
+    const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
+    const navButtons = navbar.querySelectorAll(".btn.is--nav");
+
+    document.body.style.overflow = "";
+
+    gsap.to(menuClose, { opacity: 0, duration: 0.3, ease: "power4.out" });
+    gsap.to(menuOpen, { opacity: 1, duration: 0.3, ease: "power4.out" });
+
+    gsap.to(menuInner, {
+      x: "100vw",
+      duration: 0.5,
+      ease: "power4.out",
+      onComplete: () => gsap.set(menuInner, { display: "none" }),
+    });
+
+    gsap.set(menuItems, { opacity: 0, y: "1rem" });
+
+    gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
+
+    if (navbarBg) {
+      gsap.to(navbarBg, { backgroundColor: "", duration: 0.3, ease: "power4.out" });
+    }
+
+    navButtons.forEach((btn) => {
+      gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
+    });
+
+    isMenuOpen = false;
+  }
+
+  menuTrigger.addEventListener("click", function () {
+    console.log("Menu trigger clicked, screen width:", window.innerWidth);
+
+    if (window.innerWidth >= 992) return;
+
+    if (typeof window.closeMobileDropdown === "function") {
+      window.closeMobileDropdown();
+    }
+
+    if (isMenuOpen) closeMenu();
+    else openMenu();
+  });
+
+  initializeMobileMenu();
+
+  let wasMobile = window.innerWidth < 992;
+  window.addEventListener("resize", function () {
+    const isMobile = window.innerWidth < 992;
+
+    if (isMobile !== wasMobile) {
+      wasMobile = isMobile;
+
+      if (isMobile) {
+        initializeMobileMenu();
+        isMenuOpen = false;
+      } else {
+        gsap.set(menuOpen, { opacity: 1 });
         gsap.set(menuClose, { opacity: 0 });
-        gsap.set(menuInner, { display: "none", x: "100vw" });
+        gsap.set(menuInner, { display: "", x: "0vw" });
 
         const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
-        gsap.set(menuItems, { opacity: 0, y: "1rem" });
-      }
-
-      function openMenu() {
-        const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
-        const navButtons = navbar.querySelectorAll(".btn.is--nav");
-
-        document.body.style.overflow = "hidden";
-
-        gsap.to(menuOpen, { opacity: 0, duration: 0.3, ease: "power4.out" });
-        gsap.to(menuClose, { opacity: 1, duration: 0.3, ease: "power4.out" });
-
-        gsap.set(menuInner, { display: "flex", x: "100vw" });
-        gsap.to(menuInner, { x: "0vw", duration: 0.5, ease: "power4.out" });
-
-        gsap.to(menuItems, {
-          opacity: 1,
-          y: "0rem",
-          duration: 0.4,
-          ease: "power4.out",
-          stagger: 0.05,
-          delay: 0.2,
-        });
-
-        gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
-
-        if (navbarBg) {
-          gsap.to(navbarBg, {
-            backgroundColor: "rgba(242, 243, 246, 0.6)",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        }
-
-        navButtons.forEach((btn) => {
-          gsap.to(btn, {
-            backgroundColor: "#040a44",
-            color: "#f2f3f6",
-            duration: 0.3,
-            ease: "power4.out",
-          });
-        });
-
-        isMenuOpen = true;
-      }
-
-      function closeMenu() {
-        const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
-        const navButtons = navbar.querySelectorAll(".btn.is--nav");
+        gsap.set(menuItems, { opacity: 1, y: "0rem" });
 
         document.body.style.overflow = "";
-
-        gsap.to(menuClose, { opacity: 0, duration: 0.3, ease: "power4.out" });
-        gsap.to(menuOpen, { opacity: 1, duration: 0.3, ease: "power4.out" });
-
-        gsap.to(menuInner, {
-          x: "100vw",
-          duration: 0.5,
-          ease: "power4.out",
-          onComplete: () => gsap.set(menuInner, { display: "none" }),
-        });
-
-        gsap.set(menuItems, { opacity: 0, y: "1rem" });
-
-        gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
-        if (navbarBg) gsap.to(navbarBg, { backgroundColor: "", duration: 0.3, ease: "power4.out" });
-
-        navButtons.forEach((btn) => {
-          gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
-        });
-
         isMenuOpen = false;
       }
+    }
+  });
+})();
 
-      menuTrigger.addEventListener("click", function () {
-        if (window.innerWidth >= 992) return;
+// --------------------- Navbar Scroll Behavior --------------------- //
+(function () {
+  const navbar = document.querySelector(".navbar");
+  if (!navbar) return;
 
-        if (typeof window.closeMobileDropdown === "function") {
-          window.closeMobileDropdown();
-        }
+  let lastScrollY = window.scrollY;
+  const scrollThreshold = window.innerHeight * 0.25;
 
-        isMenuOpen ? closeMenu() : openMenu();
+  function handleNavbarScroll() {
+    const currentScrollY = window.scrollY;
+    const isScrollingDown = currentScrollY > lastScrollY;
+
+    if (currentScrollY < scrollThreshold) {
+      navbar.style.transform = "translateY(0)";
+    } else {
+      navbar.style.transform = isScrollingDown ? "translateY(-100%)" : "translateY(0)";
+    }
+
+    lastScrollY = currentScrollY;
+  }
+
+  let ticking = false;
+  window.addEventListener("scroll", function () {
+    if (!ticking) {
+      window.requestAnimationFrame(function () {
+        handleNavbarScroll();
+        ticking = false;
       });
+      ticking = true;
+    }
+  });
 
-      initializeMobileMenu();
+  handleNavbarScroll();
+})();
 
-      let wasMobile = window.innerWidth < 992;
-      window.addEventListener("resize", function () {
-        const isMobile = window.innerWidth < 992;
+// --------------------- Eyebrow Text Cycling Animation --------------------- //
+(function () {
+  const eyebrowElement = document.querySelector('[animation="eyebrow"]');
+  if (!eyebrowElement) return;
 
-        if (isMobile !== wasMobile) {
-          wasMobile = isMobile;
+  const phrases = [
+    "From field to office",
+    "From data to decision",
+    "From risk to reliability",
+    "From reactive to proactive.",
+  ];
 
-          if (isMobile) {
-            initializeMobileMenu();
-            isMenuOpen = false;
-          } else {
-            gsap.set(menuOpen, { opacity: 1 });
-            gsap.set(menuClose, { opacity: 0 });
-            gsap.set(menuInner, { display: "", x: "0vw" });
-            const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
-            gsap.set(menuItems, { opacity: 1, y: "0rem" });
-            document.body.style.overflow = "";
-            isMenuOpen = false;
-          }
-        }
-      });
-    })();
+  let currentIndex = 0;
+  let isAnimating = false;
+  let currentSplit = null;
 
-    // --------------------- Navbar Scroll Behavior --------------------- //
-    (function () {
-      const navbar = document.querySelector(".navbar");
-      if (!navbar) return;
+  function initializeText() {
+    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
+    eyebrowElement.innerHTML = textWithSpaces;
+    eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
 
-      let lastScrollY = window.scrollY;
-      const scrollThreshold = window.innerHeight * 0.25;
+    currentSplit = new SplitText(eyebrowElement, {
+      type: "chars",
+      charsClass: "char",
+    });
+  }
 
-      function handleNavbarScroll() {
-        const currentScrollY = window.scrollY;
-        const isScrollingDown = currentScrollY > lastScrollY;
+  function animateTextChange() {
+    if (isAnimating) return;
+    isAnimating = true;
 
-        if (currentScrollY < scrollThreshold) {
-          navbar.style.transform = "translateY(0)";
-        } else {
-          navbar.style.transform = isScrollingDown ? "translateY(-100%)" : "translateY(0)";
-        }
+    if (!currentSplit) {
+      currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
+    }
 
-        lastScrollY = currentScrollY;
-      }
+    const oldChars = currentSplit.chars;
 
-      let ticking = false;
-      window.addEventListener("scroll", function () {
-        if (!ticking) {
-          window.requestAnimationFrame(function () {
-            handleNavbarScroll();
-            ticking = false;
-          });
-          ticking = true;
-        }
-      });
+    gsap.to(oldChars, {
+      yPercent: -100,
+      opacity: 0,
+      stagger: 0.03,
+      duration: 0.4,
+      ease: "power2.out",
+    });
 
-      handleNavbarScroll();
-    })();
+    const tempDiv = document.createElement("div");
+    tempDiv.style.position = "absolute";
+    tempDiv.style.top = "0";
+    tempDiv.style.left = "0";
+    tempDiv.style.width = "100%";
 
-    // --------------------- Eyebrow Text Cycling Animation --------------------- //
-    (function () {
-      if (!hasGSAP() || !hasSplitText()) return;
+    currentIndex = (currentIndex + 1) % phrases.length;
+    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
+    tempDiv.innerHTML = textWithSpaces;
+    eyebrowElement.appendChild(tempDiv);
 
-      const eyebrowElement = document.querySelector('[animation="eyebrow"]');
-      if (!eyebrowElement) return;
+    const newSplit = new SplitText(tempDiv, { type: "chars", charsClass: "char" });
+    const newChars = newSplit.chars;
 
-      const phrases = [
-        "From field to office",
-        "From data to decision",
-        "From risk to reliability",
-        "From reactive to proactive.",
-      ];
+    gsap.set(newChars, { yPercent: 100, opacity: 0 });
 
-      let currentIndex = 0;
-      let isAnimating = false;
-      let currentSplit = null;
-
-      function initializeText() {
-        const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
-        eyebrowElement.innerHTML = textWithSpaces;
+    gsap.to(newChars, {
+      yPercent: 0,
+      opacity: 1,
+      stagger: 0.03,
+      duration: 0.4,
+      ease: "power2.out",
+      onComplete: () => {
+        currentSplit.revert();
+        eyebrowElement.innerHTML = tempDiv.innerHTML;
         eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
 
         currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-      }
 
-      function animateTextChange() {
-        if (isAnimating) return;
-        isAnimating = true;
+        isAnimating = false;
+        setTimeout(animateTextChange, 2000);
+      },
+    });
+  }
 
-        if (!currentSplit) {
-          currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-        }
+  initializeText();
+  setTimeout(animateTextChange, 2000);
+})();
 
-        const oldChars = currentSplit.chars;
+// --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
+(function () {
+  const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
+  const EYEBROW_SELECTOR = '[animation="eyebrow"]';
+  const VISUAL_SELECTOR = 'img.absolute--img[image]';
 
-        gsap.to(oldChars, {
-          yPercent: -100,
-          opacity: 0,
-          stagger: 0.03,
-          duration: 0.4,
+  const phrases = [
+    "From field to office",
+    "From data to decision",
+    "From risk to reliability",
+    "From reactive to proactive.",
+  ];
+
+  const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
+  const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
+
+  if (!heroScope || !eyebrowEl) return;
+
+  const heroImgs = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
+  if (!heroImgs.length) return;
+
+  heroImgs.forEach((img) => {
+    img.style.position = img.style.position || "absolute";
+    img.style.inset = img.style.inset || "0";
+    img.style.transition = img.style.transition || "opacity 450ms ease";
+  });
+
+  function forceOpacity(el, value) {
+    el.style.setProperty("opacity", String(value), "important");
+  }
+
+  function setActiveByValue(imageValue) {
+    heroImgs.forEach((img) => {
+      const isMatch = img.getAttribute("image") === String(imageValue);
+
+      img.classList.toggle("is-active", isMatch);
+      img.setAttribute("aria-hidden", isMatch ? "false" : "true");
+
+      forceOpacity(img, isMatch ? 1 : 0);
+      img.style.pointerEvents = isMatch ? "auto" : "none";
+    });
+  }
+
+  function syncFromAriaLabel() {
+    const label = (eyebrowEl.getAttribute("aria-label") || "").trim();
+    if (!label) return;
+
+    const idx = phrases.findIndex((p) => p === label);
+    if (idx !== -1) setActiveByValue(idx + 1);
+  }
+
+  syncFromAriaLabel();
+  setActiveByValue(1);
+
+  const observer = new MutationObserver(() => {
+    syncFromAriaLabel();
+  });
+
+  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+  observer.observe(eyebrowEl, { childList: true, subtree: true });
+})();
+
+// --------------------- Hover Circle Follow Mouse --------------------- //
+(function () {
+  const gridTrusted = document.querySelector(".grid--trusted");
+  if (!gridTrusted) return;
+
+  const logoParents = gridTrusted.querySelectorAll(".trusted--logo-parent");
+
+  logoParents.forEach((parent) => {
+    const hoverCircle = parent.querySelector(".hover--circle");
+    if (!hoverCircle) return;
+
+    parent.addEventListener("mousemove", function (e) {
+      const rect = parent.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const circleSize = 10; // 10rem
+      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetX = x - (circleSize / 2) * rootFont;
+      const offsetY = y - (circleSize / 2) * rootFont;
+
+      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
+    });
+
+    parent.addEventListener("mouseenter", function () {
+      gsap.to(hoverCircle, { opacity: 0.3, scale: 1, duration: 0.3, ease: "power2.out" });
+    });
+
+    parent.addEventListener("mouseleave", function () {
+      gsap.to(hoverCircle, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.out" });
+    });
+  });
+
+  const lines = gridTrusted.querySelectorAll(".lines");
+  lines.forEach((line) => {
+    const hoverCircle = line.querySelector(".hover--circle.is--100");
+    if (!hoverCircle) return;
+    gsap.set(hoverCircle, { opacity: 0 });
+  });
+
+  gridTrusted.addEventListener("mousemove", function (e) {
+    lines.forEach((line) => {
+      const hoverCircle = line.querySelector(".hover--circle.is--100");
+      if (!hoverCircle) return;
+
+      const rect = line.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const circleSize = 10; // 10rem
+      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetX = x - (circleSize / 2) * rootFont;
+      const offsetY = y - (circleSize / 2) * rootFont;
+
+      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
+    });
+  });
+
+  gridTrusted.addEventListener("mouseenter", function () {
+    lines.forEach((line) => {
+      const hoverCircle = line.querySelector(".hover--circle.is--100");
+      if (hoverCircle) gsap.to(hoverCircle, { opacity: 1, duration: 0.3, ease: "power2.out" });
+    });
+  });
+
+  gridTrusted.addEventListener("mouseleave", function () {
+    lines.forEach((line) => {
+      const hoverCircle = line.querySelector(".hover--circle.is--100");
+      if (hoverCircle) gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
+    });
+  });
+})();
+
+// --------------------- ✅ Offer Slide Hover Animation (Desktop) — FIXED --------------------- //
+(function () {
+  let swiperInstance = null;
+
+  function initOfferSlides() {
+    if (window.innerWidth <= 992) return;
+
+    const offerSlides = document.querySelectorAll(".offer--slide");
+    if (offerSlides.length === 0) return;
+
+    let activeSlide = null;
+
+    function setInactive(slide) {
+      slide.classList.remove("is-active");
+
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
+
+      gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
+
+      if (icon) {
+        gsap.to(icon, {
+          x: "-1rem",
+          autoAlpha: 0,
+          duration: 0.25,
           ease: "power2.out",
+          onComplete: () => gsap.set(icon, { pointerEvents: "none" }),
         });
+      }
 
-        const tempDiv = document.createElement("div");
-        tempDiv.style.position = "absolute";
-        tempDiv.style.top = "0";
-        tempDiv.style.left = "0";
-        tempDiv.style.width = "100%";
-
-        currentIndex = (currentIndex + 1) % phrases.length;
-        const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
-        tempDiv.innerHTML = textWithSpaces;
-        eyebrowElement.appendChild(tempDiv);
-
-        const newSplit = new SplitText(tempDiv, { type: "chars", charsClass: "char" });
-        const newChars = newSplit.chars;
-
-        gsap.set(newChars, { yPercent: 100, opacity: 0 });
-
-        gsap.to(newChars, {
-          yPercent: 0,
-          opacity: 1,
-          stagger: 0.03,
-          duration: 0.4,
+      if (content) {
+        gsap.to(content, {
+          autoAlpha: 0,
+          duration: 0.25,
           ease: "power2.out",
-          onComplete: () => {
-            currentSplit.revert();
-            eyebrowElement.innerHTML = tempDiv.innerHTML;
-            eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
-
-            currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-
-            isAnimating = false;
-            setTimeout(animateTextChange, 2000);
-          },
+          onComplete: () => gsap.set(content, { pointerEvents: "none" }),
         });
       }
+    }
 
-      initializeText();
-      setTimeout(animateTextChange, 2000);
-    })();
+    function setActive(slide) {
+      offerSlides.forEach((s) => s.classList.remove("is-active"));
+      slide.classList.add("is-active");
 
-    // --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
-    (function () {
-      const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
-      const EYEBROW_SELECTOR = '[animation="eyebrow"]';
-      const VISUAL_SELECTOR = 'img.absolute--img[image]';
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
 
-      const phrases = [
-        "From field to office",
-        "From data to decision",
-        "From risk to reliability",
-        "From reactive to proactive.",
-      ];
+      gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
-      const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
-      if (!heroScope || !eyebrowEl) return;
+      if (icon) gsap.set(icon, { pointerEvents: "auto" });
+      if (content) gsap.set(content, { pointerEvents: "auto" });
 
-      const heroImgs = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
-      if (!heroImgs.length) return;
+      if (icon) gsap.to(icon, { x: "0rem", autoAlpha: 1, duration: 0.25, ease: "power2.out" });
+      if (content) gsap.to(content, { autoAlpha: 1, duration: 0.25, ease: "power2.out" });
 
-      heroImgs.forEach((img) => {
-        img.style.position = img.style.position || "absolute";
-        img.style.inset = img.style.inset || "0";
-        img.style.transition = img.style.transition || "opacity 450ms ease";
+      activeSlide = slide;
+    }
+
+    // Init default (tout hidden = non-interactif)
+    offerSlides.forEach((slide) => {
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
+
+      gsap.set(slide, { opacity: 0.3 });
+      if (icon) gsap.set(icon, { x: "-1rem", autoAlpha: 0, pointerEvents: "none" });
+      if (content) gsap.set(content, { autoAlpha: 0, pointerEvents: "none" });
+    });
+
+    if (offerSlides[0]) setActive(offerSlides[0]);
+
+    offerSlides.forEach((slide) => {
+      const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
+
+      hoverTarget.addEventListener("mouseenter", function () {
+        if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
+        setActive(slide);
       });
+    });
+  }
 
-      function forceOpacity(el, value) {
-        el.style.setProperty("opacity", String(value), "important");
-      }
+  function initOfferSlider() {
+    if (window.innerWidth > 992) return;
 
-      function setActiveByValue(imageValue) {
-        heroImgs.forEach((img) => {
-          const isMatch = img.getAttribute("image") === String(imageValue);
-          img.classList.toggle("is-active", isMatch);
-          img.setAttribute("aria-hidden", isMatch ? "false" : "true");
-          forceOpacity(img, isMatch ? 1 : 0);
-          img.style.pointerEvents = isMatch ? "auto" : "none";
-        });
-      }
+    const slider = document.querySelector(".offers-slider");
+    if (!slider) return;
 
-      function syncFromAriaLabel() {
-        const label = (eyebrowEl.getAttribute("aria-label") || "").trim();
-        if (!label) return false;
+    if (typeof Swiper === "undefined") {
+      console.error("Swiper is not loaded");
+      return;
+    }
 
-        const idx = phrases.findIndex((p) => p === label);
-        if (idx !== -1) {
-          setActiveByValue(idx + 1);
-          return true;
-        }
-        return false;
-      }
+    if (swiperInstance) {
+      swiperInstance.destroy(true, true);
+      swiperInstance = null;
+    }
 
-      // initial: only fallback to 1 if no match
-      const matched = syncFromAriaLabel();
-      if (!matched) setActiveByValue(1);
+    swiperInstance = new Swiper(".offers-slider", {
+      slidesPerView: "auto",
+      spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
+      navigation: {
+        nextEl: ".offer-slider-btn.is--next",
+        prevEl: ".offer-slider-btn.is--prev",
+        disabledClass: "swiper-button-disabled",
+      },
+      on: {
+        init: function () {
+          updateSlideNumbers(this);
+          updateSliderMargins(this);
+        },
+        slideChange: function () {
+          updateSlideNumbers(this);
+          updateSliderMargins(this);
+        },
+      },
+    });
 
-      const observer = new MutationObserver(() => syncFromAriaLabel());
-      observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
-      observer.observe(eyebrowEl, { childList: true, subtree: true });
-    })();
+    function updateSliderMargins(swiper) {
+      const sliderEl = document.querySelector(".offers-slider");
+      if (!sliderEl) return;
 
-    // --------------------- Hover Circle Follow Mouse --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+      const isFirstSlide = swiper.activeIndex === 0;
+      const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
-      const gridTrusted = document.querySelector(".grid--trusted");
-      if (!gridTrusted) return;
+      sliderEl.classList.remove("is--first", "is--middle", "is--last");
+      if (isFirstSlide) sliderEl.classList.add("is--first");
+      else if (isLastSlide) sliderEl.classList.add("is--last");
+      else sliderEl.classList.add("is--middle");
+    }
+  }
 
-      const logoParents = gridTrusted.querySelectorAll(".trusted--logo-parent");
+  function updateSlideNumbers(swiper) {
+    const currentSlideNumber = document.querySelector(".slide--number:first-child");
+    const totalSlideNumber = document.querySelector(".slide--number:last-child");
 
-      logoParents.forEach((parent) => {
-        const hoverCircle = parent.querySelector(".hover--circle");
-        if (!hoverCircle) return;
+    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
+    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
+  }
 
-        parent.addEventListener("mousemove", function (e) {
-          const rect = parent.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+  const isDesktop = window.innerWidth > 992;
+  if (isDesktop) initOfferSlides();
+  else initOfferSlider();
 
-          const circleSize = 10; // rem
-          const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-          const offsetX = x - (circleSize / 2) * rem;
-          const offsetY = y - (circleSize / 2) * rem;
+  let wasDesktop = isDesktop;
+  window.addEventListener("resize", function () {
+    const isDesktop = window.innerWidth > 992;
 
-          gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
-        });
+    if (isDesktop !== wasDesktop) {
+      wasDesktop = isDesktop;
 
-        parent.addEventListener("mouseenter", function () {
-          gsap.to(hoverCircle, { opacity: 0.3, scale: 1, duration: 0.3, ease: "power2.out" });
-        });
-
-        parent.addEventListener("mouseleave", function () {
-          gsap.to(hoverCircle, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.out" });
-        });
-      });
-
-      const lines = gridTrusted.querySelectorAll(".lines");
-      lines.forEach((line) => {
-        const hoverCircle = line.querySelector(".hover--circle.is--100");
-        if (hoverCircle) gsap.set(hoverCircle, { opacity: 0 });
-      });
-
-      gridTrusted.addEventListener("mousemove", function (e) {
-        lines.forEach((line) => {
-          const hoverCircle = line.querySelector(".hover--circle.is--100");
-          if (!hoverCircle) return;
-
-          const rect = line.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-
-          const circleSize = 10;
-          const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-          const offsetX = x - (circleSize / 2) * rem;
-          const offsetY = y - (circleSize / 2) * rem;
-
-          gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
-        });
-      });
-
-      gridTrusted.addEventListener("mouseenter", function () {
-        lines.forEach((line) => {
-          const hoverCircle = line.querySelector(".hover--circle.is--100");
-          if (hoverCircle) gsap.to(hoverCircle, { opacity: 1, duration: 0.3, ease: "power2.out" });
-        });
-      });
-
-      gridTrusted.addEventListener("mouseleave", function () {
-        lines.forEach((line) => {
-          const hoverCircle = line.querySelector(".hover--circle.is--100");
-          if (hoverCircle) gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
-        });
-      });
-    })();
-
-    // --------------------- Offer Slide Hover Animation (Desktop) / Swiper (Mobile) --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
-
-      let swiperInstance = null;
-
-      function initOfferSlides() {
-        if (window.innerWidth <= 992) return;
-
-        const offerSlides = document.querySelectorAll(".offer--slide");
-        if (offerSlides.length === 0) return;
-
-        let activeSlide = null;
-
-        function setInactive(slide) {
-          slide.classList.remove("is-active");
-
-          const icon = slide.querySelector(".offer--slide-icon");
-          const content = slide.querySelector(".offer--slide-content");
-
-          gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
-          if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
-          if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
-        }
-
-        function setActive(slide) {
-          offerSlides.forEach((s) => s.classList.remove("is-active"));
-          slide.classList.add("is-active");
-
-          const icon = slide.querySelector(".offer--slide-icon");
-          const content = slide.querySelector(".offer--slide-content");
-
-          gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-          if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
-          if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
-          activeSlide = slide;
-        }
-
-        offerSlides.forEach((slide) => {
-          const icon = slide.querySelector(".offer--slide-icon");
-          const content = slide.querySelector(".offer--slide-content");
-
-          gsap.set(slide, { opacity: 0.3 });
-          if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
-          if (content) gsap.set(content, { opacity: 0 });
-        });
-
-        if (offerSlides[0]) setActive(offerSlides[0]);
-
-        offerSlides.forEach((slide) => {
-          const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
-
-          hoverTarget.addEventListener("mouseenter", function () {
-            if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
-            setActive(slide);
-          });
-        });
-      }
-
-      function initOfferSlider() {
-        if (window.innerWidth > 992) return;
-        if (!hasSwiper()) return;
-
-        const slider = document.querySelector(".offers-slider");
-        if (!slider) return;
-
+      if (isDesktop) {
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
           swiperInstance = null;
         }
-
-        swiperInstance = new Swiper(".offers-slider", {
-          slidesPerView: "auto",
-          spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
-          navigation: {
-            nextEl: ".offer-slider-btn.is--next",
-            prevEl: ".offer-slider-btn.is--prev",
-            disabledClass: "swiper-button-disabled",
-          },
-          on: {
-            init: function () {
-              updateSlideNumbers(this);
-              updateSliderMargins(this);
-            },
-            slideChange: function () {
-              updateSlideNumbers(this);
-              updateSliderMargins(this);
-            },
-          },
-        });
-
-        function updateSliderMargins(swiper) {
-          const sliderEl = document.querySelector(".offers-slider");
-          if (!sliderEl) return;
-
-          const isFirstSlide = swiper.activeIndex === 0;
-          const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
-
-          sliderEl.classList.remove("is--first", "is--middle", "is--last");
-
-          if (isFirstSlide) sliderEl.classList.add("is--first");
-          else if (isLastSlide) sliderEl.classList.add("is--last");
-          else sliderEl.classList.add("is--middle");
-        }
+        initOfferSlides();
+      } else {
+        initOfferSlider();
       }
+    }
+  });
+})();
 
-      function updateSlideNumbers(swiper) {
-        const currentSlideNumber = document.querySelector(".slide--number:first-child");
-        const totalSlideNumber = document.querySelector(".slide--number:last-child");
-        if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
-        if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
-      }
+// --------------------- How It Works Scroll Animation --------------------- //
+(function () {
+  if (window.innerWidth <= 992) return;
 
-      const isDesktop = window.innerWidth > 992;
-      if (isDesktop) initOfferSlides();
-      else initOfferSlider();
+  const triggersParent = document.querySelector(".howitworks--triggers-parent");
+  const triggers = document.querySelectorAll(".howitworks--trigger");
+  const parents = document.querySelectorAll(".howitworks--parent");
 
-      let wasDesktop = isDesktop;
-      window.addEventListener("resize", function () {
-        const nowDesktop = window.innerWidth > 992;
-        if (nowDesktop !== wasDesktop) {
-          wasDesktop = nowDesktop;
+  if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
 
-          if (nowDesktop) {
-            if (swiperInstance) {
-              swiperInstance.destroy(true, true);
-              swiperInstance = null;
-            }
-            initOfferSlides();
-          } else {
-            initOfferSlider();
-          }
-        }
-      });
-    })();
+  parents.forEach((parent) => {
+    const content = parent.querySelector(".howitworks--content");
+    const response = parent.querySelector(".howitworks--response");
+    const line = parent.querySelector(".howitworks--line");
 
-    // --------------------- How It Works Scroll Animation --------------------- //
-    (function () {
-      if (!hasGSAP() || !hasScrollTrigger()) return;
-      if (window.innerWidth <= 992) return;
+    if (content) gsap.set(content, { opacity: 0.3 });
+    if (response) gsap.set(response, { height: 0, overflow: "hidden" });
+    if (line) gsap.set(line, { width: "0%" });
+  });
 
-      const triggersParent = document.querySelector(".howitworks--triggers-parent");
-      const triggers = document.querySelectorAll(".howitworks--trigger");
-      const parents = document.querySelectorAll(".howitworks--parent");
+  const initialYPercent = [0, 100, 200];
+  const initialYRem = [0, 3, 6];
+  const finalYPercent = [-200, -100, 0];
+  const finalYRem = [-6, -3, 0];
 
-      if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
+  parents.forEach((parent, index) => {
+    const img = parent.querySelector(".howitworks--img");
+    if (img) {
+      const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
+    }
+  });
 
-      parents.forEach((parent) => {
-        const content = parent.querySelector(".howitworks--content");
-        const response = parent.querySelector(".howitworks--response");
-        const line = parent.querySelector(".howitworks--line");
-
-        if (content) gsap.set(content, { opacity: 0.3 });
-        if (response) gsap.set(response, { height: 0, overflow: "hidden" });
-        if (line) gsap.set(line, { width: "0%" });
-      });
-
-      const initialYPercent = [0, 100, 200];
-      const initialYRem = [0, 3, 6];
-      const finalYPercent = [-200, -100, 0];
-      const finalYRem = [-6, -3, 0];
-
-      parents.forEach((parent, index) => {
-        const img = parent.querySelector(".howitworks--img");
-        if (!img) return;
-
-        const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
-        gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
-      });
-
-      parents.forEach((parent, index) => {
-        const img = parent.querySelector(".howitworks--img");
-        if (img) {
-          const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
-          gsap.to(img, {
-            yPercent: finalYPercent[index],
-            y: remInPx,
-            ease: "none",
-            scrollTrigger: {
-              trigger: triggersParent,
-              start: "top bottom",
-              end: "bottom bottom",
-              scrub: true,
-            },
-          });
-        }
-
-        const imgInner = parent.querySelector(".howitworks--img--inner");
-        if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
-      });
-
-      triggers.forEach((trigger, index) => {
-        const parent = parents[index];
-        if (!parent) return;
-
-        const content = parent.querySelector(".howitworks--content");
-        const response = parent.querySelector(".howitworks--response");
-        const line = parent.querySelector(".howitworks--line");
-
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: trigger,
-            start: "top bottom",
-            onEnter: () => {
-              if (index > 0 && parents[index - 1]) {
-                const prevContent = parents[index - 1].querySelector(".howitworks--content");
-                const prevResponse = parents[index - 1].querySelector(".howitworks--response");
-                if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
-                if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
-              }
-
-              if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
-              if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
-            },
-            onLeaveBack: () => {
-              if (content) gsap.to(content, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
-              if (response) gsap.to(response, { height: 0, duration: 0.4, ease: "power2.out" });
-
-              if (index > 0 && parents[index - 1]) {
-                const prevContent = parents[index - 1].querySelector(".howitworks--content");
-                const prevResponse = parents[index - 1].querySelector(".howitworks--response");
-                if (prevContent) gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
-                if (prevResponse) gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
-              }
-            },
-          },
-        });
-
-        if (line) {
-          gsap.to(line, {
-            width: "100%",
-            ease: "none",
-            scrollTrigger: { trigger: trigger, start: "top bottom", end: "bottom bottom", scrub: true },
-          });
-        }
-      });
-
-      const section = document.querySelector(".section.is--howworks");
-
-      parents.forEach((parent, index) => {
-        const imgInner = parent.querySelector(".howitworks--img--inner");
-        if (!imgInner) return;
-
-        const base = {
-          yPercent: -10,
-          filter: "blur(0rem)",
-          ease: "none",
-          scrollTrigger: { scrub: true },
-        };
-
-        if (index === 0) {
-          gsap.to(imgInner, {
-            ...base,
-            scrollTrigger: { ...base.scrollTrigger, trigger: section, start: "top bottom", end: "top center" },
-          });
-        } else if (index === 1) {
-          gsap.to(imgInner, {
-            ...base,
-            scrollTrigger: { ...base.scrollTrigger, trigger: triggersParent, start: "top bottom", end: "top center" },
-          });
-        } else if (index === 2) {
-          gsap.to(imgInner, {
-            ...base,
-            scrollTrigger: { ...base.scrollTrigger, trigger: triggersParent, start: "center bottom", end: "center center" },
-          });
-        }
-      });
-    })();
-
-    // --------------------- What Offers Hover Circle --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
-
-      const section = document.querySelector(".section.is--whatoffers");
-      const container = document.querySelector(".relative.is--whatworks");
-      const hoverCircle = document.querySelector(".hover--circle.is--what");
-
-      if (!section || !container || !hoverCircle) return;
-
-      gsap.set(hoverCircle, { opacity: 0 });
-
-      let mouseX = 0;
-      let mouseY = 0;
-      let rafId = null;
-
-      function animate() {
-        gsap.to(hoverCircle, {
-          x: mouseX,
-          y: mouseY,
-          duration: 0.6,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-        rafId = requestAnimationFrame(animate);
-      }
-
-      section.addEventListener("mousemove", function (e) {
-        const rect = container.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
-      });
-
-      section.addEventListener("mouseenter", function () {
-        gsap.to(hoverCircle, { opacity: 0.3, duration: 0.3, ease: "power2.out" });
-        if (!rafId) rafId = requestAnimationFrame(animate);
-      });
-
-      section.addEventListener("mouseleave", function () {
-        gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-      });
-    })();
-
-    // --------------------- Number Counter Animation --------------------- //
-    (function () {
-      if (!hasScrollTrigger() || !hasGSAP()) return;
-
-      const numberCounters = document.querySelectorAll(".number--count");
-      if (numberCounters.length === 0) return;
-
-      numberCounters.forEach((counter) => {
-        const originalText = counter.textContent.trim();
-        const targetNumber = parseInt(originalText, 10);
-        const digitCount = originalText.length;
-
-        if (isNaN(targetNumber)) return;
-
-        counter.setAttribute("data-target", targetNumber);
-        const targetString = targetNumber.toString().padStart(digitCount, "0");
-
-        let html = "";
-        for (let i = 0; i < digitCount; i++) {
-          const targetDigit = parseInt(targetString[i], 10);
-          let columnHTML = "";
-
-          const startDigit = (targetDigit + 1) % 10;
-          for (let j = 0; j < 10; j++) {
-            const digit = (startDigit + j) % 10;
-            columnHTML += `<span class="digit-item">${digit}</span>`;
-          }
-
-          html += `<span class="digit-wrapper"><span class="digit-column">${columnHTML}</span></span>`;
-        }
-
-        counter.innerHTML = html;
-
-        ScrollTrigger.create({
-          trigger: counter,
+  parents.forEach((parent, index) => {
+    const img = parent.querySelector(".howitworks--img");
+    if (img) {
+      const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      gsap.to(img, {
+        yPercent: finalYPercent[index],
+        y: remInPx,
+        ease: "none",
+        scrollTrigger: {
+          trigger: triggersParent,
           start: "top bottom",
-          once: true,
-          onEnter: () => {
-            const columns = counter.querySelectorAll(".digit-column");
-            columns.forEach((column, index) => {
-              gsap.fromTo(
-                column,
-                { y: "0em" },
-                { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
-              );
-            });
-          },
-        });
+          end: "bottom bottom",
+          scrub: true,
+        },
       });
-    })();
+    }
 
-    // --------------------- Footer Accordion (Mobile) --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+    const imgInner = parent.querySelector(".howitworks--img--inner");
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
+  });
 
-      function initFooterAccordion() {
-        if (window.innerWidth >= 992) return;
+  triggers.forEach((trigger, index) => {
+    const parent = parents[index];
+    if (!parent) return;
 
-        const titleParents = document.querySelectorAll(".footer--title-parent");
-        if (titleParents.length === 0) return;
+    const content = parent.querySelector(".howitworks--content");
+    const response = parent.querySelector(".howitworks--response");
+    const line = parent.querySelector(".howitworks--line");
 
-        let activeParent = null;
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: trigger,
+        start: "top bottom",
+        onEnter: () => {
+          if (index > 0 && parents[index - 1]) {
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
+            if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
+          }
 
-        titleParents.forEach((titleParent) => {
-          const column = titleParent.closest(".footer--column");
-          if (!column) return;
+          if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
+          if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
+        },
+        onLeaveBack: () => {
+          if (content) gsap.to(content, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+          if (response) gsap.to(response, { height: 0, duration: 0.4, ease: "power2.out" });
 
-          const inner = column.querySelector(".footer--inner");
-          const icon = titleParent.querySelector(".footer-title-icon");
-          if (!inner) return;
+          if (index > 0 && parents[index - 1]) {
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
+            if (prevContent) gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
+          }
+        },
+      },
+    });
 
-          gsap.set(inner, { height: 0, overflow: "hidden" });
-          if (icon) gsap.set(icon, { rotation: 0 });
+    if (line) {
+      gsap.to(line, {
+        width: "100%",
+        ease: "none",
+        scrollTrigger: {
+          trigger: trigger,
+          start: "top bottom",
+          end: "bottom bottom",
+          scrub: true,
+        },
+      });
+    }
+  });
 
-          titleParent.addEventListener("click", () => {
-            const isActive = activeParent === titleParent;
+  const section = document.querySelector(".section.is--howworks");
 
-            if (activeParent && activeParent !== titleParent) {
-              const prevColumn = activeParent.closest(".footer--column");
-              const prevInner = prevColumn.querySelector(".footer--inner");
-              const prevIcon = activeParent.querySelector(".footer-title-icon");
+  parents.forEach((parent, index) => {
+    const imgInner = parent.querySelector(".howitworks--img--inner");
+    if (!imgInner) return;
 
-              gsap.to(prevInner, { height: 0, duration: 0.3, ease: "power2.out" });
-              if (prevIcon) gsap.to(prevIcon, { rotation: 0, duration: 0.3, ease: "power2.out" });
-            }
+    if (index === 0) {
+      gsap.to(imgInner, {
+        yPercent: -10,
+        filter: "blur(0rem)",
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
+        },
+      });
+    } else if (index === 1) {
+      gsap.to(imgInner, {
+        yPercent: -10,
+        filter: "blur(0rem)",
+        ease: "none",
+        scrollTrigger: {
+          trigger: triggersParent,
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
+        },
+      });
+    } else if (index === 2) {
+      gsap.to(imgInner, {
+        yPercent: -10,
+        filter: "blur(0rem)",
+        ease: "none",
+        scrollTrigger: {
+          trigger: triggersParent,
+          start: "center bottom",
+          end: "center center",
+          scrub: true,
+        },
+      });
+    }
+  });
+})();
 
-            if (isActive) {
-              gsap.to(inner, { height: 0, duration: 0.3, ease: "power2.out" });
-              if (icon) gsap.to(icon, { rotation: 0, duration: 0.3, ease: "power2.out" });
-              activeParent = null;
-            } else {
-              gsap.to(inner, { height: "auto", duration: 0.3, ease: "power2.out" });
-              if (icon) gsap.to(icon, { rotation: 180, duration: 0.3, ease: "power2.out" });
-              activeParent = titleParent;
-            }
-          });
-        });
+// --------------------- What Offers Hover Circle --------------------- //
+(function () {
+  const section = document.querySelector(".section.is--whatoffers");
+  const container = document.querySelector(".relative.is--whatworks");
+  const hoverCircle = document.querySelector(".hover--circle.is--what");
+  if (!section || !container || !hoverCircle) return;
+
+  gsap.set(hoverCircle, { opacity: 0 });
+
+  let mouseX = 0;
+  let mouseY = 0;
+
+  section.addEventListener("mousemove", function (e) {
+    const rect = container.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  });
+
+  section.addEventListener("mouseenter", function () {
+    gsap.to(hoverCircle, { opacity: 0.3, duration: 0.3, ease: "power2.out" });
+  });
+
+  section.addEventListener("mouseleave", function () {
+    gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
+  });
+
+  gsap.ticker.add(() => {
+    gsap.to(hoverCircle, {
+      x: mouseX,
+      y: mouseY,
+      duration: 0.6,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  });
+})();
+
+// --------------------- Number Counter Animation --------------------- //
+(function () {
+  console.log("Number counter script running...");
+  const numberCounters = document.querySelectorAll(".number--count");
+  console.log("Found counters:", numberCounters.length);
+
+  if (numberCounters.length === 0) {
+    console.log("No .number--count elements found");
+    return;
+  }
+
+  if (typeof ScrollTrigger === "undefined") {
+    console.error("ScrollTrigger is not loaded");
+    return;
+  }
+
+  console.log("ScrollTrigger is available");
+
+  numberCounters.forEach((counter, idx) => {
+    const originalText = counter.textContent.trim();
+    console.log(`Counter ${idx}: "${originalText}"`);
+    const targetNumber = parseInt(originalText);
+    const digitCount = originalText.length;
+
+    if (isNaN(targetNumber)) {
+      console.log(`Counter ${idx} is NaN, skipping`);
+      return;
+    }
+
+    counter.setAttribute("data-target", targetNumber);
+    const targetString = targetNumber.toString().padStart(digitCount, "0");
+
+    let html = "";
+    for (let i = 0; i < digitCount; i++) {
+      const targetDigit = parseInt(targetString[i]);
+      let columnHTML = "";
+
+      const startDigit = (targetDigit + 1) % 10;
+
+      for (let j = 0; j < 10; j++) {
+        const digit = (startDigit + j) % 10;
+        columnHTML += `<span class="digit-item">${digit}</span>`;
       }
 
-      initFooterAccordion();
+      html += `<span class="digit-wrapper"><span class="digit-column">${columnHTML}</span></span>`;
+    }
 
-      let wasMobile = window.innerWidth < 992;
-      window.addEventListener("resize", () => {
-        const isMobile = window.innerWidth < 992;
-        if (isMobile !== wasMobile) {
-          wasMobile = isMobile;
+    counter.innerHTML = html;
 
-          if (isMobile) {
-            initFooterAccordion();
-          } else {
-            const footerInners = document.querySelectorAll(".footer--inner");
-            const footerIcons = document.querySelectorAll(".footer-title-icon");
+    ScrollTrigger.create({
+      trigger: counter,
+      start: "top bottom",
+      once: true,
+      onEnter: () => {
+        const columns = counter.querySelectorAll(".digit-column");
 
-            footerInners.forEach((inner) => gsap.set(inner, { height: "auto", overflow: "visible" }));
-            footerIcons.forEach((icon) => gsap.set(icon, { rotation: 0 }));
-          }
+        columns.forEach((column, index) => {
+          gsap.fromTo(
+            column,
+            { y: "0em" },
+            {
+              y: "-9em",
+              duration: 2,
+              ease: "power2.out",
+              delay: 0.4 + index * 0.1,
+            }
+          );
+        });
+      },
+    });
+  });
+})();
+
+// --------------------- Footer Accordion (Mobile) --------------------- //
+(function () {
+  function initFooterAccordion() {
+    if (window.innerWidth >= 992) return;
+
+    const titleParents = document.querySelectorAll(".footer--title-parent");
+    if (titleParents.length === 0) return;
+
+    let activeParent = null;
+
+    titleParents.forEach((titleParent) => {
+      const column = titleParent.closest(".footer--column");
+      if (!column) return;
+
+      const inner = column.querySelector(".footer--inner");
+      const icon = titleParent.querySelector(".footer-title-icon");
+      if (!inner) return;
+
+      gsap.set(inner, { height: 0, overflow: "hidden" });
+      if (icon) gsap.set(icon, { rotation: 0 });
+
+      titleParent.addEventListener("click", () => {
+        const isActive = activeParent === titleParent;
+
+        if (activeParent && activeParent !== titleParent) {
+          const prevColumn = activeParent.closest(".footer--column");
+          const prevInner = prevColumn.querySelector(".footer--inner");
+          const prevIcon = activeParent.querySelector(".footer-title-icon");
+
+          gsap.to(prevInner, { height: 0, duration: 0.3, ease: "power2.out" });
+          if (prevIcon) gsap.to(prevIcon, { rotation: 0, duration: 0.3, ease: "power2.out" });
+        }
+
+        if (isActive) {
+          gsap.to(inner, { height: 0, duration: 0.3, ease: "power2.out" });
+          if (icon) gsap.to(icon, { rotation: 0, duration: 0.3, ease: "power2.out" });
+          activeParent = null;
+        } else {
+          gsap.to(inner, { height: "auto", duration: 0.3, ease: "power2.out" });
+          if (icon) gsap.to(icon, { rotation: 180, duration: 0.3, ease: "power2.out" });
+          activeParent = titleParent;
         }
       });
-    })();
+    });
+  }
 
-    // --------------------- Button Hover Animation --------------------- //
-    (function () {
-      if (!hasGSAP()) return;
+  initFooterAccordion();
 
-      const buttons = document.querySelectorAll(".btn");
-      if (buttons.length === 0) return;
+  let wasMobile = window.innerWidth < 992;
+  window.addEventListener("resize", () => {
+    const isMobile = window.innerWidth < 992;
+    if (isMobile !== wasMobile) {
+      wasMobile = isMobile;
 
-      buttons.forEach((btn) => {
-        const hoverClose = btn.querySelector(".hover--close");
-        const hoverOpen = btn.querySelector(".hover--open");
-        if (!hoverClose || !hoverOpen) return;
+      if (isMobile) {
+        initFooterAccordion();
+      } else {
+        const footerInners = document.querySelectorAll(".footer--inner");
+        const footerIcons = document.querySelectorAll(".footer-title-icon");
 
-        gsap.set(hoverClose, { width: "auto" });
-        gsap.set(hoverOpen, { width: 0 });
+        footerInners.forEach((inner) => gsap.set(inner, { height: "auto", overflow: "visible" }));
+        footerIcons.forEach((icon) => gsap.set(icon, { rotation: 0 }));
+      }
+    }
+  });
+})();
 
-        btn.addEventListener("mouseenter", function () {
-          gsap.to(hoverClose, { width: 0, duration: 0.3, ease: "power2.out" });
-          gsap.to(hoverOpen, { width: "auto", duration: 0.3, ease: "power2.out" });
-        });
+// --------------------- Button Hover Animation --------------------- //
+(function () {
+  const buttons = document.querySelectorAll(".btn");
+  if (buttons.length === 0) return;
 
-        btn.addEventListener("mouseleave", function () {
-          gsap.to(hoverClose, { width: "auto", duration: 0.3, ease: "power2.out" });
-          gsap.to(hoverOpen, { width: 0, duration: 0.3, ease: "power2.out" });
-        });
-      });
-    })();
+  buttons.forEach((btn) => {
+    const hoverClose = btn.querySelector(".hover--close");
+    const hoverOpen = btn.querySelector(".hover--open");
+    if (!hoverClose || !hoverOpen) return;
+
+    gsap.set(hoverClose, { width: "auto" });
+    gsap.set(hoverOpen, { width: 0 });
+
+    btn.addEventListener("mouseenter", function () {
+      gsap.to(hoverClose, { width: 0, duration: 0.3, ease: "power2.out" });
+      gsap.to(hoverOpen, { width: "auto", duration: 0.3, ease: "power2.out" });
+    });
+
+    btn.addEventListener("mouseleave", function () {
+      gsap.to(hoverClose, { width: "auto", duration: 0.3, ease: "power2.out" });
+      gsap.to(hoverOpen, { width: 0, duration: 0.3, ease: "power2.out" });
+    });
   });
 })();

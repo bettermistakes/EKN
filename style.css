@@ -186,33 +186,29 @@ body {
   transform: scale(1);
 }
 
-/* --------------------- Offer Slide Styles --------------------- */
+/* --------------------- ✅ Offer Slide Styles (FIXED: display + pointer-events) --------------------- */
 @media (min-width: 992px) {
   .offer--slide {
     cursor: pointer;
     transition: opacity 0.25s ease;
   }
 
-  .offer--slide-icon {
+  /* IMPORTANT:
+     hide inactive content with display:none so it cannot intercept hover/click.
+     JS/GSAP will toggle display for active slide.
+  */
+  .offer--slide-icon,
+  .offer--slide-content {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
     will-change: transform, opacity;
   }
 
-  .offer--slide-content {
-    will-change: opacity;
-  }
-
-  /* ✅ FIX: force arrow visibility even if GSAP sets inline styles */
-  .offer--slide-icon {
-    opacity: 0 !important;
-    transform: translateX(-1rem) !important;
-    transition: opacity 280ms ease, transform 280ms ease;
-    pointer-events: none;
-  }
-
-  .offer--slide:hover .offer--slide-icon,
-  .offer--slide.is-active .offer--slide-icon {
-    opacity: 1 !important;
-    transform: translateX(0rem) !important;
+  .offer--slide.is-active .offer--slide-icon,
+  .offer--slide.is-active .offer--slide-content {
+    display: block;
+    pointer-events: auto;
   }
 }
 
