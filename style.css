@@ -1,117 +1,51 @@
 /* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
 
-body {
-  opacity: 0;
-}
+body { opacity: 0; }
 
 /* --------------------- Navbar Scroll Styles --------------------- */
-.navbar {
-  transition: transform 0.3s ease-in-out;
-  z-index: 1000;
-}
-
-.navbar--bg {
-  transition: opacity 0.3s ease-in-out;
-  will-change: background-color, border-bottom-color;
-}
+.navbar { transition: transform 0.3s ease-in-out; z-index: 1000; }
+.navbar--bg { transition: opacity 0.3s ease-in-out; will-change: background-color, border-bottom-color; }
 
 /* --------------------- Navbar Dropdown Styles --------------------- */
-.navbar--dropdown {
-  position: relative;
-}
-
-.navbar--dropdown-trigger {
-  cursor: pointer;
-}
+.navbar--dropdown { position: relative; }
+.navbar--dropdown-trigger { cursor: pointer; }
 
 @media (min-width: 992px) {
-  .navbar--dropdown-trigger {
-    will-change: color;
-  }
-
-  .navlink .dropdown--line {
-    will-change: width;
-  }
-
-  .dropdown--line {
-    will-change: width;
-  }
+  .navbar--dropdown-trigger { will-change: color; }
+  .navlink .dropdown--line { will-change: width; }
+  .dropdown--line { will-change: width; }
 }
 
-.navbar--dropdown-list {
-  overflow: auto;
-  will-change: height;
-}
-
-.btn.is--nav {
-  will-change: background-color, color;
-}
+.navbar--dropdown-list { overflow: auto; will-change: height; }
+.btn.is--nav { will-change: background-color, color; }
 
 /* --------------------- Navbar Solution Items Hover (Desktop) --------------------- */
 @media (min-width: 992px) {
-  .navbar--solution-item {
-    cursor: pointer;
-    will-change: opacity;
-  }
-
-  .solution--svg-item {
-    will-change: opacity, transform;
-  }
-
-  .navbar--solution-item .paragraph-small-130 {
-    will-change: opacity, transform;
-  }
+  .navbar--solution-item { cursor: pointer; will-change: opacity; }
+  .solution--svg-item { will-change: opacity, transform; }
+  .navbar--solution-item .paragraph-small-130 { will-change: opacity, transform; }
 }
 
 /* --------------------- Resource Links Hover (Desktop) --------------------- */
 @media (min-width: 992px) {
-  .resource--link {
-    cursor: pointer;
-    will-change: opacity;
-  }
-
-  .resource--link-svg {
-    will-change: opacity, transform;
-  }
+  .resource--link { cursor: pointer; will-change: opacity; }
+  .resource--link-svg { will-change: opacity, transform; }
 }
 
 /* --------------------- Mobile Navbar Dropdown Styles --------------------- */
 @media (max-width: 991px) {
-  .navbar--dropdown-trigger {
-    cursor: pointer;
-  }
-
-  .navbar--dropdown-list {
-    will-change: transform;
-  }
-
-  .navbar--dropdown-bg {
-    will-change: opacity;
-  }
-
-  .navbar--goback {
-    cursor: pointer;
-  }
+  .navbar--dropdown-trigger { cursor: pointer; }
+  .navbar--dropdown-list { will-change: transform; }
+  .navbar--dropdown-bg { will-change: opacity; }
+  .navbar--goback { cursor: pointer; }
 }
 
 /* --------------------- Mobile Hamburger Menu Styles --------------------- */
 @media (max-width: 991px) {
-  .menu--trigger {
-    cursor: pointer;
-  }
-
-  .menu--open,
-  .menu--close {
-    will-change: opacity;
-  }
-
-  .navbar-menu--inner {
-    will-change: transform;
-  }
-
-  [animate="navbar"] {
-    will-change: opacity, transform;
-  }
+  .menu--trigger { cursor: pointer; }
+  .menu--open, .menu--close { will-change: opacity; }
+  .navbar-menu--inner { will-change: transform; }
+  [animate="navbar"] { will-change: opacity, transform; }
 }
 
 /* --------------------- Eyebrow Animation Styles --------------------- */
@@ -121,48 +55,33 @@ body {
   display: inline-block;
   white-space: nowrap;
 }
-
 [animation="eyebrow"] .char {
   display: inline-block;
   letter-spacing: 0.05em;
   will-change: transform, opacity;
 }
-
 [animation="eyebrow"] .space {
   display: inline-block;
   white-space: pre;
 }
 
 /* --------------------- ✅ HERO IMAGE SWITCH STYLES (SMOOTH) --------------------- */
-.section.is--home-hero {
-  position: relative;
-}
+.section.is--home-hero { position: relative; }
 
-/* Base: all hero imgs are hidden by default */
 .section.is--home-hero img.absolute--img[image] {
   position: absolute;
   inset: 0;
   opacity: 0;
   transition: opacity 450ms ease;
   will-change: opacity;
-}
-
-/* Active */
-.section.is--home-hero img.absolute--img.is-active {
-  opacity: 1;
-}
-
-/* Optional: reduce flicker on some browsers */
-.section.is--home-hero img.absolute--img[image] {
   backface-visibility: hidden;
   transform: translateZ(0);
 }
 
+.section.is--home-hero img.absolute--img.is-active { opacity: 1; }
+
 /* --------------------- Hover Circle Styles --------------------- */
-.trusted--logo-parent {
-  position: relative;
-  overflow: hidden;
-}
+.trusted--logo-parent { position: relative; overflow: hidden; }
 
 .hover--circle {
   position: absolute;
@@ -177,21 +96,12 @@ body {
   left: 0;
 }
 
-.lines {
-  position: relative;
-  overflow: hidden;
-}
+.lines { position: relative; overflow: hidden; }
+.hover--circle.is--100 { transform: scale(1); }
 
-.hover--circle.is--100 {
-  transform: scale(1);
-}
-
-/* --------------------- ✅ Offer Slide Styles (DESKTOP - keep original display/position) --------------------- */
+/* --------------------- ✅ Offer Slide Styles (DESKTOP - FIXED parent absolute) --------------------- */
 @media (min-width: 992px) {
-  .offer--slide {
-    cursor: pointer;
-    transition: opacity 0.25s ease;
-  }
+  .offer--slide { cursor: pointer; transition: opacity 0.25s ease; }
 
   .offer--slide-icon,
   .offer--slide-content {
@@ -208,115 +118,57 @@ body {
     pointer-events: auto;
   }
 
-  .section.is--home-offers .offers-slider {
-    position: relative;
-  }
+  .section.is--home-offers .offers-slider { position: relative; }
+  .section.is--home-offers .offer--slide { position: relative; }
 
-  .section.is--home-offers .offer--slide {
-    position: relative;
-  }
-
+  /* ✅ REQUIRED BY YOU (as per screenshot): parent is ABSOLUTE + Fill */
   .section.is--home-offers .offer--slide-content-parent {
-    position: relative;
+    position: absolute;
+    inset: 0;
     z-index: 1;
   }
 
+  /* child content stays absolute too */
   .section.is--home-offers .offer--slide-content {
     position: absolute;
     inset: 0;
     z-index: 1;
   }
 
-  .section.is--home-offers .offer--slide.is-active .offer--slide-content {
-    z-index: 5;
-  }
+  .section.is--home-offers .offer--slide.is-active .offer--slide-content { z-index: 5; }
 }
 
 @media (max-width: 991px) {
-  .offer-slider-btn {
-    cursor: pointer;
-  }
+  .offer-slider-btn { cursor: pointer; }
+  .offer-slider-btn.swiper-button-disabled { opacity: 0.5; pointer-events: none; }
 
-  .offer-slider-btn.swiper-button-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
+  .offers-slider { transition: margin 0.5s ease-in-out; }
+  .offers-slider.is--first { margin-left: 0; margin-right: 0; }
+  .offers-slider.is--middle { margin-left: auto; margin-right: auto; }
+  .offers-slider.is--last { margin-left: auto; margin-right: 0; }
 
-  .offers-slider {
-    transition: margin 0.5s ease-in-out;
-  }
-
-  .offers-slider.is--first {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .offers-slider.is--middle {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .offers-slider.is--last {
-    margin-left: auto;
-    margin-right: 0;
-  }
-
-  .offers-slider .swiper-slide {
-    width: 78.66vw;
-  }
+  .offers-slider .swiper-slide { width: 78.66vw; }
 }
 
 /* --------------------- How It Works Scroll Animation Styles --------------------- */
 @media (min-width: 992px) {
-  .howitworks--content {
-    will-change: opacity;
-  }
-
-  .howitworks--response {
-    overflow: hidden;
-    will-change: height;
-  }
-
-  .howitworks--line {
-    will-change: width;
-  }
-
-  .howitworks--img {
-    will-change: transform;
-  }
-
-  .howitworks--img--inner {
-    will-change: transform, filter;
-  }
+  .howitworks--content { will-change: opacity; }
+  .howitworks--response { overflow: hidden; will-change: height; }
+  .howitworks--line { will-change: width; }
+  .howitworks--img { will-change: transform; }
+  .howitworks--img--inner { will-change: transform, filter; }
 }
 
 @media (max-width: 991px) {
-  .howitworks--content {
-    opacity: 1 !important;
-  }
-
-  .howitworks--response {
-    height: auto !important;
-  }
-
-  .howitworks--line {
-    width: 100% !important;
-  }
-
-  .howitworks--img {
-    transform: none !important;
-  }
-
-  .howitworks--img--inner {
-    transform: none !important;
-  }
+  .howitworks--content { opacity: 1 !important; }
+  .howitworks--response { height: auto !important; }
+  .howitworks--line { width: 100% !important; }
+  .howitworks--img { transform: none !important; }
+  .howitworks--img--inner { transform: none !important; }
 }
 
 /* --------------------- What Offers Hover Circle Styles --------------------- */
-.relative.is--whatworks {
-  position: relative;
-  overflow: hidden;
-}
+.relative.is--whatworks { position: relative; overflow: hidden; }
 
 .hover--circle.is--what {
   position: absolute;
@@ -328,65 +180,24 @@ body {
 }
 
 /* --------------------- Number Counter Animation Styles --------------------- */
-.number--count {
-  display: inline-flex;
-}
-
-.digit-wrapper {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: top;
-}
-
-.digit {
-  display: inline-block;
-}
-
-.digit-column {
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-}
-
-.digit-item {
-  display: block;
-  line-height: 1;
-}
+.number--count { display: inline-flex; }
+.digit-wrapper { display: inline-block; overflow: hidden; vertical-align: top; }
+.digit-column { display: flex; flex-direction: column; will-change: transform; }
+.digit-item { display: block; line-height: 1; }
 
 /* --------------------- Footer Accordion (Mobile) --------------------- */
 @media (max-width: 991px) {
-  .footer--title-parent {
-    cursor: pointer;
-  }
-
-  .footer--inner {
-    overflow: hidden;
-  }
-
-  .footer-title-icon {
-    transition: transform 0.3s ease;
-    will-change: transform;
-  }
+  .footer--title-parent { cursor: pointer; }
+  .footer--inner { overflow: hidden; }
+  .footer-title-icon { transition: transform 0.3s ease; will-change: transform; }
 }
 
 /* --------------------- Button Hover Animation Styles --------------------- */
-.btn {
-  cursor: pointer;
-}
-
-.hover--close,
-.hover--open {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  will-change: width;
-}
+.btn { cursor: pointer; }
+.hover--close, .hover--open { display: inline-block; overflow: hidden; white-space: nowrap; will-change: width; }
 
 /* =========================================================
    ✅ WHAT EKN OFFERS — Maintain screenshot display
-   - Left list dims siblings
-   - Active item shows copy + arrow
-   - Right card stays sticky and clickable
 ========================================================= */
 @media (min-width: 992px) {
   .section.is--whatoffers .whatoffers--right {
@@ -395,22 +206,15 @@ body {
     transform: translateY(-50%);
   }
 
-  /* Item base state = dim */
   .section.is--whatoffers .whatoffers--item {
     cursor: pointer;
     transition: opacity 0.25s ease;
     will-change: opacity;
   }
 
-  .section.is--whatoffers .whatoffers--item.is-dimmed {
-    opacity: 0.35;
-  }
+  .section.is--whatoffers .whatoffers--item.is-dimmed { opacity: 0.35; }
+  .section.is--whatoffers .whatoffers--item.is-active { opacity: 1; }
 
-  .section.is--whatoffers .whatoffers--item.is-active {
-    opacity: 1;
-  }
-
-  /* Copy + arrow hidden by default */
   .section.is--whatoffers .whatoffers--copy,
   .section.is--whatoffers .whatoffers--arrow {
     opacity: 0;
@@ -420,11 +224,8 @@ body {
     will-change: opacity, transform;
   }
 
-  .section.is--whatoffers .whatoffers--arrow {
-    transform: translateX(-0.4rem);
-  }
+  .section.is--whatoffers .whatoffers--arrow { transform: translateX(-0.4rem); }
 
-  /* Active shows them */
   .section.is--whatoffers .whatoffers--item.is-active .whatoffers--copy,
   .section.is--whatoffers .whatoffers--item.is-active .whatoffers--arrow {
     opacity: 1;
@@ -432,11 +233,8 @@ body {
     pointer-events: auto;
   }
 
-  .section.is--whatoffers .whatoffers--item.is-active .whatoffers--arrow {
-    transform: translateX(0);
-  }
+  .section.is--whatoffers .whatoffers--item.is-active .whatoffers--arrow { transform: translateX(0); }
 
-  /* Nice smoothing for right card swaps */
   .section.is--whatoffers .whatoffers--card-img {
     transition: opacity 350ms ease;
     will-change: opacity;
