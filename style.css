@@ -99,14 +99,17 @@ body { opacity: 0; }
 .lines { position: relative; overflow: hidden; }
 .hover--circle.is--100 { transform: scale(1); }
 
-/* --------------------- ✅ Offer Slide Styles (DESKTOP - FIXED parent absolute) --------------------- */
+/* --------------------- ✅ Offer Slide Styles (DESKTOP - FIXED without breaking inner layout) --------------------- */
 @media (min-width: 992px) {
-  .offer--slide { cursor: pointer; transition: opacity 0.25s ease; }
+  .offer--slide {
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+    will-change: opacity;
+  }
 
   .offer--slide-icon,
   .offer--slide-content {
     opacity: 0;
-    visibility: hidden;
     pointer-events: none;
     will-change: transform, opacity;
   }
@@ -114,24 +117,23 @@ body { opacity: 0; }
   .offer--slide.is-active .offer--slide-icon,
   .offer--slide.is-active .offer--slide-content {
     opacity: 1;
-    visibility: visible;
     pointer-events: auto;
   }
 
   .section.is--home-offers .offers-slider { position: relative; }
   .section.is--home-offers .offer--slide { position: relative; }
 
-  /* ✅ REQUIRED BY YOU (as per screenshot): parent is ABSOLUTE + Fill */
+  /* ✅ REQUIRED BY YOU: parent is ABSOLUTE + Fill */
   .section.is--home-offers .offer--slide-content-parent {
     position: absolute;
     inset: 0;
     z-index: 1;
   }
 
-  /* child content stays absolute too */
+  /* ✅ IMPORTANT: keep internal structure intact */
   .section.is--home-offers .offer--slide-content {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    inset: auto;
     z-index: 1;
   }
 

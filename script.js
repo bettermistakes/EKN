@@ -108,9 +108,7 @@ $(window).on("load", function () {
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
 
-    navButtons.forEach((btn) => {
-      gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
-    });
+    navButtons.forEach((btn) => gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" }));
   }
 
   dropdowns.forEach((dropdown) => {
@@ -478,9 +476,7 @@ $(window).on("load", function () {
 
     if (navbarBg) gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
 
-    navButtons.forEach((btn) => {
-      gsap.to(btn, { backgroundColor: "#040a44", color: "#f2f3f6", duration: 0.3, ease: "power4.out" });
-    });
+    navButtons.forEach((btn) => gsap.to(btn, { backgroundColor: "#040a44", color: "#f2f3f6", duration: 0.3, ease: "power4.out" }));
 
     isMenuOpen = true;
   }
@@ -504,12 +500,9 @@ $(window).on("load", function () {
     gsap.set(menuItems, { opacity: 0, y: "1rem" });
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
     if (navbarBg) gsap.to(navbarBg, { backgroundColor: "", duration: 0.3, ease: "power4.out" });
 
-    navButtons.forEach((btn) => {
-      gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
-    });
+    navButtons.forEach((btn) => gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" }));
 
     isMenuOpen = false;
   }
@@ -518,7 +511,6 @@ $(window).on("load", function () {
     if (window.innerWidth >= 992) return;
 
     if (typeof window.closeMobileDropdown === "function") window.closeMobileDropdown();
-
     if (isMenuOpen) closeMenu();
     else openMenu();
   });
@@ -539,8 +531,10 @@ $(window).on("load", function () {
         gsap.set(menuOpen, { opacity: 1 });
         gsap.set(menuClose, { opacity: 0 });
         gsap.set(menuInner, { display: "", x: "0vw" });
+
         const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
         gsap.set(menuItems, { opacity: 1, y: "0rem" });
+
         document.body.style.overflow = "";
         isMenuOpen = false;
       }
@@ -610,7 +604,6 @@ $(window).on("load", function () {
     if (!currentSplit) currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
 
     const oldChars = currentSplit.chars;
-
     gsap.to(oldChars, { yPercent: -100, opacity: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" });
 
     const tempDiv = document.createElement("div");
@@ -795,7 +788,6 @@ $(window).on("load", function () {
     if (!offerSlides.length) return;
 
     desktopInited = true;
-
     let activeSlide = null;
 
     function applyOff(slide) {
@@ -807,11 +799,11 @@ $(window).on("load", function () {
 
       if (icon) {
         gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-        gsap.set(icon, { visibility: "hidden", pointerEvents: "none" });
+        icon.style.pointerEvents = "none";
       }
       if (content) {
         gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-        gsap.set(content, { visibility: "hidden", pointerEvents: "none" });
+        content.style.pointerEvents = "none";
       }
     }
 
@@ -823,17 +815,17 @@ $(window).on("load", function () {
       gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
 
       if (icon) {
-        gsap.set(icon, { visibility: "visible", pointerEvents: "auto" });
+        icon.style.pointerEvents = "auto";
         gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
       }
       if (content) {
-        gsap.set(content, { visibility: "visible", pointerEvents: "auto" });
+        content.style.pointerEvents = "auto";
         gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
       }
     }
 
     function setActive(slide) {
-      offerSlides.forEach((s) => s !== slide && applyOff(s));
+      offerSlides.forEach((s) => { if (s !== slide) applyOff(s); });
       applyOn(slide);
       activeSlide = slide;
     }
@@ -841,9 +833,14 @@ $(window).on("load", function () {
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+
       gsap.set(slide, { opacity: 0.3 });
-      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
-      if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
+      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
+      if (content) gsap.set(content, { opacity: 0 });
+
+      if (icon) icon.style.pointerEvents = "none";
+      if (content) content.style.pointerEvents = "none";
+
       slide.classList.remove("is-active");
     });
 
@@ -874,7 +871,7 @@ $(window).on("load", function () {
     if (typeof Swiper === "undefined") return;
 
     destroySwiperIfAny();
-    desktopInited = false; // reset desktop init when switching modes
+    desktopInited = false;
 
     swiperInstance = new Swiper(".offers-slider", {
       slidesPerView: "auto",
