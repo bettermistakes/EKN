@@ -942,6 +942,9 @@ $(window).on("load", function () {
     const offerSlides = document.querySelectorAll(".offer--slide");
     if (offerSlides.length === 0) return;
 
+    const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
+    const sliderWrapper = document.querySelector(".offers-slider");
+
     let activeSlide = null;
 
     function applyVisibility(slide, isActive) {
@@ -975,6 +978,8 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       offerSlides.forEach((s) => s.classList.remove("is-active"));
+      if (firstSlide) firstSlide.classList.remove("is-active");
+
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
@@ -991,7 +996,7 @@ $(window).on("load", function () {
       activeSlide = slide;
     }
 
-    // Init (inactive)
+    // Init inactive for all .offer--slide
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1004,9 +1009,15 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    if (offerSlides[0]) setActive(offerSlides[0]);
+    // ✅ Default active = first slide (is--offer-first)
+    if (firstSlide) {
+      gsap.set(firstSlide, { opacity: 1 });
+      firstSlide.classList.add("is-active");
+      applyVisibility(firstSlide, true);
+      activeSlide = firstSlide;
+    }
 
-    // Hover target: the <a> layer
+    // Hover to activate other slides
     offerSlides.forEach((slide) => {
       const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
 
@@ -1015,6 +1026,14 @@ $(window).on("load", function () {
         setActive(slide);
       });
     });
+
+    // ✅ Reset to first slide when leaving the slider area
+    if (sliderWrapper && firstSlide) {
+      sliderWrapper.addEventListener("mouseleave", () => {
+        if (activeSlide && activeSlide !== firstSlide) setInactive(activeSlide);
+        setActive(firstSlide);
+      });
+    }
   }
 
   // Mobile slider functionality
