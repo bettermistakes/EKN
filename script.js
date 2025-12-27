@@ -939,11 +939,11 @@ $(window).on("load", function () {
   function initOfferSlides() {
     if (window.innerWidth <= 992) return;
 
-    const offerSlides = document.querySelectorAll(".offer--slide");
-    if (offerSlides.length === 0) return;
+    const offerSlidesAll = document.querySelectorAll(".swiper-slide");
+    if (offerSlidesAll.length === 0) return;
 
+    const offerSlides = document.querySelectorAll(".swiper-slide.offer--slide");
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
-    const sliderWrapper = document.querySelector(".offers-slider");
 
     let activeSlide = null;
 
@@ -977,7 +977,10 @@ $(window).on("load", function () {
     }
 
     function setActive(slide) {
+      // remove active from all “offer--slide” slides
       offerSlides.forEach((s) => s.classList.remove("is-active"));
+
+      // also remove active from first slide if exists
       if (firstSlide) firstSlide.classList.remove("is-active");
 
       slide.classList.add("is-active");
@@ -996,7 +999,7 @@ $(window).on("load", function () {
       activeSlide = slide;
     }
 
-    // Init inactive for all .offer--slide
+    // Init: set all offer--slide slides inactive visually
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1009,29 +1012,60 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // ✅ Default active = first slide (is--offer-first)
+    // ✅ Default active: show first slide (is--offer-first) if present
     if (firstSlide) {
-      gsap.set(firstSlide, { opacity: 1 });
+      const icon = firstSlide.querySelector(".offer--slide-icon");
+      const content = firstSlide.querySelector(".offer--slide-content");
+      const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
+
       firstSlide.classList.add("is-active");
+      gsap.set(firstSlide, { opacity: 1 });
+
       applyVisibility(firstSlide, true);
+
+      // Force visible state (in case any init code set it hidden)
+      if (icon) gsap.set(icon, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
+      if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
+      if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
+
       activeSlide = firstSlide;
     }
 
-    // Hover to activate other slides
+    // Hover: hover on offer--slide titles activates that slide
     offerSlides.forEach((slide) => {
       const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
 
       hoverTarget.addEventListener("mouseenter", function () {
+        // if first slide was active, dim it
         if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
         setActive(slide);
       });
     });
 
-    // ✅ Reset to first slide when leaving the slider area
-    if (sliderWrapper && firstSlide) {
-      sliderWrapper.addEventListener("mouseleave", () => {
-        if (activeSlide && activeSlide !== firstSlide) setInactive(activeSlide);
-        setActive(firstSlide);
+    // ✅ If leaving the whole slider area, revert to first slide
+    const wrapper = document.querySelector(".offer-sliders-wrapper");
+    if (wrapper && firstSlide) {
+      wrapper.addEventListener("mouseleave", function () {
+        // make all offer slides inactive
+        offerSlides.forEach((s) => {
+          if (s !== firstSlide) setInactive(s);
+        });
+
+        // reset first slide visible
+        const icon = firstSlide.querySelector(".offer--slide-icon");
+        const content = firstSlide.querySelector(".offer--slide-content");
+        const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
+
+        firstSlide.classList.add("is-active");
+        gsap.to(firstSlide, { opacity: 1, duration: 0.25, ease: "power2.out" });
+
+        applyVisibility(firstSlide, true);
+
+        if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
+        if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
+        if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
+
+        activeSlide = firstSlide;
       });
     }
   }
@@ -1099,10 +1133,10 @@ $(window).on("load", function () {
 
   let wasDesktop = isDesktop;
   window.addEventListener("resize", function () {
-    const isDesktop = window.innerWidth > 992;
-    if (isDesktop !== wasDesktop) {
-      wasDesktop = isDesktop;
-      if (isDesktop) {
+    const isDesktopNow = window.innerWidth > 992;
+    if (isDesktopNow !== wasDesktop) {
+      wasDesktop = isDesktopNow;
+      if (isDesktopNow) {
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
           swiperInstance = null;
