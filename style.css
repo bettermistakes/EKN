@@ -177,6 +177,17 @@ body {
   left: 0;
 }
 
+/* ✅ Layering fix so it looks like before */
+.trusted--logo {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+.trusted--logo-parent .hover--circle {
+  z-index: 1;
+}
+
 .lines {
   position: relative;
   overflow: hidden;

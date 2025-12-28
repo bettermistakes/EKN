@@ -856,79 +856,93 @@ $(window).on("load", function () {
   observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
 
-// --------------------- Hover Circle Follow Mouse --------------------- //
+// --------------------- ✅ Hover Circle Follow Mouse (FIXED - works like before) --------------------- //
 (function () {
-  const gridTrusted = document.querySelector(".grid--trusted");
-  if (!gridTrusted) return;
+  const logoParents = document.querySelectorAll(".trusted--logo-parent");
+  const lines = document.querySelectorAll(".lines");
 
-  const logoParents = gridTrusted.querySelectorAll(".trusted--logo-parent");
+  if (!logoParents.length && !lines.length) return;
+
+  function setupFollower(el) {
+    const setX = gsap.quickTo(el, "x", { duration: 0.35, ease: "power2.out" });
+    const setY = gsap.quickTo(el, "y", { duration: 0.35, ease: "power2.out" });
+    return { setX, setY };
+  }
 
   logoParents.forEach((parent) => {
     const hoverCircle = parent.querySelector(".hover--circle");
     if (!hoverCircle) return;
 
-    parent.addEventListener("mousemove", function (e) {
+    gsap.set(hoverCircle, { opacity: 0, scale: 0.85, x: 0, y: 0 });
+
+    const { setX, setY } = setupFollower(hoverCircle);
+
+    parent.addEventListener("mousemove", (e) => {
       const rect = parent.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      const circleSize = 10; // 10rem
-      const offsetX =
-        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetY =
-        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const halfW = hoverCircle.offsetWidth / 2;
+      const halfH = hoverCircle.offsetHeight / 2;
 
-      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
+      setX(x - halfW);
+      setY(y - halfH);
     });
 
-    parent.addEventListener("mouseenter", function () {
-      gsap.to(hoverCircle, { opacity: 0.3, scale: 1, duration: 0.3, ease: "power2.out" });
+    parent.addEventListener("mouseenter", () => {
+      gsap.to(hoverCircle, { opacity: 0.3, scale: 1, duration: 0.25, ease: "power2.out" });
     });
 
-    parent.addEventListener("mouseleave", function () {
-      gsap.to(hoverCircle, { opacity: 0, scale: 0.8, duration: 0.3, ease: "power2.out" });
+    parent.addEventListener("mouseleave", () => {
+      gsap.to(hoverCircle, { opacity: 0, scale: 0.85, duration: 0.25, ease: "power2.out" });
     });
   });
 
-  const lines = gridTrusted.querySelectorAll(".lines");
-  lines.forEach((line) => {
-    const hoverCircle = line.querySelector(".hover--circle.is--100");
-    if (!hoverCircle) return;
-    gsap.set(hoverCircle, { opacity: 0 });
-  });
-
-  gridTrusted.addEventListener("mousemove", function (e) {
+  if (lines.length) {
     lines.forEach((line) => {
-      const hoverCircle = line.querySelector(".hover--circle.is--100");
-      if (!hoverCircle) return;
-
-      const rect = line.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const circleSize = 10;
-      const offsetX =
-        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetY =
-        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-      gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
+      const circle = line.querySelector(".hover--circle.is--100");
+      if (!circle) return;
+      gsap.set(circle, { opacity: 0, x: 0, y: 0 });
     });
-  });
 
-  gridTrusted.addEventListener("mouseenter", function () {
-    lines.forEach((line) => {
-      const hoverCircle = line.querySelector(".hover--circle.is--100");
-      if (hoverCircle) gsap.to(hoverCircle, { opacity: 1, duration: 0.3, ease: "power2.out" });
-    });
-  });
+    function moveLineCircles(e) {
+      lines.forEach((line) => {
+        const circle = line.querySelector(".hover--circle.is--100");
+        if (!circle) return;
 
-  gridTrusted.addEventListener("mouseleave", function () {
-    lines.forEach((line) => {
-      const hoverCircle = line.querySelector(".hover--circle.is--100");
-      if (hoverCircle) gsap.to(hoverCircle, { opacity: 0, duration: 0.3, ease: "power2.out" });
+        if (!circle._follower) circle._follower = setupFollower(circle);
+
+        const rect = line.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const halfW = circle.offsetWidth / 2;
+        const halfH = circle.offsetHeight / 2;
+
+        circle._follower.setX(x - halfW);
+        circle._follower.setY(y - halfH);
+      });
+    }
+
+    const gridTrusted = document.querySelector(".grid--trusted");
+    const scope = gridTrusted || document;
+
+    scope.addEventListener("mousemove", moveLineCircles);
+
+    scope.addEventListener("mouseenter", () => {
+      lines.forEach((line) => {
+        const circle = line.querySelector(".hover--circle.is--100");
+        if (circle) gsap.to(circle, { opacity: 1, duration: 0.25, ease: "power2.out" });
+      });
     });
-  });
+
+    scope.addEventListener("mouseleave", () => {
+      lines.forEach((line) => {
+        const circle = line.querySelector(".hover--circle.is--100");
+        if (circle) gsap.to(circle, { opacity: 0, duration: 0.25, ease: "power2.out" });
+      });
+    });
+  }
 })();
 
 // --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
