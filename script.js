@@ -1530,23 +1530,55 @@ $(window).on("load", function () {
     // ---------------------------
     // Hover interactions
     // ---------------------------
-    wrapper.addEventListener("mouseenter", () => {
-      paused = true;
-      pausedAt = lastPos;
-      glow.style.opacity = "1";
-    });
+  const scrollSpeed = 50; // Pixels per second
 
-    wrapper.addEventListener("mouseleave", () => {
-      paused = false;
-      startTime = performance.now() - (pausedAt / scrollSpeed) * 1000;
-      glow.style.opacity = "0";
-    });
+function startScrolling(element) {
+  const scrollWidth = element.offsetWidth;
+  let startTime = null;
 
-    wrapper.addEventListener("mousemove", (e) => {
-      const rect = wrapper.getBoundingClientRect();
-      glow.style.left = `${e.clientX - rect.left}px`;
-      glow.style.top = `${e.clientY - rect.top}px`;
-    });
+  let isPaused = false;     // Controls pause state
+  let timeOffset = 0;      // Keeps track of elapsed time when paused
+
+  function animate(time) {
+    if (!startTime) startTime = time;
+
+    if (!isPaused) {
+      // Calculate elapsed time including previous pauses
+      const timeElapsed = (time - startTime) + timeOffset;
+
+      // Loop scrolling position
+      const scrollPosition =
+        (timeElapsed * scrollSpeed) / 1000 % scrollWidth;
+
+      element.style.transform = `translateX(${-scrollPosition}px)`;
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // Pause animation on hover
+  element.addEventListener("mouseenter", () => {
+    if (isPaused) return;
+
+    isPaused = true;
+    // Save elapsed time so animation resumes smoothly
+    timeOffset += performance.now() - startTime;
   });
-});
 
+  // Resume animation when mouse leaves
+  element.addEventListener("mouseleave", () => {
+    if (!isPaused) return;
+
+    isPaused = false;
+    // Reset start time to avoid jump
+    startTime = performance.now();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document
+    .querySelectorAll(".is--scrolling")
+    .forEach(startScrolling);
+});
