@@ -1,21 +1,10 @@
 // ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
-//
-// Notes:
-// - Comments are in English (as requested)
-// - Netlify-safe (no duplicate const declarations / no nested DOMContentLoaded issues)
-// - The Marquee section is replaced with the corrected version (pause-on-hover + glow)
-//
-// Requirements assumed on page:
-// - jQuery available for the loading fade
-// - GSAP (and optionally ScrollTrigger / SplitText / Swiper depending on sections used)
-
 
 // --------------------- Loading Animation --------------------- //
 // Fade in main-wrapper after page fully loads
 $(window).on("load", function () {
   $("body").animate({ opacity: 1 }, 200);
 });
-
 
 // --------------------- Navbar Dropdown Animation (Desktop) --------------------- //
 (function () {
@@ -318,7 +307,6 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- Mobile Navbar Dropdown Animation --------------------- //
 (function () {
   const dropdowns = document.querySelectorAll(".navbar--dropdown");
@@ -411,7 +399,6 @@ $(window).on("load", function () {
   };
 })();
 
-
 // --------------------- Navbar Solution Items Hover (Desktop) --------------------- //
 (function () {
   if (window.innerWidth <= 992) return;
@@ -496,7 +483,6 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- Resource Links Hover (Desktop) --------------------- //
 (function () {
   if (window.innerWidth <= 992) return;
@@ -565,7 +551,6 @@ $(window).on("load", function () {
     }
   });
 })();
-
 
 // --------------------- Mobile Hamburger Menu Animation --------------------- //
 (function () {
@@ -693,7 +678,6 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- Navbar Scroll Behavior --------------------- //
 (function () {
   const navbar = document.querySelector(".navbar");
@@ -728,7 +712,6 @@ $(window).on("load", function () {
 
   handleNavbarScroll();
 })();
-
 
 // --------------------- Eyebrow Text Cycling Animation --------------------- //
 (function () {
@@ -811,7 +794,6 @@ $(window).on("load", function () {
   setTimeout(animateTextChange, 2000);
 })();
 
-
 // --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
 (function () {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
@@ -873,7 +855,6 @@ $(window).on("load", function () {
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
   observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
-
 
 // --------------------- ✅ Hover Circle Follow Mouse (FIXED - works like before) --------------------- //
 (function () {
@@ -964,7 +945,6 @@ $(window).on("load", function () {
   }
 })();
 
-
 // --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
 (function () {
   let swiperInstance = null;
@@ -977,7 +957,7 @@ $(window).on("load", function () {
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // Scope that includes both columns (titles + right content)
+    // ✅ Scope that includes BOTH columns (titles + right content)
     const sliderScope =
       document.querySelector(".grid--21.is--slider") ||
       firstSlide.closest(".grid--21") ||
@@ -987,7 +967,7 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    let lockedActiveSlide = null; // sticky state
+    let lockedActiveSlide = null; // ✅ sticky state
 
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1021,7 +1001,7 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return; // no re-trigger
+      if (lockedActiveSlide === slide) return; // ✅ no re-trigger
 
       // Remove active everywhere
       offerSlides.forEach((s) => s.classList.remove("is-active"));
@@ -1043,7 +1023,7 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      lockedActiveSlide = slide; // sticky
+      lockedActiveSlide = slide; // ✅ STICKY
     }
 
     function setFirstAsDefault() {
@@ -1080,7 +1060,7 @@ $(window).on("load", function () {
     // Default
     setFirstAsDefault();
 
-    // Bind hover: only changes active when entering a new slide
+    // ✅ Bind hover: only changes active when entering a NEW slide
     function bindHover(slide) {
       const targets = [
         slide,
@@ -1097,10 +1077,14 @@ $(window).on("load", function () {
     offerSlides.forEach(bindHover);
     bindHover(firstSlide);
 
-    // Reset only when leaving the whole scope
+    // ✅ Reset ONLY when leaving the WHOLE scope (and ignore internal moves)
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
+
+      // if moving inside the scope, ignore
       if (toEl && sliderScope.contains(toEl)) return;
+
+      // leaving the scope -> reset
       setFirstAsDefault();
     });
   }
@@ -1182,7 +1166,6 @@ $(window).on("load", function () {
     }
   });
 })();
-
 
 // --------------------- How It Works Scroll Animation --------------------- //
 (function () {
@@ -1309,7 +1292,6 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- What Offers Hover Circle --------------------- //
 (function () {
   const section = document.querySelector(".section.is--whatoffers");
@@ -1347,7 +1329,6 @@ $(window).on("load", function () {
     });
   });
 })();
-
 
 // --------------------- Number Counter Animation --------------------- //
 (function () {
@@ -1399,7 +1380,6 @@ $(window).on("load", function () {
     });
   });
 })();
-
 
 // --------------------- Footer Accordion (Mobile) --------------------- //
 (function () {
@@ -1468,7 +1448,6 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- Button Hover Animation --------------------- //
 (function () {
   const buttons = document.querySelectorAll(".btn");
@@ -1496,18 +1475,16 @@ $(window).on("load", function () {
 })();
 
 
-// --------------------- Marquee Animation (Auto + Pause on Hover + Glow) --------------------- //
-// IMPORTANT: this replaces your previous marquee block (which had duplicate const + nested DOMContentLoaded)
-document.addEventListener("DOMContentLoaded", () => {
-  const SCROLL_SPEED = 50; // px per second
+
+// --------------------- Marquee Animation --------------------- //
+
+ document.addEventListener("DOMContentLoaded", () => {
+  const scrollSpeed = 50; // px / seconde
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
-    if (!wrapper) return;
 
-    // ---------------------------
-    // Glow element (cursor-follow)
-    // ---------------------------
+ 
     const glow = document.createElement("div");
     glow.style.position = "absolute";
     glow.style.width = "220px";
@@ -1521,35 +1498,28 @@ document.addEventListener("DOMContentLoaded", () => {
       "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
     glow.style.filter = "blur(2px)";
 
-    // Ensure wrapper can host the glow
-    const wrapperPos = getComputedStyle(wrapper).position;
-    if (wrapperPos === "static") wrapper.style.position = "relative";
+    wrapper.style.position = "relative";
     wrapper.appendChild(glow);
 
     // ---------------------------
     // Scroll logic
     // ---------------------------
     let startTime = null;
-    let isPaused = false;
-    let frozenPos = 0;
-
-    function getWidth() {
-      // Track width can change on resize; protect against 0
-      return track.offsetWidth || 1;
-    }
+    let paused = false;
+    let pausedAt = 0;
+    let lastPos = 0;
 
     function animate(time) {
       if (!startTime) startTime = time;
 
-      if (!isPaused) {
+      if (!paused) {
         const elapsed = time - startTime;
-        const width = getWidth();
+        const width = track.offsetWidth || 1;
 
-        const pos = ((elapsed * SCROLL_SPEED) / 1000) % width;
-        frozenPos = pos;
-        track.style.transform = `translateX(${-pos}px)`;
+        lastPos = (elapsed * scrollSpeed) / 1000 % width;
+        track.style.transform = `translateX(${-lastPos}px)`;
       } else {
-        track.style.transform = `translateX(${-frozenPos}px)`;
+        track.style.transform = `translateX(${-pausedAt}px)`;
       }
 
       requestAnimationFrame(animate);
@@ -1558,29 +1528,25 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(animate);
 
     // ---------------------------
-    // Hover interactions (pause + glow)
+    // Hover interactions
     // ---------------------------
-    wrapper.addEventListener("mousemove", (e) => {
-      const rect = wrapper.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      glow.style.left = `${x}px`;
-      glow.style.top = `${y}px`;
-    });
-
     wrapper.addEventListener("mouseenter", () => {
-      isPaused = true;
+      paused = true;
+      pausedAt = lastPos;
       glow.style.opacity = "1";
     });
 
     wrapper.addEventListener("mouseleave", () => {
-      isPaused = false;
-
-      // Rebase time so it resumes smoothly from frozenPos
-      startTime = performance.now() - (frozenPos * 1000) / SCROLL_SPEED;
-
+      paused = false;
+      startTime = performance.now() - (pausedAt / scrollSpeed) * 1000;
       glow.style.opacity = "0";
+    });
+
+    wrapper.addEventListener("mousemove", (e) => {
+      const rect = wrapper.getBoundingClientRect();
+      glow.style.left = `${e.clientX - rect.left}px`;
+      glow.style.top = `${e.clientY - rect.top}px`;
     });
   });
 });
+
