@@ -1473,3 +1473,29 @@ $(window).on("load", function () {
     });
   });
 })();
+
+
+// --------------------- Marquee Animation --------------------- //
+
+  const scrollSpeed = 50; // Pixels per second
+
+  function startScrolling(element) {
+    const scrollWidth = element.offsetWidth;
+    let startTime = null;
+
+    function animate(time) {
+      if (!startTime) startTime = time;
+
+      const timeElapsed = time - startTime;
+      const scrollPosition = (timeElapsed * scrollSpeed / 1000) % scrollWidth;
+
+      element.style.transform = `translateX(${-scrollPosition}px)`;
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.is--scrolling').forEach(startScrolling);
+  });
