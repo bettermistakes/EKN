@@ -193,12 +193,10 @@ body {
     transition: opacity 0.25s ease;
   }
 
-  /* IMPORTANT:
-     DO NOT use display:none/block -> it breaks Webflow original layout (absolute/flex/etc.)
-     We only toggle opacity/visibility/pointer-events.
-  */
+  /* We only toggle opacity/visibility/pointer-events (keep layout intact) */
   .offer--slide-icon,
-  .offer--slide-content {
+  .offer--slide-content,
+  .offer--slide .offer--slide-titles .paragraph-large {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -206,10 +204,20 @@ body {
   }
 
   .offer--slide.is-active .offer--slide-icon,
-  .offer--slide.is-active .offer--slide-content {
+  .offer--slide.is-active .offer--slide-content,
+  .offer--slide.is-active .offer--slide-titles .paragraph-large {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+  }
+
+  /* Ensure content stacks above neighbors */
+  .offer--slide-content-parent {
+    z-index: 1;
+  }
+
+  .offer--slide.is-active .offer--slide-content-parent {
+    z-index: 5;
   }
 }
 
@@ -361,14 +369,4 @@ body {
   overflow: hidden;
   white-space: nowrap;
   will-change: width;
-}
-
-@media (min-width: 992px) {
-  .offer--slide-content-parent {
-    z-index: 1;
-  }
-
-  .offer--slide.is-active .offer--slide-content-parent {
-    z-index: 5;
-  }
 }

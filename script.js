@@ -931,7 +931,7 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - FIXED --------------------- //
 (function () {
   let swiperInstance = null;
 
@@ -943,11 +943,12 @@ $(window).on("load", function () {
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // IMPORTANT: use the WHOLE slider container (titles + content) so leaving titles doesn't reset
-    const sliderContainer =
+    // ✅ Reliable scope that includes BOTH columns (titles + right content)
+    const sliderScope =
+      document.querySelector(".grid--21.is--slider") ||
+      firstSlide.closest(".grid--21") ||
+      firstSlide.closest(".section") ||
       document.querySelector(".offers-slider") ||
-      document.querySelector(".swiper.offers-slider") ||
-      document.querySelector(".offer-sliders-wrapper") ||
       firstSlide.closest(".swiper");
 
     let activeSlide = null;
@@ -985,7 +986,7 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (activeSlide === slide) return; // no flicker
+      if (activeSlide === slide) return;
 
       // remove active from all
       offerSlides.forEach((s) => s.classList.remove("is-active"));
@@ -1004,17 +1005,13 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      // dim previous if needed
       if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
-
       activeSlide = slide;
     }
 
     function setFirstAsDefault() {
-      // make all offer slides inactive
       offerSlides.forEach((s) => setInactive(s));
 
-      // show first slide
       const icon = firstSlide.querySelector(".offer--slide-icon");
       const content = firstSlide.querySelector(".offer--slide-content");
       const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
@@ -1030,7 +1027,7 @@ $(window).on("load", function () {
       activeSlide = firstSlide;
     }
 
-    // Init: set offer slides inactive
+    // Init inactive
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1046,7 +1043,7 @@ $(window).on("load", function () {
     // Default active
     setFirstAsDefault();
 
-    // ✅ Attach hover to BOTH: titles + content + slide (so moving to the button keeps the active state)
+    // ✅ Bind hover to all relevant parts of the slide
     function bindHover(slide) {
       const targets = [
         slide,
@@ -1063,9 +1060,11 @@ $(window).on("load", function () {
     offerSlides.forEach(bindHover);
     bindHover(firstSlide);
 
-    // ✅ Reset ONLY when leaving the whole slider container (not when leaving the titles column)
-    if (sliderContainer) {
-      sliderContainer.addEventListener("mouseleave", () => {
+    // ✅ Reset ONLY when leaving the WHOLE scope (and guard relatedTarget)
+    if (sliderScope) {
+      sliderScope.addEventListener("mouseleave", (e) => {
+        const toEl = e.relatedTarget;
+        if (toEl && sliderScope.contains(toEl)) return; // still inside scope -> don't reset
         setFirstAsDefault();
       });
     }
@@ -1137,6 +1136,7 @@ $(window).on("load", function () {
     const isDesktopNow = window.innerWidth > 992;
     if (isDesktopNow !== wasDesktop) {
       wasDesktop = isDesktopNow;
+
       if (isDesktopNow) {
         if (swiperInstance) {
           swiperInstance.destroy(true, true);
