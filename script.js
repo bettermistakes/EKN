@@ -1475,31 +1475,13 @@ $(window).on("load", function () {
 })();
 
 
-
 // --------------------- Marquee Animation --------------------- //
 
- document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const scrollSpeed = 50; // px / seconde
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
-
- 
-    const glow = document.createElement("div");
-    glow.style.position = "absolute";
-    glow.style.width = "220px";
-    glow.style.height = "220px";
-    glow.style.borderRadius = "50%";
-    glow.style.pointerEvents = "none";
-    glow.style.opacity = "0";
-    glow.style.transform = "translate(-50%, -50%)";
-    glow.style.transition = "opacity 0.2s ease";
-    glow.style.background =
-      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
-    glow.style.filter = "blur(2px)";
-
-    wrapper.style.position = "relative";
-    wrapper.appendChild(glow);
 
     // ---------------------------
     // Scroll logic
@@ -1528,25 +1510,16 @@ $(window).on("load", function () {
     requestAnimationFrame(animate);
 
     // ---------------------------
-    // Hover interactions
+    // Hover → Pause only
     // ---------------------------
     wrapper.addEventListener("mouseenter", () => {
       paused = true;
       pausedAt = lastPos;
-      glow.style.opacity = "1";
     });
 
     wrapper.addEventListener("mouseleave", () => {
       paused = false;
       startTime = performance.now() - (pausedAt / scrollSpeed) * 1000;
-      glow.style.opacity = "0";
-    });
-
-    wrapper.addEventListener("mousemove", (e) => {
-      const rect = wrapper.getBoundingClientRect();
-      glow.style.left = `${e.clientX - rect.left}px`;
-      glow.style.top = `${e.clientY - rect.top}px`;
     });
   });
 });
-
