@@ -927,7 +927,7 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH + is--first RESTORED --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - DEFAULT FIRST WHEN NO HOVER --------------------- //
 (function () {
   let swiperInstance = null;
 
@@ -939,6 +939,7 @@ $(window).on("load", function () {
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
+    // Scope that includes BOTH columns (titles + right content)
     const sliderScope =
       document.querySelector(".grid--21.is--slider") ||
       firstSlide.closest(".grid--21") ||
@@ -949,7 +950,6 @@ $(window).on("load", function () {
     if (!sliderScope) return;
 
     const allSlides = offerSlides.includes(firstSlide) ? offerSlides : [firstSlide, ...offerSlides];
-    let lockedActiveSlide = null;
 
     function setScopeState(state) {
       sliderScope.classList.remove("is--first", "is--middle", "is--last");
@@ -982,7 +982,6 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return;
 
       allSlides.forEach((s) => {
         if (s !== slide) setInactive(s);
@@ -999,8 +998,6 @@ $(window).on("load", function () {
       if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-
-      lockedActiveSlide = slide;
 
       if (slide === firstSlide) setScopeState("is--first");
       else setScopeState("is--middle");
@@ -1021,11 +1018,10 @@ $(window).on("load", function () {
       if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
       if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
 
-      lockedActiveSlide = firstSlide;
       setScopeState("is--first");
     }
 
-    // Init (once)
+    // Init base styles once
     allSlides.forEach((slide) => {
       gsap.set(slide, { opacity: 0.3 });
 
@@ -1038,20 +1034,44 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
+    // ✅ default first immediately
     setFirstAsDefault();
 
+    // ✅ and also when the section becomes visible
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setFirstAsDefault();
+        });
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(sliderScope);
+
+    function anySlideHovered() {
+      return allSlides.some((s) => s.matches(":hover") || (s.querySelector(".offer--slide-titles") && s.querySelector(".offer--slide-titles").matches(":hover")));
+    }
+
+    function scheduleResetIfNoneHovered() {
+      setTimeout(() => {
+        if (!anySlideHovered()) setFirstAsDefault();
+      }, 30);
+    }
+
     function bindHover(slide) {
-      const targets = [slide, slide.querySelector(".offer--slide-titles")].filter(Boolean);
-      targets.forEach((t) => t.addEventListener("mouseenter", () => setActive(slide), { passive: true }));
+      const title = slide.querySelector(".offer--slide-titles");
+      const targets = [slide, title].filter(Boolean);
+
+      targets.forEach((t) => {
+        t.addEventListener("mouseenter", () => setActive(slide), { passive: true });
+        t.addEventListener("mouseleave", scheduleResetIfNoneHovered, { passive: true });
+      });
     }
 
     allSlides.forEach(bindHover);
 
-    sliderScope.addEventListener("mouseout", (e) => {
-      const toEl = e.relatedTarget;
-      if (toEl && sliderScope.contains(toEl)) return;
-      setFirstAsDefault();
-    });
+    // leaving the entire scope -> back to first
+    sliderScope.addEventListener("mouseleave", setFirstAsDefault);
   }
 
   // Mobile slider functionality
