@@ -939,11 +939,16 @@ $(window).on("load", function () {
   function initOfferSlides() {
     if (window.innerWidth <= 992) return;
 
-    const offerSlidesAll = document.querySelectorAll(".swiper-slide");
-    if (offerSlidesAll.length === 0) return;
-
     const offerSlides = document.querySelectorAll(".swiper-slide.offer--slide");
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
+    if (!offerSlides.length || !firstSlide) return;
+
+    // IMPORTANT: use the WHOLE slider container (titles + content) so leaving titles doesn't reset
+    const sliderContainer =
+      document.querySelector(".offers-slider") ||
+      document.querySelector(".swiper.offers-slider") ||
+      document.querySelector(".offer-sliders-wrapper") ||
+      firstSlide.closest(".swiper");
 
     let activeSlide = null;
 
@@ -962,6 +967,8 @@ $(window).on("load", function () {
     }
 
     function setInactive(slide) {
+      if (!slide) return;
+
       slide.classList.remove("is-active");
       applyVisibility(slide, false);
 
@@ -977,11 +984,12 @@ $(window).on("load", function () {
     }
 
     function setActive(slide) {
-      // remove active from all “offer--slide” slides
-      offerSlides.forEach((s) => s.classList.remove("is-active"));
+      if (!slide) return;
+      if (activeSlide === slide) return; // no flicker
 
-      // also remove active from first slide if exists
-      if (firstSlide) firstSlide.classList.remove("is-active");
+      // remove active from all
+      offerSlides.forEach((s) => s.classList.remove("is-active"));
+      firstSlide.classList.remove("is-active");
 
       slide.classList.add("is-active");
       applyVisibility(slide, true);
@@ -996,10 +1004,33 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
+      // dim previous if needed
+      if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
+
       activeSlide = slide;
     }
 
-    // Init: set all offer--slide slides inactive visually
+    function setFirstAsDefault() {
+      // make all offer slides inactive
+      offerSlides.forEach((s) => setInactive(s));
+
+      // show first slide
+      const icon = firstSlide.querySelector(".offer--slide-icon");
+      const content = firstSlide.querySelector(".offer--slide-content");
+      const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
+
+      firstSlide.classList.add("is-active");
+      gsap.to(firstSlide, { opacity: 1, duration: 0.25, ease: "power2.out" });
+      applyVisibility(firstSlide, true);
+
+      if (icon) gsap.set(icon, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
+      if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
+      if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
+
+      activeSlide = firstSlide;
+    }
+
+    // Init: set offer slides inactive
     offerSlides.forEach((slide) => {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1012,60 +1043,30 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // ✅ Default active: show first slide (is--offer-first) if present
-    if (firstSlide) {
-      const icon = firstSlide.querySelector(".offer--slide-icon");
-      const content = firstSlide.querySelector(".offer--slide-content");
-      const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
+    // Default active
+    setFirstAsDefault();
 
-      firstSlide.classList.add("is-active");
-      gsap.set(firstSlide, { opacity: 1 });
+    // ✅ Attach hover to BOTH: titles + content + slide (so moving to the button keeps the active state)
+    function bindHover(slide) {
+      const targets = [
+        slide,
+        slide.querySelector(".offer--slide-titles"),
+        slide.querySelector(".offer--slide-content-parent"),
+        slide.querySelector(".offer--slide-content"),
+      ].filter(Boolean);
 
-      applyVisibility(firstSlide, true);
-
-      // Force visible state (in case any init code set it hidden)
-      if (icon) gsap.set(icon, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
-      if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
-      if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
-
-      activeSlide = firstSlide;
+      targets.forEach((t) => {
+        t.addEventListener("mouseenter", () => setActive(slide));
+      });
     }
 
-    // Hover: hover on offer--slide titles activates that slide
-    offerSlides.forEach((slide) => {
-      const hoverTarget = slide.querySelector(".offer--slide-titles") || slide;
+    offerSlides.forEach(bindHover);
+    bindHover(firstSlide);
 
-      hoverTarget.addEventListener("mouseenter", function () {
-        // if first slide was active, dim it
-        if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
-        setActive(slide);
-      });
-    });
-
-    // ✅ If leaving the whole slider area, revert to first slide
-    const wrapper = document.querySelector(".offer-sliders-wrapper");
-    if (wrapper && firstSlide) {
-      wrapper.addEventListener("mouseleave", function () {
-        // make all offer slides inactive
-        offerSlides.forEach((s) => {
-          if (s !== firstSlide) setInactive(s);
-        });
-
-        // reset first slide visible
-        const icon = firstSlide.querySelector(".offer--slide-icon");
-        const content = firstSlide.querySelector(".offer--slide-content");
-        const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
-
-        firstSlide.classList.add("is-active");
-        gsap.to(firstSlide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
-        applyVisibility(firstSlide, true);
-
-        if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
-        if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
-        if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
-
-        activeSlide = firstSlide;
+    // ✅ Reset ONLY when leaving the whole slider container (not when leaving the titles column)
+    if (sliderContainer) {
+      sliderContainer.addEventListener("mouseleave", () => {
+        setFirstAsDefault();
       });
     }
   }
