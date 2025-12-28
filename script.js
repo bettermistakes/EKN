@@ -931,7 +931,7 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - FIXED --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
 (function () {
   let swiperInstance = null;
 
@@ -943,7 +943,7 @@ $(window).on("load", function () {
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // ✅ Reliable scope that includes BOTH columns (titles + right content)
+    // ✅ Scope that includes BOTH columns (titles + right content)
     const sliderScope =
       document.querySelector(".grid--21.is--slider") ||
       firstSlide.closest(".grid--21") ||
@@ -951,7 +951,9 @@ $(window).on("load", function () {
       document.querySelector(".offers-slider") ||
       firstSlide.closest(".swiper");
 
-    let activeSlide = null;
+    if (!sliderScope) return;
+
+    let lockedActiveSlide = null; // ✅ sticky state
 
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
@@ -978,7 +980,6 @@ $(window).on("load", function () {
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
-
       if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
@@ -986,12 +987,16 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (activeSlide === slide) return;
+      if (lockedActiveSlide === slide) return; // ✅ no re-trigger
 
-      // remove active from all
+      // Remove active everywhere
       offerSlides.forEach((s) => s.classList.remove("is-active"));
       firstSlide.classList.remove("is-active");
 
+      // Inactivate previous locked
+      if (lockedActiveSlide && lockedActiveSlide !== slide) setInactive(lockedActiveSlide);
+
+      // Activate new
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
@@ -1000,50 +1005,48 @@ $(window).on("load", function () {
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
       if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      if (activeSlide && activeSlide !== slide) setInactive(activeSlide);
-      activeSlide = slide;
+      lockedActiveSlide = slide; // ✅ STICKY
     }
 
     function setFirstAsDefault() {
       offerSlides.forEach((s) => setInactive(s));
 
+      firstSlide.classList.add("is-active");
+      applyVisibility(firstSlide, true);
+
       const icon = firstSlide.querySelector(".offer--slide-icon");
       const content = firstSlide.querySelector(".offer--slide-content");
       const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
 
-      firstSlide.classList.add("is-active");
       gsap.to(firstSlide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-      applyVisibility(firstSlide, true);
-
       if (icon) gsap.set(icon, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
       if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
       if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
 
-      activeSlide = firstSlide;
+      lockedActiveSlide = firstSlide;
     }
 
-    // Init inactive
+    // Init all as inactive
     offerSlides.forEach((slide) => {
+      gsap.set(slide, { opacity: 0.3 });
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-
-      gsap.set(slide, { opacity: 0.3 });
 
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
       if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // Default active
+    // Default
     setFirstAsDefault();
 
-    // ✅ Bind hover to all relevant parts of the slide
+    // ✅ Bind hover: only changes active when entering a NEW slide
     function bindHover(slide) {
       const targets = [
         slide,
@@ -1053,21 +1056,23 @@ $(window).on("load", function () {
       ].filter(Boolean);
 
       targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setActive(slide));
+        t.addEventListener("mouseenter", () => setActive(slide), { passive: true });
       });
     }
 
     offerSlides.forEach(bindHover);
     bindHover(firstSlide);
 
-    // ✅ Reset ONLY when leaving the WHOLE scope (and guard relatedTarget)
-    if (sliderScope) {
-      sliderScope.addEventListener("mouseleave", (e) => {
-        const toEl = e.relatedTarget;
-        if (toEl && sliderScope.contains(toEl)) return; // still inside scope -> don't reset
-        setFirstAsDefault();
-      });
-    }
+    // ✅ Reset ONLY when leaving the WHOLE scope (and ignore internal moves)
+    sliderScope.addEventListener("mouseout", (e) => {
+      const toEl = e.relatedTarget;
+
+      // if moving inside the scope, ignore
+      if (toEl && sliderScope.contains(toEl)) return;
+
+      // leaving the scope -> reset
+      setFirstAsDefault();
+    });
   }
 
   // Mobile slider functionality
@@ -1076,7 +1081,6 @@ $(window).on("load", function () {
 
     const slider = document.querySelector(".offers-slider");
     if (!slider) return;
-
     if (typeof Swiper === "undefined") return;
 
     if (swiperInstance) {
@@ -1122,7 +1126,6 @@ $(window).on("load", function () {
   function updateSlideNumbers(swiper) {
     const currentSlideNumber = document.querySelector(".slide--number:first-child");
     const totalSlideNumber = document.querySelector(".slide--number:last-child");
-
     if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
