@@ -1475,27 +1475,78 @@ $(window).on("load", function () {
 })();
 
 
+
 // --------------------- Marquee Animation --------------------- //
 
-  const scrollSpeed = 50; // Pixels per second
+ document.addEventListener("DOMContentLoaded", () => {
+  const scrollSpeed = 50; // px / seconde
 
-  function startScrolling(element) {
-    const scrollWidth = element.offsetWidth;
+  document.querySelectorAll(".is--scrolling").forEach((track) => {
+    const wrapper = track.parentElement;
+
+ 
+    const glow = document.createElement("div");
+    glow.style.position = "absolute";
+    glow.style.width = "220px";
+    glow.style.height = "220px";
+    glow.style.borderRadius = "50%";
+    glow.style.pointerEvents = "none";
+    glow.style.opacity = "0";
+    glow.style.transform = "translate(-50%, -50%)";
+    glow.style.transition = "opacity 0.2s ease";
+    glow.style.background =
+      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
+    glow.style.filter = "blur(2px)";
+
+    wrapper.style.position = "relative";
+    wrapper.appendChild(glow);
+
+    // ---------------------------
+    // Scroll logic
+    // ---------------------------
     let startTime = null;
+    let paused = false;
+    let pausedAt = 0;
+    let lastPos = 0;
 
     function animate(time) {
       if (!startTime) startTime = time;
 
-      const timeElapsed = time - startTime;
-      const scrollPosition = (timeElapsed * scrollSpeed / 1000) % scrollWidth;
+      if (!paused) {
+        const elapsed = time - startTime;
+        const width = track.offsetWidth || 1;
 
-      element.style.transform = `translateX(${-scrollPosition}px)`;
+        lastPos = (elapsed * scrollSpeed) / 1000 % width;
+        track.style.transform = `translateX(${-lastPos}px)`;
+      } else {
+        track.style.transform = `translateX(${-pausedAt}px)`;
+      }
+
       requestAnimationFrame(animate);
     }
 
     requestAnimationFrame(animate);
-  }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.is--scrolling').forEach(startScrolling);
+    // ---------------------------
+    // Hover interactions
+    // ---------------------------
+    wrapper.addEventListener("mouseenter", () => {
+      paused = true;
+      pausedAt = lastPos;
+      glow.style.opacity = "1";
+    });
+
+    wrapper.addEventListener("mouseleave", () => {
+      paused = false;
+      startTime = performance.now() - (pausedAt / scrollSpeed) * 1000;
+      glow.style.opacity = "0";
+    });
+
+    wrapper.addEventListener("mousemove", (e) => {
+      const rect = wrapper.getBoundingClientRect();
+      glow.style.left = `${e.clientX - rect.left}px`;
+      glow.style.top = `${e.clientY - rect.top}px`;
+    });
   });
+});
+
