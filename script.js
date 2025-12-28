@@ -1530,25 +1530,21 @@ $(window).on("load", function () {
     // ---------------------------
     // Hover interactions
     // ---------------------------
-  const scrollSpeed = 50; // Pixels per second
+const scrollSpeed = 50; // Pixels per second
 
 function startScrolling(element) {
   const scrollWidth = element.offsetWidth;
   let startTime = null;
 
-  let isPaused = false;     // Controls pause state
-  let timeOffset = 0;      // Keeps track of elapsed time when paused
+  let isPaused = false;
+  let timeOffset = 0; // cumule le temps déjà "consommé" (pour reprendre sans saut)
 
   function animate(time) {
     if (!startTime) startTime = time;
 
     if (!isPaused) {
-      // Calculate elapsed time including previous pauses
       const timeElapsed = (time - startTime) + timeOffset;
-
-      // Loop scrolling position
-      const scrollPosition =
-        (timeElapsed * scrollSpeed) / 1000 % scrollWidth;
+      const scrollPosition = (timeElapsed * scrollSpeed / 1000) % scrollWidth;
 
       element.style.transform = `translateX(${-scrollPosition}px)`;
     }
@@ -1556,21 +1552,21 @@ function startScrolling(element) {
     requestAnimationFrame(animate);
   }
 
-  // Pause animation on hover
+  // Pause au hover, reprend au mouseleave
   element.addEventListener("mouseenter", () => {
     if (isPaused) return;
-
     isPaused = true;
-    // Save elapsed time so animation resumes smoothly
-    timeOffset += performance.now() - startTime;
+
+    // On "fige" le temps courant pour reprendre au même point
+    const now = performance.now();
+    timeOffset += (now - startTime);
   });
 
-  // Resume animation when mouse leaves
   element.addEventListener("mouseleave", () => {
     if (!isPaused) return;
-
     isPaused = false;
-    // Reset start time to avoid jump
+
+    // On reset startTime pour éviter un gros gap
     startTime = performance.now();
   });
 
@@ -1578,7 +1574,6 @@ function startScrolling(element) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document
-    .querySelectorAll(".is--scrolling")
-    .forEach(startScrolling);
+  document.querySelectorAll(".is--scrolling").forEach(startScrolling);
 });
+
