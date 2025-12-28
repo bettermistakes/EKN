@@ -873,10 +873,8 @@ $(window).on("load", function () {
       const y = e.clientY - rect.top;
 
       const circleSize = 10; // 10rem
-      const offsetX =
-        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetY =
-        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetX = x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetY = y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
       gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
@@ -907,10 +905,8 @@ $(window).on("load", function () {
       const y = e.clientY - rect.top;
 
       const circleSize = 10;
-      const offsetX =
-        x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const offsetY =
-        y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetX = x - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const offsetY = y - (circleSize / 2) * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
       gsap.to(hoverCircle, { x: offsetX, y: offsetY, duration: 0.3, ease: "power2.out" });
     });
@@ -931,8 +927,7 @@ $(window).on("load", function () {
   });
 })();
 
-
-// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH + is--first RESTORED --------------------- //
 (function () {
   let swiperInstance = null;
 
@@ -944,7 +939,6 @@ $(window).on("load", function () {
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // ✅ Scope that includes BOTH columns (titles + right content)
     const sliderScope =
       document.querySelector(".grid--21.is--slider") ||
       firstSlide.closest(".grid--21") ||
@@ -954,17 +948,19 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // ✅ ensure firstSlide is in the list too (avoid double state)
     const allSlides = offerSlides.includes(firstSlide) ? offerSlides : [firstSlide, ...offerSlides];
+    let lockedActiveSlide = null;
 
-    let lockedActiveSlide = null; // ✅ sticky state
+    function setScopeState(state) {
+      sliderScope.classList.remove("is--first", "is--middle", "is--last");
+      sliderScope.classList.add(state);
+    }
 
     function setVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      // Keep active slide interactive, others non-interactive
       if (icon) gsap.set(icon, { visibility: isActive ? "visible" : "hidden", pointerEvents: isActive ? "auto" : "none" });
       if (content) gsap.set(content, { visibility: isActive ? "visible" : "hidden", pointerEvents: isActive ? "auto" : "none" });
       if (paragraph) gsap.set(paragraph, { visibility: isActive ? "visible" : "hidden", pointerEvents: isActive ? "auto" : "none" });
@@ -986,9 +982,8 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return; // ✅ prevents re-trigger glitch
+      if (lockedActiveSlide === slide) return;
 
-      // Inactivate everything except target
       allSlides.forEach((s) => {
         if (s !== slide) setInactive(s);
       });
@@ -1005,7 +1000,10 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
 
-      lockedActiveSlide = slide; // ✅ sticky
+      lockedActiveSlide = slide;
+
+      if (slide === firstSlide) setScopeState("is--first");
+      else setScopeState("is--middle");
     }
 
     function setFirstAsDefault() {
@@ -1024,9 +1022,10 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
 
       lockedActiveSlide = firstSlide;
+      setScopeState("is--first");
     }
 
-    // Init all as inactive (once)
+    // Init (once)
     allSlides.forEach((slide) => {
       gsap.set(slide, { opacity: 0.3 });
 
@@ -1039,27 +1038,18 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // Default
     setFirstAsDefault();
 
-    // ✅ hover binding (prevent internal mouse moves from changing active)
     function bindHover(slide) {
-      const targets = [
-        slide,
-        slide.querySelector(".offer--slide-titles"),
-      ].filter(Boolean);
-
-      targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setActive(slide), { passive: true });
-      });
+      const targets = [slide, slide.querySelector(".offer--slide-titles")].filter(Boolean);
+      targets.forEach((t) => t.addEventListener("mouseenter", () => setActive(slide), { passive: true }));
     }
 
     allSlides.forEach(bindHover);
 
-    // ✅ reset only when leaving entire slider scope (not when moving inside)
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
-      if (toEl && sliderScope.contains(toEl)) return; // still inside
+      if (toEl && sliderScope.contains(toEl)) return;
       setFirstAsDefault();
     });
   }
@@ -1141,7 +1131,6 @@ $(window).on("load", function () {
     }
   });
 })();
-
 
 // --------------------- How It Works Scroll Animation --------------------- //
 (function () {
@@ -1346,11 +1335,7 @@ $(window).on("load", function () {
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
         columns.forEach((column, index) => {
-          gsap.fromTo(
-            column,
-            { y: "0em" },
-            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
-          );
+          gsap.fromTo(column, { y: "0em" }, { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 });
         });
       },
     });
