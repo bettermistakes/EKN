@@ -232,6 +232,7 @@ body {
   }
 }
 
+/* --------------------- ✅ Offer Slider (MOBILE) - SECOND SWIPER --------------------- */
 @media (max-width: 991px) {
   .offer-slider-btn {
     cursor: pointer;
@@ -242,26 +243,27 @@ body {
     pointer-events: none;
   }
 
-  .offers-slider {
+  /* Apply margin animation to the MOBILE swiper (2nd slider) */
+  .swiper.is--offer-mobile {
     transition: margin 0.5s ease-in-out;
   }
 
-  .offers-slider.is--first {
+  .swiper.is--offer-mobile.is--first {
     margin-left: 0;
     margin-right: 0;
   }
 
-  .offers-slider.is--middle {
+  .swiper.is--offer-mobile.is--middle {
     margin-left: auto;
     margin-right: auto;
   }
 
-  .offers-slider.is--last {
+  .swiper.is--offer-mobile.is--last {
     margin-left: auto;
     margin-right: 0;
   }
 
-  .offers-slider .swiper-slide {
+  .swiper.is--offer-mobile .swiper-slide {
     width: 78.66vw;
   }
 }

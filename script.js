@@ -945,29 +945,37 @@ $(window).on("load", function () {
   }
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
 (function () {
   let swiperInstance = null;
 
-  // Desktop hover functionality
-  function initOfferSlides() {
-    if (window.innerWidth <= 992) return;
+  const SECTION_SELECTOR = ".section.is--home-offers";
 
-    const offerSlides = document.querySelectorAll(".swiper-slide.offer--slide");
-    const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
+  // Desktop hover functionality (keeps current behavior)
+  function initOfferSlidesDesktop() {
+    if (window.innerWidth < 992) return;
+
+    const section = document.querySelector(SECTION_SELECTOR);
+    if (!section) return;
+
+    // Desktop slider (the first one)
+    const desktopSwiper = section.querySelector(".swiper.offers-slider");
+    if (!desktopSwiper) return;
+
+    const offerSlides = desktopSwiper.querySelectorAll(".swiper-slide.offer--slide");
+    const firstSlide = desktopSwiper.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // ✅ Scope that includes BOTH columns (titles + right content)
+    // Scope includes both columns
     const sliderScope =
-      document.querySelector(".grid--21.is--slider") ||
-      firstSlide.closest(".grid--21") ||
-      firstSlide.closest(".section") ||
-      document.querySelector(".offers-slider") ||
-      firstSlide.closest(".swiper");
+      section.querySelector(".grid--21.is--slider") ||
+      desktopSwiper.closest(".grid--21") ||
+      desktopSwiper.closest("section") ||
+      desktopSwiper;
 
     if (!sliderScope) return;
 
-    let lockedActiveSlide = null; // ✅ sticky state
+    let lockedActiveSlide = null;
 
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1001,16 +1009,13 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return; // ✅ no re-trigger
+      if (lockedActiveSlide === slide) return;
 
-      // Remove active everywhere
       offerSlides.forEach((s) => s.classList.remove("is-active"));
       firstSlide.classList.remove("is-active");
 
-      // Inactivate previous locked
       if (lockedActiveSlide && lockedActiveSlide !== slide) setInactive(lockedActiveSlide);
 
-      // Activate new
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
@@ -1023,7 +1028,7 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      lockedActiveSlide = slide; // ✅ STICKY
+      lockedActiveSlide = slide;
     }
 
     function setFirstAsDefault() {
@@ -1057,10 +1062,8 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // Default
     setFirstAsDefault();
 
-    // ✅ Bind hover: only changes active when entering a NEW slide
     function bindHover(slide) {
       const targets = [
         slide,
@@ -1077,80 +1080,86 @@ $(window).on("load", function () {
     offerSlides.forEach(bindHover);
     bindHover(firstSlide);
 
-    // ✅ Reset ONLY when leaving the WHOLE scope (and ignore internal moves)
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
-
-      // if moving inside the scope, ignore
       if (toEl && sliderScope.contains(toEl)) return;
-
-      // leaving the scope -> reset
       setFirstAsDefault();
     });
   }
 
-  // Mobile slider functionality
-  function initOfferSlider() {
-    if (window.innerWidth > 992) return;
+  // ✅ Mobile Swiper functionality (SECOND slider: .swiper.is--offer-mobile)
+  function initOfferSlidesMobileSwiper() {
+    if (window.innerWidth >= 992) return;
 
-    const slider = document.querySelector(".offers-slider");
-    if (!slider) return;
+    const section = document.querySelector(SECTION_SELECTOR);
+    if (!section) return;
+
+    const mobileSwiperEl = section.querySelector(".swiper.is--offer-mobile");
+    if (!mobileSwiperEl) return;
     if (typeof Swiper === "undefined") return;
 
+    // Destroy old instance if any
     if (swiperInstance) {
       swiperInstance.destroy(true, true);
       swiperInstance = null;
     }
 
-    swiperInstance = new Swiper(".offers-slider", {
-      slidesPerView: "auto",
+    swiperInstance = new Swiper(mobileSwiperEl, {
+      slidesPerView: 1,
       spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
       navigation: {
-        nextEl: ".offer-slider-btn.is--next",
-        prevEl: ".offer-slider-btn.is--prev",
+        nextEl: section.querySelector(".offer-slider-btn.is--next"),
+        prevEl: section.querySelector(".offer-slider-btn.is--prev"),
         disabledClass: "swiper-button-disabled",
       },
       on: {
         init: function () {
-          updateSlideNumbers(this);
-          updateSliderMargins(this);
+          updateSlideNumbers(this, section);
+          updateSliderStateClasses(this, mobileSwiperEl);
         },
         slideChange: function () {
-          updateSlideNumbers(this);
-          updateSliderMargins(this);
+          updateSlideNumbers(this, section);
+          updateSliderStateClasses(this, mobileSwiperEl);
+        },
+        resize: function () {
+          updateSliderStateClasses(this, mobileSwiperEl);
         },
       },
     });
 
-    function updateSliderMargins(swiper) {
-      const sliderEl = document.querySelector(".offers-slider");
-      if (!sliderEl) return;
-
-      const isFirstSlide = swiper.activeIndex === 0;
-      const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
-
-      sliderEl.classList.remove("is--first", "is--middle", "is--last");
-
-      if (isFirstSlide) sliderEl.classList.add("is--first");
-      else if (isLastSlide) sliderEl.classList.add("is--last");
-      else sliderEl.classList.add("is--middle");
-    }
+    // Initial numbers
+    updateSlideNumbers(swiperInstance, section);
+    updateSliderStateClasses(swiperInstance, mobileSwiperEl);
   }
 
-  function updateSlideNumbers(swiper) {
-    const currentSlideNumber = document.querySelector(".slide--number:first-child");
-    const totalSlideNumber = document.querySelector(".slide--number:last-child");
+  function updateSlideNumbers(swiper, sectionScope) {
+    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
+    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
     if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
-  const isDesktop = window.innerWidth > 992;
-  if (isDesktop) initOfferSlides();
-  else initOfferSlider();
+  function updateSliderStateClasses(swiper, sliderEl) {
+    if (!sliderEl) return;
 
-  let wasDesktop = isDesktop;
+    const isFirstSlide = swiper.activeIndex === 0;
+    const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
+
+    sliderEl.classList.remove("is--first", "is--middle", "is--last");
+
+    if (isFirstSlide) sliderEl.classList.add("is--first");
+    else if (isLastSlide) sliderEl.classList.add("is--last");
+    else sliderEl.classList.add("is--middle");
+  }
+
+  // Init based on current breakpoint
+  if (window.innerWidth >= 992) initOfferSlidesDesktop();
+  else initOfferSlidesMobileSwiper();
+
+  // Switch on resize
+  let wasDesktop = window.innerWidth >= 992;
   window.addEventListener("resize", function () {
-    const isDesktopNow = window.innerWidth > 992;
+    const isDesktopNow = window.innerWidth >= 992;
     if (isDesktopNow !== wasDesktop) {
       wasDesktop = isDesktopNow;
 
@@ -1159,9 +1168,9 @@ $(window).on("load", function () {
           swiperInstance.destroy(true, true);
           swiperInstance = null;
         }
-        initOfferSlides();
+        initOfferSlidesDesktop();
       } else {
-        initOfferSlider();
+        initOfferSlidesMobileSwiper();
       }
     }
   });
@@ -1474,18 +1483,13 @@ $(window).on("load", function () {
   });
 })();
 
-
 // --------------------- Marquee Animation --------------------- //
-
 document.addEventListener("DOMContentLoaded", () => {
   const scrollSpeed = 50; // px / seconde
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
 
-    // ---------------------------
-    // Scroll logic
-    // ---------------------------
     let startTime = null;
     let paused = false;
     let pausedAt = 0;
@@ -1509,9 +1513,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     requestAnimationFrame(animate);
 
-    // ---------------------------
-    // Hover → Pause only
-    // ---------------------------
     wrapper.addEventListener("mouseenter", () => {
       paused = true;
       pausedAt = lastPos;
