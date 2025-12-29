@@ -1524,3 +1524,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// --------------------- Hero Button Hover Animation --------------------- //
+
+document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
+  const svg = btn.querySelector(".hover--close-inner svg");
+  if (!svg) return;
+
+  let tl;
+  let isRunning = false;
+
+  btn.addEventListener("mouseenter", () => {
+    if (isRunning) return;
+    isRunning = true;
+
+    if (tl) tl.kill();
+
+    gsap.set(svg, { y: 0 });
+
+    tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: () => {
+        isRunning = false;
+      },
+    })
+      .to(svg, { y: 10, duration: 0.18 })
+      .to(svg, { y: -6, duration: 0.22 })
+      .to(svg, { y: 0, duration: 0.28 });
+  });
+
+  btn.addEventListener("mouseleave", () => {
+    isRunning = false;
+    gsap.to(svg, {
+      y: 0,
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  });
+});

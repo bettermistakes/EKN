@@ -383,3 +383,15 @@ body {
   white-space: nowrap;
   will-change: width;
 }
+
+/* --------------------- Button's scroll Hover Animation Styles --------------------- */
+
+.hero--btn-wrapper .hover--open {
+  overflow: hidden;
+  position: relative;
+}
+
+.hero--btn-wrapper .hover--close-inner svg {
+  display: block;
+  will-change: transform;
+}
