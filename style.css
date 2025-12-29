@@ -395,3 +395,45 @@ body {
   display: block;
   will-change: transform;
 }
+
+/* --------------------- Offers' Padding -------------------------------------------- */
+
+
+@media (min-width: 992px) {
+
+  /* Base state (applies to all offer slides) */
+  .swiper-slide.offer--slide .paragraph-large {
+    overflow: hidden;
+    max-height: 220px; /* Increase if some text is longer */
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    transform: translateY(-0.6rem);
+    transition:
+      max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s ease,
+      padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: max-height, opacity, transform;
+  }
+
+  /* Inactive slides: fully collapsed */
+  .swiper-slide.offer--slide:not(.is-active) .paragraph-large {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    transform: translateY(-0.6rem);
+    pointer-events: none;
+  }
+
+  /* Active slide: expanded + visible */
+  .swiper-slide.offer--slide.is-active .paragraph-large {
+    max-height: 220px;
+    opacity: 1;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
