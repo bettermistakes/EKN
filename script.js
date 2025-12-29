@@ -945,30 +945,19 @@ $(window).on("load", function () {
   }
 })();
 
-// --------------------- ✅ Offer Slide Hover Animation (DESKTOP ONLY) + Swiper (MOBILE ONLY) --------------------- //
+// --------------------- ✅ Offer Slide Hover Animation (Desktop + Mobile) - STICKY + NO GLITCH --------------------- //
 (function () {
   let swiperInstance = null;
 
-  // Used to cleanly remove desktop event listeners when switching to mobile
-  let desktopAbortController = null;
-
-  // -----------------------------
-  // DESKTOP: hover + sticky logic
-  // -----------------------------
-  function initOfferSlidesDesktop() {
-    // Desktop only
+  // Desktop hover functionality
+  function initOfferSlides() {
     if (window.innerWidth <= 992) return;
-
-    // Kill any previous desktop listeners (if re-init)
-    if (desktopAbortController) desktopAbortController.abort();
-    desktopAbortController = new AbortController();
-    const { signal } = desktopAbortController;
 
     const offerSlides = document.querySelectorAll(".swiper-slide.offer--slide");
     const firstSlide = document.querySelector(".swiper-slide.is--offer-first");
     if (!offerSlides.length || !firstSlide) return;
 
-    // Scope that includes BOTH columns (titles + right content)
+    // ✅ Scope that includes BOTH columns (titles + right content)
     const sliderScope =
       document.querySelector(".grid--21.is--slider") ||
       firstSlide.closest(".grid--21") ||
@@ -978,7 +967,7 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    let lockedActiveSlide = null; // sticky state
+    let lockedActiveSlide = null; // ✅ sticky state
 
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1012,7 +1001,7 @@ $(window).on("load", function () {
 
     function setActive(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return; // avoid re-trigger
+      if (lockedActiveSlide === slide) return; // ✅ no re-trigger
 
       // Remove active everywhere
       offerSlides.forEach((s) => s.classList.remove("is-active"));
@@ -1021,6 +1010,7 @@ $(window).on("load", function () {
       // Inactivate previous locked
       if (lockedActiveSlide && lockedActiveSlide !== slide) setInactive(lockedActiveSlide);
 
+      // Activate new
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
@@ -1033,7 +1023,7 @@ $(window).on("load", function () {
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
-      lockedActiveSlide = slide;
+      lockedActiveSlide = slide; // ✅ STICKY
     }
 
     function setFirstAsDefault() {
@@ -1054,7 +1044,7 @@ $(window).on("load", function () {
       lockedActiveSlide = firstSlide;
     }
 
-    // Init inactive look
+    // Init all as inactive
     offerSlides.forEach((slide) => {
       gsap.set(slide, { opacity: 0.3 });
 
@@ -1067,10 +1057,10 @@ $(window).on("load", function () {
       if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
     });
 
-    // Default state
+    // Default
     setFirstAsDefault();
 
-    // Bind hover for desktop only
+    // ✅ Bind hover: only changes active when entering a NEW slide
     function bindHover(slide) {
       const targets = [
         slide,
@@ -1080,40 +1070,33 @@ $(window).on("load", function () {
       ].filter(Boolean);
 
       targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setActive(slide), { passive: true, signal });
+        t.addEventListener("mouseenter", () => setActive(slide), { passive: true });
       });
     }
 
     offerSlides.forEach(bindHover);
     bindHover(firstSlide);
 
-    // Reset ONLY when leaving the whole scope
-    sliderScope.addEventListener(
-      "mouseout",
-      (e) => {
-        const toEl = e.relatedTarget;
-        if (toEl && sliderScope.contains(toEl)) return;
-        setFirstAsDefault();
-      },
-      { signal }
-    );
+    // ✅ Reset ONLY when leaving the WHOLE scope (and ignore internal moves)
+    sliderScope.addEventListener("mouseout", (e) => {
+      const toEl = e.relatedTarget;
+
+      // if moving inside the scope, ignore
+      if (toEl && sliderScope.contains(toEl)) return;
+
+      // leaving the scope -> reset
+      setFirstAsDefault();
+    });
   }
 
-  // -----------------------------
-  // MOBILE: Swiper slider only
-  // -----------------------------
-  function initOfferSliderMobile() {
+  // Mobile slider functionality
+  function initOfferSlider() {
     if (window.innerWidth > 992) return;
 
     const slider = document.querySelector(".offers-slider");
     if (!slider) return;
     if (typeof Swiper === "undefined") return;
 
-    // Make sure desktop listeners are removed
-    if (desktopAbortController) desktopAbortController.abort();
-    desktopAbortController = null;
-
-    // Rebuild swiper cleanly
     if (swiperInstance) {
       swiperInstance.destroy(true, true);
       swiperInstance = null;
@@ -1161,25 +1144,25 @@ $(window).on("load", function () {
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
-  // Initial run
-  if (window.innerWidth > 992) initOfferSlidesDesktop();
-  else initOfferSliderMobile();
+  const isDesktop = window.innerWidth > 992;
+  if (isDesktop) initOfferSlides();
+  else initOfferSlider();
 
-  // Re-init on breakpoint switch only
-  let wasDesktop = window.innerWidth > 992;
+  let wasDesktop = isDesktop;
   window.addEventListener("resize", function () {
     const isDesktopNow = window.innerWidth > 992;
-    if (isDesktopNow === wasDesktop) return;
-    wasDesktop = isDesktopNow;
+    if (isDesktopNow !== wasDesktop) {
+      wasDesktop = isDesktopNow;
 
-    if (isDesktopNow) {
-      if (swiperInstance) {
-        swiperInstance.destroy(true, true);
-        swiperInstance = null;
+      if (isDesktopNow) {
+        if (swiperInstance) {
+          swiperInstance.destroy(true, true);
+          swiperInstance = null;
+        }
+        initOfferSlides();
+      } else {
+        initOfferSlider();
       }
-      initOfferSlidesDesktop();
-    } else {
-      initOfferSliderMobile();
     }
   });
 })();
@@ -1309,11 +1292,8 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- What Offers Hover Circle (DESKTOP ONLY) --------------------- //
+// --------------------- What Offers Hover Circle --------------------- //
 (function () {
-  // Desktop only
-  if (window.innerWidth <= 992) return;
-
   const section = document.querySelector(".section.is--whatoffers");
   const container = document.querySelector(".relative.is--whatworks");
   const hoverCircle = document.querySelector(".hover--circle.is--what");
@@ -1494,7 +1474,9 @@ $(window).on("load", function () {
   });
 })();
 
+
 // --------------------- Marquee Animation --------------------- //
+
 document.addEventListener("DOMContentLoaded", () => {
   const scrollSpeed = 50; // px / seconde
 
