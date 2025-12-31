@@ -561,9 +561,7 @@ $(window).on("load", function () {
   const navbar = document.querySelector(".navbar");
   const navbarBg = document.querySelector(".navbar--bg");
 
-  if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) {
-    return;
-  }
+  if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) return;
 
   let isMenuOpen = false;
 
@@ -713,7 +711,7 @@ $(window).on("load", function () {
   handleNavbarScroll();
 })();
 
-// --------------------- Eyebrow Text Cycling Animation --------------------- //
+// --------------------- Eyebrow Text Cycling Animation (FIXED - no SplitText) --------------------- //
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
@@ -727,25 +725,33 @@ $(window).on("load", function () {
 
   let currentIndex = 0;
   let isAnimating = false;
-  let currentSplit = null;
 
-  function initializeText() {
-    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
-    eyebrowElement.innerHTML = textWithSpaces;
-    eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+  // Make sure absolute temp works correctly
+  const cs = getComputedStyle(eyebrowElement);
+  if (cs.position === "static") eyebrowElement.style.position = "relative";
 
-    currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
+  function renderChars(el, text) {
+    el.innerHTML = "";
+    el.setAttribute("aria-label", text);
+
+    const frag = document.createDocumentFragment();
+
+    for (const ch of text) {
+      const span = document.createElement("span");
+      span.className = ch === " " ? "space" : "char";
+      span.textContent = ch === " " ? " " : ch;
+      frag.appendChild(span);
+    }
+
+    el.appendChild(frag);
+    return Array.from(el.querySelectorAll(".char, .space"));
   }
 
   function animateTextChange() {
     if (isAnimating) return;
     isAnimating = true;
 
-    if (!currentSplit) {
-      currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-    }
-
-    const oldChars = currentSplit.chars;
+    const oldChars = Array.from(eyebrowElement.querySelectorAll(".char, .space"));
 
     gsap.to(oldChars, {
       yPercent: -100,
@@ -755,20 +761,21 @@ $(window).on("load", function () {
       ease: "power2.out",
     });
 
-    const tempDiv = document.createElement("div");
-    tempDiv.style.position = "absolute";
-    tempDiv.style.top = "0";
-    tempDiv.style.left = "0";
-    tempDiv.style.width = "100%";
-
+    // Next phrase
     currentIndex = (currentIndex + 1) % phrases.length;
-    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
-    tempDiv.innerHTML = textWithSpaces;
-    eyebrowElement.appendChild(tempDiv);
+    const nextText = phrases[currentIndex];
 
-    const newSplit = new SplitText(tempDiv, { type: "chars", charsClass: "char" });
-    const newChars = newSplit.chars;
+    // Temp layer
+    const temp = document.createElement("div");
+    temp.style.position = "absolute";
+    temp.style.top = "0";
+    temp.style.left = "0";
+    temp.style.width = "100%";
+    temp.style.pointerEvents = "none";
 
+    eyebrowElement.appendChild(temp);
+
+    const newChars = renderChars(temp, nextText);
     gsap.set(newChars, { yPercent: 100, opacity: 0 });
 
     gsap.to(newChars, {
@@ -778,19 +785,15 @@ $(window).on("load", function () {
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
-        currentSplit.revert();
-        eyebrowElement.innerHTML = tempDiv.innerHTML;
-        eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
-
-        currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-
+        // Commit clean DOM (no nested .char)
+        renderChars(eyebrowElement, nextText);
         isAnimating = false;
         setTimeout(animateTextChange, 2000);
       },
     });
   }
 
-  initializeText();
+  renderChars(eyebrowElement, phrases[currentIndex]);
   setTimeout(animateTextChange, 2000);
 })();
 
@@ -1502,7 +1505,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const elapsed = time - startTime;
         const width = track.offsetWidth || 1;
 
-        lastPos = (elapsed * scrollSpeed) / 1000 % width;
+        lastPos = ((elapsed * scrollSpeed) / 1000) % width;
         track.style.transform = `translateX(${-lastPos}px)`;
       } else {
         track.style.transform = `translateX(${-pausedAt}px)`;
@@ -1526,39 +1529,40 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // --------------------- Hero Button Hover Animation --------------------- //
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
+    const svg = btn.querySelector(".hover--close-inner svg");
+    if (!svg) return;
 
-document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
-  const svg = btn.querySelector(".hover--close-inner svg");
-  if (!svg) return;
+    let tl;
+    let isRunning = false;
 
-  let tl;
-  let isRunning = false;
+    btn.addEventListener("mouseenter", () => {
+      if (isRunning) return;
+      isRunning = true;
 
-  btn.addEventListener("mouseenter", () => {
-    if (isRunning) return;
-    isRunning = true;
+      if (tl) tl.kill();
 
-    if (tl) tl.kill();
+      gsap.set(svg, { y: 0 });
 
-    gsap.set(svg, { y: 0 });
+      tl = gsap.timeline({
+        defaults: { ease: "power2.out" },
+        onComplete: () => {
+          isRunning = false;
+        },
+      })
+        .to(svg, { y: 10, duration: 0.18 })
+        .to(svg, { y: -6, duration: 0.22 })
+        .to(svg, { y: 0, duration: 0.28 });
+    });
 
-    tl = gsap.timeline({
-      defaults: { ease: "power2.out" },
-      onComplete: () => {
-        isRunning = false;
-      },
-    })
-      .to(svg, { y: 10, duration: 0.18 })
-      .to(svg, { y: -6, duration: 0.22 })
-      .to(svg, { y: 0, duration: 0.28 });
-  });
-
-  btn.addEventListener("mouseleave", () => {
-    isRunning = false;
-    gsap.to(svg, {
-      y: 0,
-      duration: 0.2,
-      ease: "power2.out",
+    btn.addEventListener("mouseleave", () => {
+      isRunning = false;
+      gsap.to(svg, {
+        y: 0,
+        duration: 0.2,
+        ease: "power2.out",
+      });
     });
   });
 });
