@@ -663,10 +663,10 @@ $(window).on("load", function () {
   if (!eyebrowElement) return;
 
   const phrases = [
-    "From field to office",
-    "From data to decision",
-    "From risk to reliability",
-    "From reactive to proactive.",
+    "From field to office                     ",
+    "From data to decision                    ",
+    "From risk to reliability                 ",
+    "From reactive to proactive.              ",
   ];
 
   let currentIndex = 0;
