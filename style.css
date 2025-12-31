@@ -240,7 +240,6 @@ body {
     pointer-events: none;
   }
 
-  /* ✅ IMPORTANT: you want padding (NOT margin) */
   .swiper.is--offer-mobile {
     transition: padding 0.5s ease-in-out;
     padding-left: 0;
@@ -394,15 +393,13 @@ body {
   will-change: transform;
 }
 
-/* --------------------- ✅ OFFERS: paragraph MUST be height:0 when NOT active + SMOOTH expand --------------------- */
+/* --------------------- ✅ OFFERS: paragraph ONLY (SplitText safe) --------------------- */
 @media (min-width: 992px) {
   /* Base: collapsed */
-  .swiper-slide.offer--slide .paragraph-large,
-  .swiper-slide.offer--slide .offer--slide-titles .gsap_split_line-mask,
-  .swiper-slide.offer--slide .offer--slide-titles [class*="gsap_split_line"][class*="mask"] {
+  .swiper-slide.offer--slide .paragraph-large {
     overflow: hidden;
-    height: 0;        /* ✅ required */
-    max-height: 0;    /* ✅ animated smoothly */
+    height: 0;              /* ✅ required */
+    max-height: 0;          /* ✅ smooth */
     opacity: 0;
     transform: translateY(-0.6rem);
     padding-top: 0;
@@ -415,16 +412,14 @@ body {
     pointer-events: none;
   }
 
-  /* Active: expanded (NO padding) */
-  .swiper-slide.offer--slide.is-offer-active .paragraph-large,
-  .swiper-slide.offer--slide.is-offer-active .offer--slide-titles .gsap_split_line-mask,
-  .swiper-slide.offer--slide.is-offer-active .offer--slide-titles [class*="gsap_split_line"][class*="mask"] {
+  /* Active: expanded */
+  .swiper-slide.offer--slide.is-offer-active .paragraph-large {
     height: auto;
     max-height: var(--offer-para-h, 240px); /* ✅ set by JS */
     opacity: 1;
     transform: translateY(0);
-    padding-top: 0;   /* ✅ eliminate 0.5rem */
-    padding-bottom: 0;/* ✅ eliminate 0.5rem */
+    padding-top: 0;         /* ✅ no 0.5rem */
+    padding-bottom: 0;      /* ✅ no 0.5rem */
     pointer-events: auto;
   }
 }

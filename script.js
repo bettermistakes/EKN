@@ -336,8 +336,7 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph)
-        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -828,31 +827,37 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // ✅ only the real paragraph (max-height is measured for smooth expand)
     function getParagraph(slide) {
-      const titles = slide.querySelector(".offer--slide-titles");
-      if (!titles) return null;
-      return titles.querySelector(".paragraph-large");
+      return slide.querySelector(".offer--slide-titles .paragraph-large");
     }
 
+    // ✅ SplitText-safe: measure paragraph height by temporarily expanding ONLY the paragraph
     function measureAndSetParagraphHeight(slide) {
       const p = getParagraph(slide);
       if (!p) return;
 
-      const prevMax = p.style.maxHeight;
-      const prevH = p.style.height;
-      const prevOverflow = p.style.overflow;
+      const prev = {
+        maxHeight: p.style.maxHeight,
+        height: p.style.height,
+        overflow: p.style.overflow,
+        opacity: p.style.opacity,
+        transform: p.style.transform,
+      };
 
       p.style.maxHeight = "none";
       p.style.height = "auto";
       p.style.overflow = "visible";
+      p.style.opacity = "1";
+      p.style.transform = "none";
 
-      const h = Math.ceil(p.scrollHeight || 0);
+      const h = Math.ceil(p.scrollHeight || p.getBoundingClientRect().height || 0);
       slide.style.setProperty("--offer-para-h", `${h}px`);
 
-      p.style.maxHeight = prevMax;
-      p.style.height = prevH;
-      p.style.overflow = prevOverflow;
+      p.style.maxHeight = prev.maxHeight;
+      p.style.height = prev.height;
+      p.style.overflow = prev.overflow;
+      p.style.opacity = prev.opacity;
+      p.style.transform = prev.transform;
     }
 
     function showParagraph(slide) {
@@ -867,7 +872,7 @@ $(window).on("load", function () {
         duration: 0.22,
         ease: "power2.out",
         overwrite: "auto",
-        clearProps: "height,overflow,paddingTop,paddingBottom",
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
       });
     }
 
@@ -881,7 +886,7 @@ $(window).on("load", function () {
         duration: 0.18,
         ease: "power2.out",
         overwrite: "auto",
-        clearProps: "height,overflow,paddingTop,paddingBottom",
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
       });
     }
 
@@ -961,10 +966,7 @@ $(window).on("load", function () {
       gsap.set(slide, { opacity: 1 });
 
       const p = getParagraph(slide);
-      if (p) {
-        gsap.set(p, { opacity: 0, y: -10, clearProps: "height,overflow,paddingTop,paddingBottom" });
-        measureAndSetParagraphHeight(slide);
-      }
+      if (p) gsap.set(p, { opacity: 0, y: -10 });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -972,6 +974,11 @@ $(window).on("load", function () {
       if (content) gsap.set(content, { opacity: 0 });
 
       applyVisibility(slide, false);
+    });
+
+    // ✅ Measure AFTER SplitText has created lines
+    requestAnimationFrame(() => {
+      allSlides.forEach(measureAndSetParagraphHeight);
     });
 
     setDefaultState();
@@ -1007,9 +1014,12 @@ $(window).on("load", function () {
       setDefaultState();
     });
 
-    // ✅ re-measure on resize (keeps smoothness)
+    // ✅ Re-measure on resize (desktop only)
     window.addEventListener("resize", () => {
-      allSlides.forEach(measureAndSetParagraphHeight);
+      if (window.innerWidth < 992) return;
+      requestAnimationFrame(() => {
+        allSlides.forEach(measureAndSetParagraphHeight);
+      });
     });
   }
 
