@@ -1477,3 +1477,54 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
   });
 });
+// ===================== BG COLOR SWITCH (trigger-bg) ===================== //
+// Changes .background-gradient background-color from #08126D to #F2F9FF
+// when .trigger-bg top reaches the top of the viewport (and reverses on scroll up)
+
+(function () {
+  // Prevent double init (useful on Webflow/Netlify setups)
+  if (window.__bgSwitchTriggerInit) return;
+  window.__bgSwitchTriggerInit = true;
+
+  const trigger = document.querySelector(".trigger-bg");
+  const bgWrap = document.querySelector(".background-gradient");
+  if (!trigger || !bgWrap) return;
+
+  const DARK = "#08126D";
+  const LIGHT = "#F2F9FF";
+  const DURATION = 600; // ms
+
+  // Smooth transition (JS-only)
+  bgWrap.style.transition = `background-color ${DURATION}ms ease`;
+  bgWrap.style.willChange = "background-color";
+
+  // Ensure trigger has a measurable height (JS-only safety)
+  if (trigger.offsetHeight === 0) trigger.style.height = "1px";
+
+  // Initial state (optional)
+  if (!bgWrap.style.backgroundColor) bgWrap.style.backgroundColor = DARK;
+
+  let isLight = bgWrap.style.backgroundColor === LIGHT;
+  let rafId = null;
+
+  function setBg(toLight) {
+    if (toLight === isLight) return;
+    isLight = toLight;
+    bgWrap.style.backgroundColor = toLight ? LIGHT : DARK;
+  }
+
+  function update() {
+    rafId = null;
+    const rect = trigger.getBoundingClientRect();
+    setBg(rect.top <= 0);
+  }
+
+  function onScroll() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  update(); // initial check
+})();
