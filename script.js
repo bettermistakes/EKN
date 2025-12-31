@@ -336,7 +336,8 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph)
+        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -802,7 +803,9 @@ $(window).on("load", function () {
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP (smooth: no height/max-height/padding animation → no jump)
+  // DESKTOP
+  // ✅ FIX: paragraph must be height:0 when NOT active (handled by CSS),
+  // and only visible when hovered (we only animate opacity/translate here)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -827,31 +830,15 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
+    // Grab SplitText-safe bits (paragraph + SplitText masks)
     function getParagraphBits(slide) {
       const titles = slide.querySelector(".offer--slide-titles");
       if (!titles) return [];
       return Array.from(
         titles.querySelectorAll(
-          ".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']"
+          ".paragraph-large, .gsap_split_line-mask, [class*='gsap_split_line'][class*='mask']"
         )
       );
-    }
-
-    function normalizeParagraphLayout(slide) {
-      const bits = getParagraphBits(slide);
-      if (!bits.length) return;
-
-      bits.forEach((el) => {
-        el.style.maxHeight = "none";
-        el.style.height = "auto";
-        el.style.overflow = "visible";
-        el.style.paddingTop = "";
-        el.style.paddingBottom = "";
-        el.style.pointerEvents = "none";
-        el.style.visibility = "visible";
-        el.style.willChange = "transform, opacity";
-        el.style.transform = "translateY(0px)";
-      });
     }
 
     function showParagraph(slide) {
@@ -864,6 +851,8 @@ $(window).on("load", function () {
         duration: 0.22,
         ease: "power2.out",
         overwrite: "auto",
+        // IMPORTANT: let CSS control height/max-height (so it can be 0 when inactive)
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
       });
     }
 
@@ -877,6 +866,7 @@ $(window).on("load", function () {
         duration: 0.18,
         ease: "power2.out",
         overwrite: "auto",
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
       });
     }
 
@@ -950,14 +940,16 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
+    // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
 
-      normalizeParagraphLayout(slide);
-
       const bits = getParagraphBits(slide);
-      if (bits.length) gsap.set(bits, { opacity: 0, y: -10 });
+      if (bits.length) {
+        // only opacity/translate in JS, height/max-height handled by CSS
+        gsap.set(bits, { opacity: 0, y: -10, clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom" });
+      }
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -1002,7 +994,7 @@ $(window).on("load", function () {
   }
 
   // ----------------------------
-  // MOBILE: second slider
+  // MOBILE: second slider (unchanged)
   // ----------------------------
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
@@ -1055,7 +1047,6 @@ $(window).on("load", function () {
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
-  // ✅ keeps classes for CSS padding behavior
   function updateSliderStateClasses(swiper, sliderEl) {
     if (!sliderEl) return;
 
@@ -1403,10 +1394,6 @@ document.addEventListener("DOMContentLoaded", () => {
     glow.style.opacity = "0";
     glow.style.transform = "translate(-50%, -50%)";
     glow.style.transition = "opacity 0.2s ease";
-    // ✅ IMPORTANT: you were missing it
-    glow.style.background =
-      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
-    glow.style.filter = "blur(2px)";
 
     wrapper.style.position = "relative";
     wrapper.appendChild(glow);
@@ -1494,6 +1481,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   bgWrap.style.willChange = "background-color";
 
   if (trigger.offsetHeight === 0) trigger.style.height = "1px";
+
   if (!bgWrap.style.backgroundColor) bgWrap.style.backgroundColor = DARK;
 
   let isLight = bgWrap.style.backgroundColor === LIGHT;
