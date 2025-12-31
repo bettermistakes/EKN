@@ -880,6 +880,11 @@ $(window).on("load", function () {
   let swiperInstance = null;
   const SECTION_SELECTOR = ".section.is--home-offers";
 
+  // =============================
+  // DESKTOP: default = first active, NO dim on others
+  // hover = dim siblings (0.3), hovered stays 1
+  // mouseout = back to default
+  // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
 
@@ -891,10 +896,8 @@ $(window).on("load", function () {
 
     const firstSlide = desktopSwiper.querySelector(".swiper-slide.is--offer-first");
     const offerSlides = Array.from(desktopSwiper.querySelectorAll(".swiper-slide.offer--slide"));
-
     if (!firstSlide || !offerSlides.length) return;
 
-    // Include first slide + all offer slides
     const allSlides = [firstSlide, ...offerSlides];
 
     const sliderScope =
@@ -905,10 +908,6 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    let lockedActiveSlide = null;
-
-    // Only control icon + content visibility.
-    // Paragraph is animated by CSS only (padding/max-height/opacity) => smoother.
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -921,6 +920,7 @@ $(window).on("load", function () {
         });
       });
 
+      // keep paragraph always visible (CSS controls expand/collapse)
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
       if (paragraph) {
         gsap.set(paragraph, {
@@ -930,7 +930,7 @@ $(window).on("load", function () {
       }
     }
 
-    function setDimmed(slide) {
+    function setNeutral(slide) {
       if (!slide) return;
       slide.classList.remove("is-active");
       applyVisibility(slide, false);
@@ -938,59 +938,65 @@ $(window).on("load", function () {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
+      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
     }
 
     function setActivated(slide) {
       if (!slide) return;
-
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
-      if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
-
-      lockedActiveSlide = slide;
+      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (content) gsap.to(content, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
     }
 
-    function setActive(slide) {
+    function setDimmed(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return;
-
-      // ✅ Dim all others when one is active
-      allSlides.forEach((s) => {
-        if (s === slide) setActivated(s);
-        else setDimmed(s);
-      });
-    }
-
-    function setFirstAsDefault() {
-      allSlides.forEach((s) => {
-        if (s === firstSlide) setActivated(s);
-        else setDimmed(s);
-      });
-    }
-
-    // Initial state
-    allSlides.forEach((slide) => {
-      gsap.set(slide, { opacity: slide === firstSlide ? 1 : 0.3 });
+      // don't mark active
+      if (slide.classList.contains("is-active")) applyVisibility(slide, false);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      if (icon) gsap.set(icon, { x: slide === firstSlide ? "0rem" : "-1rem", opacity: slide === firstSlide ? 1 : 0 });
-      if (content) gsap.set(content, { opacity: slide === firstSlide ? 1 : 0 });
+      gsap.to(slide, { opacity: 0.3, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+    }
 
-      applyVisibility(slide, slide === firstSlide);
+    function setDefaultState() {
+      allSlides.forEach((s) => {
+        if (s === firstSlide) setActivated(s);
+        else setNeutral(s);
+      });
+    }
+
+    function setHoverState(activeSlide) {
+      allSlides.forEach((s) => {
+        if (s === activeSlide) setActivated(s);
+        else setDimmed(s);
+      });
+    }
+
+    // Init (clear any leftover inline opacity)
+    allSlides.forEach((slide) => {
+      slide.classList.remove("is-active");
+      gsap.set(slide, { opacity: 1 });
+
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
+      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
+      if (content) gsap.set(content, { opacity: 0 });
+
+      applyVisibility(slide, false);
     });
 
-    setFirstAsDefault();
+    setDefaultState();
 
     function bindHover(slide) {
       const targets = [
@@ -1001,19 +1007,23 @@ $(window).on("load", function () {
       ].filter(Boolean);
 
       targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setActive(slide), { passive: true });
+        t.addEventListener("mouseenter", () => setHoverState(slide), { passive: true });
       });
     }
 
     allSlides.forEach(bindHover);
 
+    // leave whole block => default (no dim)
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
       if (toEl && sliderScope.contains(toEl)) return;
-      setFirstAsDefault();
+      setDefaultState();
     });
   }
 
+  // ----------------------------
+  // MOBILE: second slider
+  // ----------------------------
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
 
@@ -1422,6 +1432,23 @@ document.addEventListener("DOMContentLoaded", () => {
     let pausedAt = 0;
     let lastPos = 0;
 
+    // Cursor-follow glow (no extra CSS file needed)
+    const glow = document.createElement("div");
+    glow.style.position = "absolute";
+    glow.style.width = "220px";
+    glow.style.height = "220px";
+    glow.style.borderRadius = "50%";
+    glow.style.pointerEvents = "none";
+    glow.style.opacity = "0";
+    glow.style.transform = "translate(-50%, -50%)";
+    glow.style.transition = "opacity 0.2s ease";
+    glow.style.background =
+      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
+    glow.style.filter = "blur(2px)";
+
+    wrapper.style.position = "relative";
+    wrapper.appendChild(glow);
+
     function animate(time) {
       if (!startTime) startTime = time;
 
@@ -1440,14 +1467,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     requestAnimationFrame(animate);
 
+    wrapper.addEventListener("mousemove", (e) => {
+      const r = wrapper.getBoundingClientRect();
+      glow.style.left = `${e.clientX - r.left}px`;
+      glow.style.top = `${e.clientY - r.top}px`;
+    });
+
     wrapper.addEventListener("mouseenter", () => {
       paused = true;
       pausedAt = lastPos;
+      glow.style.opacity = "1";
     });
 
     wrapper.addEventListener("mouseleave", () => {
       paused = false;
       startTime = performance.now() - (pausedAt / scrollSpeed) * 1000;
+      glow.style.opacity = "0";
     });
   });
 });

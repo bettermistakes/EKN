@@ -204,7 +204,7 @@ body {
     transition: opacity 0.25s ease;
   }
 
-  /* Icon + content: can be hidden */
+  /* We only toggle opacity/visibility/pointer-events (keep layout intact) */
   .offer--slide-icon,
   .offer--slide-content {
     opacity: 0;
@@ -218,12 +218,6 @@ body {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-  }
-
-  /* Paragraph: DO NOT hide with visibility (keeps padding transition smooth) */
-  .offer--slide .offer--slide-titles .paragraph-large {
-    visibility: visible;
-    will-change: max-height, opacity, transform, padding;
   }
 
   /* Ensure content stacks above neighbors */
@@ -389,7 +383,6 @@ body {
 }
 
 /* --------------------- Button's scroll Hover Animation Styles --------------------- */
-
 .hero--btn-wrapper .hover--open {
   overflow: hidden;
   position: relative;
@@ -415,7 +408,7 @@ body {
       opacity 0.35s ease,
       padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
       transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: max-height, opacity, transform, padding;
+    will-change: max-height, opacity, transform;
   }
 
   /* Inactive slides: fully collapsed */
