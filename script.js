@@ -57,7 +57,6 @@ $(window).on("load", function () {
     if (!list) return;
 
     gsap.set(list, { display: "flex", height: 0 });
-
     gsap.to(list, { height: "auto", duration: 0.3, ease: "power4.out" });
 
     if (animate) {
@@ -800,10 +799,10 @@ $(window).on("load", function () {
 (function () {
   let swiperInstance = null;
   const SECTION_SELECTOR = ".section.is--home-offers";
-  const ACTIVE_CLASS = "is-offer-active"; // ✅ single source of truth
+  const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP (fix SplitText height + visibility)
+  // DESKTOP (smooth: no height/max-height/padding animation → no jump)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -828,7 +827,7 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // ✅ SplitText-safe paragraph bits
+    // Grab SplitText-safe bits
     function getParagraphBits(slide) {
       const titles = slide.querySelector(".offer--slide-titles");
       if (!titles) return [];
@@ -839,49 +838,48 @@ $(window).on("load", function () {
       );
     }
 
+    // ✅ JS-only override to avoid reflow jumps caused by CSS collapse
+    function normalizeParagraphLayout(slide) {
+      const bits = getParagraphBits(slide);
+      if (!bits.length) return;
+
+      bits.forEach((el) => {
+        // cancel collapse transitions from CSS by overriding inline
+        el.style.maxHeight = "none";
+        el.style.height = "auto";
+        el.style.overflow = "visible";
+        el.style.paddingTop = "";
+        el.style.paddingBottom = "";
+        el.style.pointerEvents = "none";
+        el.style.visibility = "visible";
+        el.style.willChange = "transform, opacity";
+        el.style.transform = "translateY(0px)";
+      });
+    }
+
     function showParagraph(slide) {
       const bits = getParagraphBits(slide);
       if (!bits.length) return;
 
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-
-      // ✅ clear Webflow/SplitText inline collapsing
-      if (paragraph) {
-        paragraph.style.height = "auto";
-        paragraph.style.maxHeight = "220px";
-        paragraph.style.overflow = "hidden";
-      }
-
-      bits.forEach((el) => {
-        el.style.visibility = "visible";
-        el.style.pointerEvents = "none";
+      gsap.to(bits, {
+        opacity: 1,
+        y: 0,
+        duration: 0.22,
+        ease: "power2.out",
+        overwrite: "auto",
       });
-
-      gsap.to(bits, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
     }
 
     function hideParagraph(slide) {
       const bits = getParagraphBits(slide);
       if (!bits.length) return;
 
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-      if (paragraph) {
-        paragraph.style.maxHeight = "0px";
-        paragraph.style.height = "0px";
-        paragraph.style.overflow = "hidden";
-      }
-
       gsap.to(bits, {
         opacity: 0,
-        duration: 0.15,
+        y: -10,
+        duration: 0.18,
         ease: "power2.out",
         overwrite: "auto",
-        onComplete: () => {
-          bits.forEach((el) => {
-            el.style.visibility = "hidden";
-            el.style.pointerEvents = "none";
-          });
-        },
       });
     }
 
@@ -891,7 +889,10 @@ $(window).on("load", function () {
 
       [icon, content].forEach((el) => {
         if (!el) return;
-        gsap.set(el, { visibility: isActive ? "visible" : "hidden", pointerEvents: isActive ? "auto" : "none" });
+        gsap.set(el, {
+          visibility: isActive ? "visible" : "hidden",
+          pointerEvents: isActive ? "auto" : "none",
+        });
       });
 
       if (isActive) showParagraph(slide);
@@ -899,7 +900,6 @@ $(window).on("load", function () {
     }
 
     function setNeutral(slide) {
-      if (!slide) return;
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
@@ -912,7 +912,6 @@ $(window).on("load", function () {
     }
 
     function setActivated(slide) {
-      if (!slide) return;
       slide.classList.add(ACTIVE_CLASS);
       applyVisibility(slide, true);
 
@@ -925,8 +924,6 @@ $(window).on("load", function () {
     }
 
     function setDimmed(slide) {
-      if (!slide) return;
-
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
@@ -956,17 +953,22 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
-    // Init
+    // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
+
+      // ✅ kill layout jumps
+      normalizeParagraphLayout(slide);
+
+      const bits = getParagraphBits(slide);
+      if (bits.length) gsap.set(bits, { opacity: 0, y: -10 });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
-      hideParagraph(slide);
       applyVisibility(slide, false);
     });
 
@@ -1005,7 +1007,7 @@ $(window).on("load", function () {
   }
 
   // ----------------------------
-  // MOBILE: second slider
+  // MOBILE: second slider (unchanged)
   // ----------------------------
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
