@@ -394,38 +394,37 @@ body {
   will-change: transform;
 }
 
-/* --------------------- ✅ OFFERS: paragraph MUST be height:0 when NOT active --------------------- */
+/* --------------------- ✅ OFFERS: paragraph MUST be height:0 when NOT active + SMOOTH expand --------------------- */
 @media (min-width: 992px) {
   /* Base: collapsed */
   .swiper-slide.offer--slide .paragraph-large,
   .swiper-slide.offer--slide .offer--slide-titles .gsap_split_line-mask,
   .swiper-slide.offer--slide .offer--slide-titles [class*="gsap_split_line"][class*="mask"] {
     overflow: hidden;
-    max-height: 0;
-    height: 0; /* ✅ required */
+    height: 0;        /* ✅ required */
+    max-height: 0;    /* ✅ animated smoothly */
     opacity: 0;
     transform: translateY(-0.6rem);
     padding-top: 0;
     padding-bottom: 0;
     transition:
-      max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.35s ease,
-      padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease,
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: max-height, opacity, transform;
     pointer-events: none;
   }
 
-  /* Active: expanded */
+  /* Active: expanded (NO padding) */
   .swiper-slide.offer--slide.is-offer-active .paragraph-large,
   .swiper-slide.offer--slide.is-offer-active .offer--slide-titles .gsap_split_line-mask,
   .swiper-slide.offer--slide.is-offer-active .offer--slide-titles [class*="gsap_split_line"][class*="mask"] {
-    max-height: 220px;
     height: auto;
+    max-height: var(--offer-para-h, 240px); /* ✅ set by JS */
     opacity: 1;
     transform: translateY(0);
-    padding-top: 0rem;
-    padding-bottom: 0rem;
+    padding-top: 0;   /* ✅ eliminate 0.5rem */
+    padding-bottom: 0;/* ✅ eliminate 0.5rem */
     pointer-events: auto;
   }
 }

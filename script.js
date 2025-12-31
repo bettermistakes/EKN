@@ -804,8 +804,6 @@ $(window).on("load", function () {
 
   // =============================
   // DESKTOP
-  // ✅ FIX: paragraph must be height:0 when NOT active (handled by CSS),
-  // and only visible when hovered (we only animate opacity/translate here)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -830,43 +828,60 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // Grab SplitText-safe bits (paragraph + SplitText masks)
-    function getParagraphBits(slide) {
+    // ✅ only the real paragraph (max-height is measured for smooth expand)
+    function getParagraph(slide) {
       const titles = slide.querySelector(".offer--slide-titles");
-      if (!titles) return [];
-      return Array.from(
-        titles.querySelectorAll(
-          ".paragraph-large, .gsap_split_line-mask, [class*='gsap_split_line'][class*='mask']"
-        )
-      );
+      if (!titles) return null;
+      return titles.querySelector(".paragraph-large");
+    }
+
+    function measureAndSetParagraphHeight(slide) {
+      const p = getParagraph(slide);
+      if (!p) return;
+
+      const prevMax = p.style.maxHeight;
+      const prevH = p.style.height;
+      const prevOverflow = p.style.overflow;
+
+      p.style.maxHeight = "none";
+      p.style.height = "auto";
+      p.style.overflow = "visible";
+
+      const h = Math.ceil(p.scrollHeight || 0);
+      slide.style.setProperty("--offer-para-h", `${h}px`);
+
+      p.style.maxHeight = prevMax;
+      p.style.height = prevH;
+      p.style.overflow = prevOverflow;
     }
 
     function showParagraph(slide) {
-      const bits = getParagraphBits(slide);
-      if (!bits.length) return;
+      const p = getParagraph(slide);
+      if (!p) return;
 
-      gsap.to(bits, {
+      measureAndSetParagraphHeight(slide);
+
+      gsap.to(p, {
         opacity: 1,
         y: 0,
         duration: 0.22,
         ease: "power2.out",
         overwrite: "auto",
-        // IMPORTANT: let CSS control height/max-height (so it can be 0 when inactive)
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
+        clearProps: "height,overflow,paddingTop,paddingBottom",
       });
     }
 
     function hideParagraph(slide) {
-      const bits = getParagraphBits(slide);
-      if (!bits.length) return;
+      const p = getParagraph(slide);
+      if (!p) return;
 
-      gsap.to(bits, {
+      gsap.to(p, {
         opacity: 0,
         y: -10,
         duration: 0.18,
         ease: "power2.out",
         overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
+        clearProps: "height,overflow,paddingTop,paddingBottom",
       });
     }
 
@@ -945,10 +960,10 @@ $(window).on("load", function () {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
 
-      const bits = getParagraphBits(slide);
-      if (bits.length) {
-        // only opacity/translate in JS, height/max-height handled by CSS
-        gsap.set(bits, { opacity: 0, y: -10, clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom" });
+      const p = getParagraph(slide);
+      if (p) {
+        gsap.set(p, { opacity: 0, y: -10, clearProps: "height,overflow,paddingTop,paddingBottom" });
+        measureAndSetParagraphHeight(slide);
       }
 
       const icon = slide.querySelector(".offer--slide-icon");
@@ -991,10 +1006,15 @@ $(window).on("load", function () {
       if (toEl && sliderScope.contains(toEl)) return;
       setDefaultState();
     });
+
+    // ✅ re-measure on resize (keeps smoothness)
+    window.addEventListener("resize", () => {
+      allSlides.forEach(measureAndSetParagraphHeight);
+    });
   }
 
   // ----------------------------
-  // MOBILE: second slider (unchanged)
+  // MOBILE: second slider
   // ----------------------------
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
