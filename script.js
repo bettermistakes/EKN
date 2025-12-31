@@ -794,7 +794,7 @@ $(window).on("load", function () {
   setTimeout(animateTextChange, 2000);
 })();
 
-// --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW (FIXED) --------------------- //
+// --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
 (function () {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
@@ -802,9 +802,9 @@ $(window).on("load", function () {
 
   const phrases = [
     "From field to office",
-    "From data to decision",
-    "From risk to reliability",
-    "From reactive to proactive.",
+    "From data to decision  ",
+    "From risk to reliability   ",
+    "From reactive to proactive.  ",
   ];
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
@@ -825,15 +825,9 @@ $(window).on("load", function () {
     el.style.setProperty("opacity", String(value), "important");
   }
 
-  let currentActiveValue = null;
-
   function setActiveByValue(imageValue) {
-    const nextValue = String(imageValue);
-    if (currentActiveValue === nextValue) return;
-    currentActiveValue = nextValue;
-
     heroImgs.forEach((img) => {
-      const isMatch = img.getAttribute("image") === nextValue;
+      const isMatch = img.getAttribute("image") === String(imageValue);
 
       img.classList.toggle("is-active", isMatch);
       img.setAttribute("aria-hidden", isMatch ? "false" : "true");
@@ -851,16 +845,15 @@ $(window).on("load", function () {
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // Default first image, then sync once from aria-label (if available)
-  setActiveByValue(1);
   syncFromAriaLabel();
+  setActiveByValue(1);
 
-  // ✅ Observe ONLY aria-label changes (do NOT observe DOM mutations)
   const observer = new MutationObserver(() => {
     syncFromAriaLabel();
   });
 
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+  observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
 
 // --------------------- ✅ Hover Circle Follow Mouse (FIXED - works like before) --------------------- //
@@ -1509,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const elapsed = time - startTime;
         const width = track.offsetWidth || 1;
 
-        lastPos = ((elapsed * scrollSpeed) / 1000) % width;
+        lastPos = (elapsed * scrollSpeed) / 1000 % width;
         track.style.transform = `translateX(${-lastPos}px)`;
       } else {
         track.style.transform = `translateX(${-pausedAt}px)`;
@@ -1533,6 +1526,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // --------------------- Hero Button Hover Animation --------------------- //
+
 document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const svg = btn.querySelector(".hover--close-inner svg");
   if (!svg) return;
