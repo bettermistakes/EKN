@@ -90,12 +90,7 @@ $(window).on("load", function () {
     gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
-      gsap.to(btn, {
-        backgroundColor: "#040A44",
-        color: "#F2F3F6",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(btn, { backgroundColor: "#040A44", color: "#F2F3F6", duration: 0.3, ease: "power4.out" });
     });
   }
 
@@ -103,12 +98,7 @@ $(window).on("load", function () {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
     if (navbarBg) {
-      gsap.to(navbarBg, {
-        backgroundColor: "",
-        borderBottomColor: "",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(navbarBg, { backgroundColor: "", borderBottomColor: "", duration: 0.3, ease: "power4.out" });
     }
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
@@ -346,8 +336,7 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph)
-        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -813,7 +802,7 @@ $(window).on("load", function () {
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP: padding is animated on the SLIDE (no jump)
+  // DESKTOP (smooth: no height/max-height/padding animation → no jump)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -842,7 +831,9 @@ $(window).on("load", function () {
       const titles = slide.querySelector(".offer--slide-titles");
       if (!titles) return [];
       return Array.from(
-        titles.querySelectorAll(".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']")
+        titles.querySelectorAll(
+          ".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']"
+        )
       );
     }
 
@@ -909,14 +900,6 @@ $(window).on("load", function () {
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
-      gsap.to(slide, {
-        paddingTop: "0rem",
-        paddingBottom: "0rem",
-        duration: 0.25,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
@@ -929,14 +912,6 @@ $(window).on("load", function () {
       slide.classList.add(ACTIVE_CLASS);
       applyVisibility(slide, true);
 
-      gsap.to(slide, {
-        paddingTop: "1.25rem",
-        paddingBottom: "1.25rem",
-        duration: 0.35,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
@@ -948,14 +923,6 @@ $(window).on("load", function () {
     function setDimmed(slide) {
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
-
-      gsap.to(slide, {
-        paddingTop: "0rem",
-        paddingBottom: "0rem",
-        duration: 0.25,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -983,10 +950,9 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
-    // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
-      gsap.set(slide, { opacity: 1, paddingTop: "0rem", paddingBottom: "0rem" });
+      gsap.set(slide, { opacity: 1 });
 
       normalizeParagraphLayout(slide);
 
@@ -1036,7 +1002,7 @@ $(window).on("load", function () {
   }
 
   // ----------------------------
-  // MOBILE: second slider (unchanged)
+  // MOBILE: second slider
   // ----------------------------
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
@@ -1089,6 +1055,7 @@ $(window).on("load", function () {
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
+  // ✅ keeps classes for CSS padding behavior
   function updateSliderStateClasses(swiper, sliderEl) {
     if (!sliderEl) return;
 
@@ -1317,11 +1284,7 @@ $(window).on("load", function () {
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
         columns.forEach((column, index) => {
-          gsap.fromTo(
-            column,
-            { y: "0em" },
-            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
-          );
+          gsap.fromTo(column, { y: "0em" }, { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 });
         });
       },
     });
@@ -1440,6 +1403,10 @@ document.addEventListener("DOMContentLoaded", () => {
     glow.style.opacity = "0";
     glow.style.transform = "translate(-50%, -50%)";
     glow.style.transition = "opacity 0.2s ease";
+    // ✅ IMPORTANT: you were missing it
+    glow.style.background =
+      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
+    glow.style.filter = "blur(2px)";
 
     wrapper.style.position = "relative";
     wrapper.appendChild(glow);
@@ -1511,8 +1478,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 });
 
 // ===================== BG COLOR SWITCH (trigger-bg) ===================== //
-// Changes .background-gradient background-color from #08126D to #F2F9FF
-// when .trigger-bg top reaches the top of the viewport (and reverses on scroll up)
 (function () {
   if (window.__bgSwitchTriggerInit) return;
   window.__bgSwitchTriggerInit = true;
@@ -1529,7 +1494,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   bgWrap.style.willChange = "background-color";
 
   if (trigger.offsetHeight === 0) trigger.style.height = "1px";
-
   if (!bgWrap.style.backgroundColor) bgWrap.style.backgroundColor = DARK;
 
   let isLight = bgWrap.style.backgroundColor === LIGHT;
