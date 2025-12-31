@@ -1,7 +1,6 @@
 // ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
 
 // --------------------- Loading Animation --------------------- //
-// Fade in main-wrapper after page fully loads
 $(window).on("load", function () {
   $("body").animate({ opacity: 1 }, 200);
 });
@@ -16,7 +15,6 @@ $(window).on("load", function () {
 
   let activeDropdown = null;
 
-  // Initialize all dropdown lists and items (desktop only)
   function initDesktopDropdowns() {
     if (window.innerWidth < 992) return;
 
@@ -26,28 +24,19 @@ $(window).on("load", function () {
       const line = trigger ? trigger.querySelector(".dropdown--line") : null;
 
       if (list) {
-        gsap.set(list, {
-          display: "none",
-          height: 0,
-          overflow: "hidden",
-        });
-
-        // Initialize dropdown items
+        gsap.set(list, { display: "none", height: 0, overflow: "hidden" });
         const items = list.querySelectorAll('[animate="dropdownnav"]');
         gsap.set(items, { opacity: 0, y: "1rem" });
       }
 
-      // Initialize line
       if (line) gsap.set(line, { width: "0%" });
     });
   }
 
-  // Close a dropdown
   function closeDropdown(dropdown) {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
-
     if (!list) return;
 
     gsap.to(list, {
@@ -57,61 +46,36 @@ $(window).on("load", function () {
       onComplete: () => gsap.set(list, { display: "none" }),
     });
 
-    if (trigger) {
-      gsap.to(trigger, { color: "", duration: 0.3, ease: "power4.out" });
-    }
-
-    if (line) {
-      gsap.to(line, { width: "0%", duration: 0.3, ease: "power4.out" });
-    }
+    if (trigger) gsap.to(trigger, { color: "", duration: 0.3, ease: "power4.out" });
+    if (line) gsap.to(line, { width: "0%", duration: 0.3, ease: "power4.out" });
   }
 
-  // Open a dropdown
   function openDropdown(dropdown, animate = false) {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
-
     if (!list) return;
 
     gsap.set(list, { display: "flex", height: 0 });
 
-    gsap.to(list, {
-      height: "auto",
-      duration: 0.3,
-      ease: "power4.out",
-    });
+    gsap.to(list, { height: "auto", duration: 0.3, ease: "power4.out" });
 
     if (animate) {
       const items = list.querySelectorAll('[animate="dropdownnav"]');
-      gsap.to(items, {
-        opacity: 1,
-        y: "0rem",
-        duration: 0.4,
-        ease: "power4.out",
-        stagger: 0.05,
-      });
+      gsap.to(items, { opacity: 1, y: "0rem", duration: 0.4, ease: "power4.out", stagger: 0.05 });
     }
 
-    if (trigger) {
-      gsap.to(trigger, { color: "#0133F6", duration: 0.3, ease: "power4.out" });
-    }
-
-    if (line) {
-      gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
-    }
+    if (trigger) gsap.to(trigger, { color: "#0133F6", duration: 0.3, ease: "power4.out" });
+    if (line) gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
   }
 
-  // Reset dropdown items
   function resetDropdownItems(dropdown) {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     if (!list) return;
-
     const items = list.querySelectorAll('[animate="dropdownnav"]');
     gsap.set(items, { opacity: 0, y: "1rem" });
   }
 
-  // Navbar hover styles
   function activateNavbarStyle() {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
@@ -127,12 +91,7 @@ $(window).on("load", function () {
     gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
-      gsap.to(btn, {
-        backgroundColor: "#040A44",
-        color: "#F2F3F6",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(btn, { backgroundColor: "#040A44", color: "#F2F3F6", duration: 0.3, ease: "power4.out" });
     });
   }
 
@@ -140,27 +99,16 @@ $(window).on("load", function () {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
     if (navbarBg) {
-      gsap.to(navbarBg, {
-        backgroundColor: "",
-        borderBottomColor: "",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(navbarBg, { backgroundColor: "", borderBottomColor: "", duration: 0.3, ease: "power4.out" });
     }
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
-      gsap.to(btn, {
-        backgroundColor: "",
-        color: "",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
     });
   }
 
-  // Hover listeners (dropdown triggers)
   dropdowns.forEach((dropdown) => {
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     if (!trigger) return;
@@ -183,7 +131,6 @@ $(window).on("load", function () {
     });
   });
 
-  // Hover listeners for .navlink (closes dropdown)
   const navlinks = navbar.querySelectorAll(".navlink");
 
   navlinks.forEach((navlink) => {
@@ -209,7 +156,6 @@ $(window).on("load", function () {
     });
   });
 
-  // Close dropdown when leaving navbar
   navbar.addEventListener("mouseleave", function () {
     if (window.innerWidth < 992) return;
 
@@ -327,9 +273,8 @@ $(window).on("load", function () {
 
       wasMobile = isMobile;
 
-      if (isMobile) {
-        initMobileDropdown();
-      } else {
+      if (isMobile) initMobileDropdown();
+      else {
         gsap.set(list, { display: "", x: "0vw" });
         if (bg) gsap.set(bg, { opacity: "" });
       }
@@ -387,7 +332,6 @@ $(window).on("load", function () {
         if (prevParagraph) gsap.to(prevParagraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
       }
 
-      // ✅ opacity 0.3 only on siblings (not default)
       solutionItems.forEach((item) => {
         gsap.to(item, { opacity: item !== currentItem ? 0.3 : 1, duration: 0.3, ease: "power4.out" });
       });
@@ -540,20 +484,11 @@ $(window).on("load", function () {
     gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
 
     if (navbarBg) {
-      gsap.to(navbarBg, {
-        backgroundColor: "rgba(242, 243, 246, 0.6)",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
     }
 
     navButtons.forEach((btn) => {
-      gsap.to(btn, {
-        backgroundColor: "#040a44",
-        color: "#f2f3f6",
-        duration: 0.3,
-        ease: "power4.out",
-      });
+      gsap.to(btn, { backgroundColor: "#040a44", color: "#f2f3f6", duration: 0.3, ease: "power4.out" });
     });
 
     isMenuOpen = true;
@@ -633,11 +568,8 @@ $(window).on("load", function () {
     const currentScrollY = window.scrollY;
     const isScrollingDown = currentScrollY > lastScrollY;
 
-    if (currentScrollY < scrollThreshold) {
-      navbar.style.transform = "translateY(0)";
-    } else {
-      navbar.style.transform = isScrollingDown ? "translateY(-100%)" : "translateY(0)";
-    }
+    if (currentScrollY < scrollThreshold) navbar.style.transform = "translateY(0)";
+    else navbar.style.transform = isScrollingDown ? "translateY(-100%)" : "translateY(0)";
 
     lastScrollY = currentScrollY;
   }
@@ -688,13 +620,7 @@ $(window).on("load", function () {
 
     const oldChars = currentSplit.chars;
 
-    gsap.to(oldChars, {
-      yPercent: -100,
-      opacity: 0,
-      stagger: 0.03,
-      duration: 0.4,
-      ease: "power2.out",
-    });
+    gsap.to(oldChars, { yPercent: -100, opacity: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" });
 
     const tempDiv = document.createElement("div");
     tempDiv.style.position = "absolute";
@@ -740,12 +666,7 @@ $(window).on("load", function () {
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = 'img.absolute--img[image]';
 
-  const phrases = [
-    "From field to office",
-    "From data to decision",
-    "From risk to reliability",
-    "From reactive to proactive.",
-  ];
+  const phrases = ["From field to office", "From data to decision", "From risk to reliability", "From reactive to proactive."];
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
@@ -879,13 +800,10 @@ $(window).on("load", function () {
 (function () {
   let swiperInstance = null;
   const SECTION_SELECTOR = ".section.is--home-offers";
+  const ACTIVE_CLASS = "is-offer-active"; // ✅ single source of truth
 
   // =============================
-  // DESKTOP:
-  // default = first active, NO dim
-  // hover slide = dim siblings only
-  // paragraph appears ONLY on active (hovered/default active) slide
-  // (handles SplitText lines even if browser auto-closes <p>)
+  // DESKTOP (fix SplitText height + visibility)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -910,17 +828,14 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // ----------------------------
-    // ✅ Paragraph visibility helpers (SplitText-safe)
-    // ----------------------------
+    // ✅ SplitText-safe paragraph bits
     function getParagraphBits(slide) {
       const titles = slide.querySelector(".offer--slide-titles");
       if (!titles) return [];
-
-      // Browser may auto-close <p> because of <div> children -> split lines can become siblings.
-      // So we collect paragraph + split wrappers/lines within the titles scope.
       return Array.from(
-        titles.querySelectorAll(".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']")
+        titles.querySelectorAll(
+          ".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']"
+        )
       );
     }
 
@@ -928,27 +843,21 @@ $(window).on("load", function () {
       const bits = getParagraphBits(slide);
       if (!bits.length) return;
 
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+
+      // ✅ clear Webflow/SplitText inline collapsing
+      if (paragraph) {
+        paragraph.style.height = "auto";
+        paragraph.style.maxHeight = "220px";
+        paragraph.style.overflow = "hidden";
+      }
+
       bits.forEach((el) => {
         el.style.visibility = "visible";
-        el.style.pointerEvents = "none"; // keep non-interactive (prevents stealing hover)
+        el.style.pointerEvents = "none";
       });
 
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-      if (paragraph) {
-        gsap.to(paragraph, {
-          opacity: 1,
-          duration: 0.2,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      } else {
-        gsap.to(bits, {
-          opacity: 1,
-          duration: 0.2,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
+      gsap.to(bits, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
     }
 
     function hideParagraph(slide) {
@@ -956,9 +865,13 @@ $(window).on("load", function () {
       if (!bits.length) return;
 
       const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-      const targets = paragraph ? [paragraph] : bits;
+      if (paragraph) {
+        paragraph.style.maxHeight = "0px";
+        paragraph.style.height = "0px";
+        paragraph.style.overflow = "hidden";
+      }
 
-      gsap.to(targets, {
+      gsap.to(bits, {
         opacity: 0,
         duration: 0.15,
         ease: "power2.out",
@@ -976,23 +889,18 @@ $(window).on("load", function () {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
-      // Icon + Right content
       [icon, content].forEach((el) => {
         if (!el) return;
-        gsap.set(el, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
+        gsap.set(el, { visibility: isActive ? "visible" : "hidden", pointerEvents: isActive ? "auto" : "none" });
       });
 
-      // ✅ Paragraph: show/hide including SplitText lines
       if (isActive) showParagraph(slide);
       else hideParagraph(slide);
     }
 
     function setNeutral(slide) {
       if (!slide) return;
-      slide.classList.remove("is-active");
+      slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1005,7 +913,7 @@ $(window).on("load", function () {
 
     function setActivated(slide) {
       if (!slide) return;
-      slide.classList.add("is-active");
+      slide.classList.add(ACTIVE_CLASS);
       applyVisibility(slide, true);
 
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1019,8 +927,7 @@ $(window).on("load", function () {
     function setDimmed(slide) {
       if (!slide) return;
 
-      // dim ONLY during hover state
-      slide.classList.remove("is-active");
+      slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1051,7 +958,7 @@ $(window).on("load", function () {
 
     // Init
     allSlides.forEach((slide) => {
-      slide.classList.remove("is-active");
+      slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
 
       const icon = slide.querySelector(".offer--slide-icon");
@@ -1059,7 +966,6 @@ $(window).on("load", function () {
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
-      // start hidden (including split lines)
       hideParagraph(slide);
       applyVisibility(slide, false);
     });
@@ -1228,12 +1134,7 @@ $(window).on("load", function () {
         yPercent: finalYPercent[index],
         y: remInPx,
         ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
+        scrollTrigger: { trigger: triggersParent, start: "top bottom", end: "bottom bottom", scrub: true },
       });
     }
 
@@ -1343,13 +1244,7 @@ $(window).on("load", function () {
   });
 
   gsap.ticker.add(() => {
-    gsap.to(hoverCircle, {
-      x: mouseX,
-      y: mouseY,
-      duration: 0.6,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+    gsap.to(hoverCircle, { x: mouseX, y: mouseY, duration: 0.6, ease: "power2.out", overwrite: "auto" });
   });
 })();
 
@@ -1363,17 +1258,14 @@ $(window).on("load", function () {
     const originalText = counter.textContent.trim();
     const targetNumber = parseInt(originalText, 10);
     const digitCount = originalText.length;
-
     if (isNaN(targetNumber)) return;
 
     counter.setAttribute("data-target", String(targetNumber));
-
     const targetString = targetNumber.toString().padStart(digitCount, "0");
 
     let html = "";
     for (let i = 0; i < digitCount; i++) {
       const targetDigit = parseInt(targetString[i], 10);
-
       let columnHTML = "";
       const startDigit = (targetDigit + 1) % 10;
 
@@ -1394,11 +1286,7 @@ $(window).on("load", function () {
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
         columns.forEach((column, index) => {
-          gsap.fromTo(
-            column,
-            { y: "0em" },
-            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
-          );
+          gsap.fromTo(column, { y: "0em" }, { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 });
         });
       },
     });
@@ -1460,9 +1348,8 @@ $(window).on("load", function () {
 
     wasMobile = isMobile;
 
-    if (isMobile) {
-      initFooterAccordion();
-    } else {
+    if (isMobile) initFooterAccordion();
+    else {
       const footerInners = document.querySelectorAll(".footer--inner");
       const footerIcons = document.querySelectorAll(".footer-title-icon");
 
@@ -1509,7 +1396,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let pausedAt = 0;
     let lastPos = 0;
 
-    // Cursor-follow glow (no extra CSS file needed)
     const glow = document.createElement("div");
     glow.style.position = "absolute";
     glow.style.width = "220px";
@@ -1519,6 +1405,9 @@ document.addEventListener("DOMContentLoaded", () => {
     glow.style.opacity = "0";
     glow.style.transform = "translate(-50%, -50%)";
     glow.style.transition = "opacity 0.2s ease";
+    glow.style.background =
+      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
+    glow.style.filter = "blur(2px)";
 
     wrapper.style.position = "relative";
     wrapper.appendChild(glow);
@@ -1577,10 +1466,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     gsap.set(svg, { y: 0 });
 
     tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out" },
-        onComplete: () => (isRunning = false),
-      })
+      .timeline({ defaults: { ease: "power2.out" }, onComplete: () => (isRunning = false) })
       .to(svg, { y: 10, duration: 0.18 })
       .to(svg, { y: -6, duration: 0.22 })
       .to(svg, { y: 0, duration: 0.28 });
