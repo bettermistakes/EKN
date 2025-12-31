@@ -90,7 +90,12 @@ $(window).on("load", function () {
     gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
-      gsap.to(btn, { backgroundColor: "#040A44", color: "#F2F3F6", duration: 0.3, ease: "power4.out" });
+      gsap.to(btn, {
+        backgroundColor: "#040A44",
+        color: "#F2F3F6",
+        duration: 0.3,
+        ease: "power4.out",
+      });
     });
   }
 
@@ -98,7 +103,12 @@ $(window).on("load", function () {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
 
     if (navbarBg) {
-      gsap.to(navbarBg, { backgroundColor: "", borderBottomColor: "", duration: 0.3, ease: "power4.out" });
+      gsap.to(navbarBg, {
+        backgroundColor: "",
+        borderBottomColor: "",
+        duration: 0.3,
+        ease: "power4.out",
+      });
     }
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
@@ -336,7 +346,8 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph)
+        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -802,7 +813,7 @@ $(window).on("load", function () {
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP (smooth: no height/max-height/padding animation → no jump)
+  // DESKTOP: padding is animated on the SLIDE (no jump)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -827,24 +838,19 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    // Grab SplitText-safe bits
     function getParagraphBits(slide) {
       const titles = slide.querySelector(".offer--slide-titles");
       if (!titles) return [];
       return Array.from(
-        titles.querySelectorAll(
-          ".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']"
-        )
+        titles.querySelectorAll(".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']")
       );
     }
 
-    // ✅ JS-only override to avoid reflow jumps caused by CSS collapse
     function normalizeParagraphLayout(slide) {
       const bits = getParagraphBits(slide);
       if (!bits.length) return;
 
       bits.forEach((el) => {
-        // cancel collapse transitions from CSS by overriding inline
         el.style.maxHeight = "none";
         el.style.height = "auto";
         el.style.overflow = "visible";
@@ -903,6 +909,14 @@ $(window).on("load", function () {
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
 
+      gsap.to(slide, {
+        paddingTop: "0rem",
+        paddingBottom: "0rem",
+        duration: 0.25,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
@@ -915,6 +929,14 @@ $(window).on("load", function () {
       slide.classList.add(ACTIVE_CLASS);
       applyVisibility(slide, true);
 
+      gsap.to(slide, {
+        paddingTop: "1.25rem",
+        paddingBottom: "1.25rem",
+        duration: 0.35,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
 
@@ -926,6 +948,14 @@ $(window).on("load", function () {
     function setDimmed(slide) {
       slide.classList.remove(ACTIVE_CLASS);
       applyVisibility(slide, false);
+
+      gsap.to(slide, {
+        paddingTop: "0rem",
+        paddingBottom: "0rem",
+        duration: 0.25,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -956,9 +986,8 @@ $(window).on("load", function () {
     // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
-      gsap.set(slide, { opacity: 1 });
+      gsap.set(slide, { opacity: 1, paddingTop: "0rem", paddingBottom: "0rem" });
 
-      // ✅ kill layout jumps
       normalizeParagraphLayout(slide);
 
       const bits = getParagraphBits(slide);
@@ -1288,7 +1317,11 @@ $(window).on("load", function () {
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
         columns.forEach((column, index) => {
-          gsap.fromTo(column, { y: "0em" }, { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 });
+          gsap.fromTo(
+            column,
+            { y: "0em" },
+            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
+          );
         });
       },
     });
@@ -1408,7 +1441,6 @@ document.addEventListener("DOMContentLoaded", () => {
     glow.style.transform = "translate(-50%, -50%)";
     glow.style.transition = "opacity 0.2s ease";
 
-
     wrapper.style.position = "relative";
     wrapper.appendChild(glow);
 
@@ -1477,12 +1509,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
   });
 });
+
 // ===================== BG COLOR SWITCH (trigger-bg) ===================== //
 // Changes .background-gradient background-color from #08126D to #F2F9FF
 // when .trigger-bg top reaches the top of the viewport (and reverses on scroll up)
-
 (function () {
-  // Prevent double init (useful on Webflow/Netlify setups)
   if (window.__bgSwitchTriggerInit) return;
   window.__bgSwitchTriggerInit = true;
 
@@ -1494,14 +1525,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const LIGHT = "#F2F9FF";
   const DURATION = 600; // ms
 
-  // Smooth transition (JS-only)
   bgWrap.style.transition = `background-color ${DURATION}ms ease`;
   bgWrap.style.willChange = "background-color";
 
-  // Ensure trigger has a measurable height (JS-only safety)
   if (trigger.offsetHeight === 0) trigger.style.height = "1px";
 
-  // Initial state (optional)
   if (!bgWrap.style.backgroundColor) bgWrap.style.backgroundColor = DARK;
 
   let isLight = bgWrap.style.backgroundColor === LIGHT;
@@ -1526,9 +1554,8 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
-  update(); // initial check
+  update();
 })();
-
 
 // --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
 (function () {
@@ -1537,9 +1564,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   wrap.style.setProperty("width", "100%", "important");
 
-  // If you have a GSAP tween that animates width, make sure ScrollTrigger measures AFTER this.
   if (typeof ScrollTrigger !== "undefined") {
-    // Wait a tick (and images) to ensure layout is stable
     window.addEventListener("load", () => ScrollTrigger.refresh());
   }
 })();
