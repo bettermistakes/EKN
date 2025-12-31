@@ -1528,3 +1528,18 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   window.addEventListener("resize", onScroll);
   update(); // initial check
 })();
+
+
+// --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
+(function () {
+  const wrap = document.querySelector(".section.is--image .home--image-wrapper");
+  if (!wrap) return;
+
+  wrap.style.setProperty("width", "100%", "important");
+
+  // If you have a GSAP tween that animates width, make sure ScrollTrigger measures AFTER this.
+  if (typeof ScrollTrigger !== "undefined") {
+    // Wait a tick (and images) to ensure layout is stable
+    window.addEventListener("load", () => ScrollTrigger.refresh());
+  }
+})();
