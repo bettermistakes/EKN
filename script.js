@@ -879,11 +879,12 @@ $(window).on("load", function () {
 (function () {
   let swiperInstance = null;
   const SECTION_SELECTOR = ".section.is--home-offers";
+  const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP: default = first active, NO dim on others
-  // hover = dim siblings (0.3), hovered stays 1
-  // mouseout = back to default
+  // DESKTOP: default = first active
+  // hover = switch active
+  // pointerleave scope = back to default
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -893,6 +894,10 @@ $(window).on("load", function () {
 
     const desktopSwiper = section.querySelector(".swiper.offers-slider");
     if (!desktopSwiper) return;
+
+    // prevent double init
+    if (desktopSwiper.dataset.offerHoverInit === "1") return;
+    desktopSwiper.dataset.offerHoverInit = "1";
 
     const firstSlide = desktopSwiper.querySelector(".swiper-slide.is--offer-first");
     const offerSlides = Array.from(desktopSwiper.querySelectorAll(".swiper-slide.offer--slide"));
@@ -906,92 +911,82 @@ $(window).on("load", function () {
       desktopSwiper.closest("section") ||
       desktopSwiper;
 
-    if (!sliderScope) return;
-
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      [icon, content].forEach((el) => {
+      [icon, content, paragraph].forEach((el) => {
         if (!el) return;
         gsap.set(el, {
           visibility: isActive ? "visible" : "hidden",
           pointerEvents: isActive ? "auto" : "none",
         });
       });
-
-      // keep paragraph always visible (CSS controls expand/collapse)
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
-      if (paragraph) {
-        gsap.set(paragraph, {
-          visibility: "visible",
-          pointerEvents: isActive ? "auto" : "none",
-        });
-      }
     }
 
-    function setNeutral(slide) {
+    function setInactive(slide) {
       if (!slide) return;
-      slide.classList.remove("is-active");
-      applyVisibility(slide, false);
+      slide.classList.remove(ACTIVE_CLASS);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (paragraph) gsap.to(paragraph, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+
+      applyVisibility(slide, false);
     }
 
-    function setActivated(slide) {
+    function setActive(slide) {
       if (!slide) return;
-      slide.classList.add("is-active");
+
+      // clear our active class everywhere
+      allSlides.forEach((s) => s.classList.remove(ACTIVE_CLASS));
+
+      slide.classList.add(ACTIVE_CLASS);
+
+      const icon = slide.querySelector(".offer--slide-icon");
+      const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+
+      gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+      if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+
       applyVisibility(slide, true);
 
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-    }
-
-    function setDimmed(slide) {
-      if (!slide) return;
-      // don't mark active
-      if (slide.classList.contains("is-active")) applyVisibility(slide, false);
-
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 0.3, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
+      // dim others
+      allSlides.forEach((s) => {
+        if (s !== slide) setInactive(s);
+      });
     }
 
     function setDefaultState() {
-      allSlides.forEach((s) => {
-        if (s === firstSlide) setActivated(s);
-        else setNeutral(s);
-      });
+      // remove collision class if Webflow/others use it
+      allSlides.forEach((s) => s.classList.remove("is-active"));
+
+      // default: first active, others dimmed
+      setActive(firstSlide);
     }
 
-    function setHoverState(activeSlide) {
-      allSlides.forEach((s) => {
-        if (s === activeSlide) setActivated(s);
-        else setDimmed(s);
-      });
-    }
-
-    // Init (clear any leftover inline opacity)
+    // Init clean
     allSlides.forEach((slide) => {
-      slide.classList.remove("is-active");
-      gsap.set(slide, { opacity: 1 });
+      slide.classList.remove(ACTIVE_CLASS);
+      slide.classList.remove("is-active"); // safety cleanup
+      gsap.set(slide, { opacity: 0.3 });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
+      if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0 });
 
       applyVisibility(slide, false);
     });
@@ -1007,18 +1002,18 @@ $(window).on("load", function () {
       ].filter(Boolean);
 
       targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setHoverState(slide), { passive: true });
+        t.addEventListener("pointerenter", () => setActive(slide), { passive: true });
       });
     }
 
     allSlides.forEach(bindHover);
 
-    // leave whole block => default (no dim)
-    sliderScope.addEventListener("mouseout", (e) => {
-      const toEl = e.relatedTarget;
-      if (toEl && sliderScope.contains(toEl)) return;
-      setDefaultState();
-    });
+    // ✅ reliable hover-out
+    if (sliderScope) {
+      sliderScope.addEventListener("pointerleave", () => {
+        setDefaultState();
+      });
+    }
   }
 
   // ----------------------------

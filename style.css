@@ -213,8 +213,9 @@ body {
     will-change: transform, opacity;
   }
 
-  .offer--slide.is-active .offer--slide-icon,
-  .offer--slide.is-active .offer--slide-content {
+  /* ✅ switched to is-offer-active (avoid collision with other .is-active uses) */
+  .offer--slide.is-offer-active .offer--slide-icon,
+  .offer--slide.is-offer-active .offer--slide-content {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -225,7 +226,7 @@ body {
     z-index: 1;
   }
 
-  .offer--slide.is-active .offer--slide-content-parent {
+  .offer--slide.is-offer-active .offer--slide-content-parent {
     z-index: 5;
   }
 }
@@ -412,7 +413,7 @@ body {
   }
 
   /* Inactive slides: fully collapsed */
-  .swiper-slide.offer--slide:not(.is-active) .paragraph-large {
+  .swiper-slide.offer--slide:not(.is-offer-active) .paragraph-large {
     max-height: 0;
     opacity: 0;
     padding-top: 0;
@@ -422,7 +423,7 @@ body {
   }
 
   /* Active slide: expanded + visible */
-  .swiper-slide.offer--slide.is-active .paragraph-large {
+  .swiper-slide.offer--slide.is-offer-active .paragraph-large {
     max-height: 220px;
     opacity: 1;
     padding-top: 0.5rem;
