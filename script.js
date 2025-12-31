@@ -561,7 +561,9 @@ $(window).on("load", function () {
   const navbar = document.querySelector(".navbar");
   const navbarBg = document.querySelector(".navbar--bg");
 
-  if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) return;
+  if (!menuTrigger || !menuOpen || !menuClose || !menuInner || !navbar) {
+    return;
+  }
 
   let isMenuOpen = false;
 
@@ -711,10 +713,12 @@ $(window).on("load", function () {
   handleNavbarScroll();
 })();
 
-// --------------------- Eyebrow Text Cycling Animation (FIXED - no SplitText) --------------------- //
+
+// --------------------- Eyebrow Text Cycling Animation (FIXED - no overlap) --------------------- //
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
+  if (typeof SplitText === "undefined") return;
 
   const phrases = [
     "From field to office",
@@ -726,32 +730,82 @@ $(window).on("load", function () {
   let currentIndex = 0;
   let isAnimating = false;
 
-  // Make sure absolute temp works correctly
-  const cs = getComputedStyle(eyebrowElement);
-  if (cs.position === "static") eyebrowElement.style.position = "relative";
+  // container setup
+  eyebrowElement.style.position = "relative";
+  eyebrowElement.style.display = "inline-block";
+  eyebrowElement.style.overflow = "hidden";
 
-  function renderChars(el, text) {
-    el.innerHTML = "";
-    el.setAttribute("aria-label", text);
+  // layers
+  const layerA = document.createElement("div");
+  const layerB = document.createElement("div");
 
-    const frag = document.createDocumentFragment();
+  [layerA, layerB].forEach((layer) => {
+    layer.style.position = "absolute";
+    layer.style.top = "0";
+    layer.style.left = "0";
+    layer.style.width = "100%";
+    layer.style.willChange = "transform, opacity";
+  });
 
-    for (const ch of text) {
-      const span = document.createElement("span");
-      span.className = ch === " " ? "space" : "char";
-      span.textContent = ch === " " ? " " : ch;
-      frag.appendChild(span);
-    }
+  eyebrowElement.innerHTML = "";
+  eyebrowElement.appendChild(layerA);
+  eyebrowElement.appendChild(layerB);
 
-    el.appendChild(frag);
-    return Array.from(el.querySelectorAll(".char, .space"));
+  let currentLayer = layerA;
+  let nextLayer = layerB;
+
+  let splitCurrent = null;
+  let splitNext = null;
+
+  function setLayerText(layer, text) {
+    layer.innerHTML = text.replace(/ /g, '<span class="space"> </span>');
+  }
+
+  function rebuildSplits() {
+    if (splitCurrent) splitCurrent.revert();
+    if (splitNext) splitNext.revert();
+
+    splitCurrent = new SplitText(currentLayer, { type: "chars", charsClass: "char" });
+    splitNext = new SplitText(nextLayer, { type: "chars", charsClass: "char" });
+  }
+
+  function syncHeight() {
+    const h = currentLayer.getBoundingClientRect().height;
+    if (h) eyebrowElement.style.height = `${h}px`;
+  }
+
+  function init() {
+    setLayerText(currentLayer, phrases[currentIndex]);
+    setLayerText(nextLayer, "");
+    eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+
+    gsap.set(currentLayer, { yPercent: 0, opacity: 1 });
+    gsap.set(nextLayer, { yPercent: 100, opacity: 0 });
+
+    rebuildSplits();
+    syncHeight();
+
+    setTimeout(animateTextChange, 2000);
   }
 
   function animateTextChange() {
     if (isAnimating) return;
     isAnimating = true;
 
-    const oldChars = Array.from(eyebrowElement.querySelectorAll(".char, .space"));
+    currentIndex = (currentIndex + 1) % phrases.length;
+    const nextText = phrases[currentIndex];
+
+    setLayerText(nextLayer, nextText);
+    eyebrowElement.setAttribute("aria-label", nextText);
+
+    rebuildSplits();
+    syncHeight();
+
+    const oldChars = splitCurrent.chars;
+    const newChars = splitNext.chars;
+
+    gsap.set(nextLayer, { yPercent: 100, opacity: 1 });
+    gsap.set(newChars, { yPercent: 100, opacity: 0 });
 
     gsap.to(oldChars, {
       yPercent: -100,
@@ -761,23 +815,6 @@ $(window).on("load", function () {
       ease: "power2.out",
     });
 
-    // Next phrase
-    currentIndex = (currentIndex + 1) % phrases.length;
-    const nextText = phrases[currentIndex];
-
-    // Temp layer
-    const temp = document.createElement("div");
-    temp.style.position = "absolute";
-    temp.style.top = "0";
-    temp.style.left = "0";
-    temp.style.width = "100%";
-    temp.style.pointerEvents = "none";
-
-    eyebrowElement.appendChild(temp);
-
-    const newChars = renderChars(temp, nextText);
-    gsap.set(newChars, { yPercent: 100, opacity: 0 });
-
     gsap.to(newChars, {
       yPercent: 0,
       opacity: 1,
@@ -785,17 +822,29 @@ $(window).on("load", function () {
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
-        // Commit clean DOM (no nested .char)
-        renderChars(eyebrowElement, nextText);
+        const tmp = currentLayer;
+        currentLayer = nextLayer;
+        nextLayer = tmp;
+
+        // reset hidden layer
+        gsap.set(nextLayer, { yPercent: 100, opacity: 0 });
+        nextLayer.innerHTML = "";
+
+        if (splitCurrent) splitCurrent.revert();
+        if (splitNext) splitNext.revert();
+        splitCurrent = new SplitText(currentLayer, { type: "chars", charsClass: "char" });
+        splitNext = null;
+
         isAnimating = false;
         setTimeout(animateTextChange, 2000);
       },
     });
   }
 
-  renderChars(eyebrowElement, phrases[currentIndex]);
-  setTimeout(animateTextChange, 2000);
+  init();
+  window.addEventListener("resize", syncHeight);
 })();
+
 
 // --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
 (function () {
@@ -858,6 +907,7 @@ $(window).on("load", function () {
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
   observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
+
 
 // --------------------- ✅ Hover Circle Follow Mouse (FIXED - works like before) --------------------- //
 (function () {
@@ -947,6 +997,7 @@ $(window).on("load", function () {
     });
   }
 })();
+
 
 // --------------------- ✅ Offer Slide Hover Animation (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
 (function () {
@@ -1505,7 +1556,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const elapsed = time - startTime;
         const width = track.offsetWidth || 1;
 
-        lastPos = ((elapsed * scrollSpeed) / 1000) % width;
+        lastPos = (elapsed * scrollSpeed) / 1000 % width;
         track.style.transform = `translateX(${-lastPos}px)`;
       } else {
         track.style.transform = `translateX(${-pausedAt}px)`;
@@ -1529,40 +1580,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // --------------------- Hero Button Hover Animation --------------------- //
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
-    const svg = btn.querySelector(".hover--close-inner svg");
-    if (!svg) return;
+document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
+  const svg = btn.querySelector(".hover--close-inner svg");
+  if (!svg) return;
 
-    let tl;
-    let isRunning = false;
+  let tl;
+  let isRunning = false;
 
-    btn.addEventListener("mouseenter", () => {
-      if (isRunning) return;
-      isRunning = true;
+  btn.addEventListener("mouseenter", () => {
+    if (isRunning) return;
+    isRunning = true;
 
-      if (tl) tl.kill();
+    if (tl) tl.kill();
 
-      gsap.set(svg, { y: 0 });
+    gsap.set(svg, { y: 0 });
 
-      tl = gsap.timeline({
-        defaults: { ease: "power2.out" },
-        onComplete: () => {
-          isRunning = false;
-        },
-      })
-        .to(svg, { y: 10, duration: 0.18 })
-        .to(svg, { y: -6, duration: 0.22 })
-        .to(svg, { y: 0, duration: 0.28 });
-    });
+    tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: () => {
+        isRunning = false;
+      },
+    })
+      .to(svg, { y: 10, duration: 0.18 })
+      .to(svg, { y: -6, duration: 0.22 })
+      .to(svg, { y: 0, duration: 0.28 });
+  });
 
-    btn.addEventListener("mouseleave", () => {
-      isRunning = false;
-      gsap.to(svg, {
-        y: 0,
-        duration: 0.2,
-        ease: "power2.out",
-      });
+  btn.addEventListener("mouseleave", () => {
+    isRunning = false;
+    gsap.to(svg, {
+      y: 0,
+      duration: 0.2,
+      ease: "power2.out",
     });
   });
 });
