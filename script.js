@@ -155,7 +155,8 @@ $(window).on("load", function () {
         backgroundColor: "",
         color: "",
         duration: 0.3,
-        ease: "power4.out" });
+        ease: "power4.out",
+      });
     });
   }
 
@@ -883,7 +884,8 @@ $(window).on("load", function () {
   // DESKTOP:
   // default = first active, NO dim
   // hover slide = dim siblings only
-  // paragraph appears ONLY on active (hovered) slide
+  // paragraph appears ONLY on active (hovered/default active) slide
+  // (handles SplitText lines even if browser auto-closes <p>)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -908,10 +910,71 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
+    // ----------------------------
+    // ✅ Paragraph visibility helpers (SplitText-safe)
+    // ----------------------------
+    function getParagraphBits(slide) {
+      const titles = slide.querySelector(".offer--slide-titles");
+      if (!titles) return [];
+
+      // Browser may auto-close <p> because of <div> children -> split lines can become siblings.
+      // So we collect paragraph + split wrappers/lines within the titles scope.
+      return Array.from(
+        titles.querySelectorAll(".paragraph-large, .gsap_split_line, [class*='gsap_split_line'][class*='mask']")
+      );
+    }
+
+    function showParagraph(slide) {
+      const bits = getParagraphBits(slide);
+      if (!bits.length) return;
+
+      bits.forEach((el) => {
+        el.style.visibility = "visible";
+        el.style.pointerEvents = "none"; // keep non-interactive (prevents stealing hover)
+      });
+
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+      if (paragraph) {
+        gsap.to(paragraph, {
+          opacity: 1,
+          duration: 0.2,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      } else {
+        gsap.to(bits, {
+          opacity: 1,
+          duration: 0.2,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      }
+    }
+
+    function hideParagraph(slide) {
+      const bits = getParagraphBits(slide);
+      if (!bits.length) return;
+
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+      const targets = paragraph ? [paragraph] : bits;
+
+      gsap.to(targets, {
+        opacity: 0,
+        duration: 0.15,
+        ease: "power2.out",
+        overwrite: "auto",
+        onComplete: () => {
+          bits.forEach((el) => {
+            el.style.visibility = "hidden";
+            el.style.pointerEvents = "none";
+          });
+        },
+      });
+    }
+
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       // Icon + Right content
       [icon, content].forEach((el) => {
@@ -922,13 +985,9 @@ $(window).on("load", function () {
         });
       });
 
-      // ✅ Paragraph: visible ONLY when slide is active (hovered)
-      if (paragraph) {
-        gsap.set(paragraph, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
-      }
+      // ✅ Paragraph: show/hide including SplitText lines
+      if (isActive) showParagraph(slide);
+      else hideParagraph(slide);
     }
 
     function setNeutral(slide) {
@@ -1000,6 +1059,8 @@ $(window).on("load", function () {
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
+      // start hidden (including split lines)
+      hideParagraph(slide);
       applyVisibility(slide, false);
     });
 
