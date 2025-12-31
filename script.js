@@ -155,8 +155,7 @@ $(window).on("load", function () {
         backgroundColor: "",
         color: "",
         duration: 0.3,
-        ease: "power4.out",
-      });
+        ease: "power4.out" });
     });
   }
 
@@ -387,6 +386,7 @@ $(window).on("load", function () {
         if (prevParagraph) gsap.to(prevParagraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
       }
 
+      // ✅ opacity 0.3 only on siblings (not default)
       solutionItems.forEach((item) => {
         gsap.to(item, { opacity: item !== currentItem ? 0.3 : 1, duration: 0.3, ease: "power4.out" });
       });
@@ -577,7 +577,6 @@ $(window).on("load", function () {
     gsap.set(menuItems, { opacity: 0, y: "1rem" });
 
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
     if (navbarBg) gsap.to(navbarBg, { backgroundColor: "", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
@@ -884,7 +883,7 @@ $(window).on("load", function () {
   // DESKTOP:
   // default = first active, NO dim
   // hover slide = dim siblings only
-  // mouseleave slide = back to default (no dim) if nothing else hovered
+  // paragraph appears ONLY on active (hovered) slide
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -912,7 +911,9 @@ $(window).on("load", function () {
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
+      // Icon + Right content
       [icon, content].forEach((el) => {
         if (!el) return;
         gsap.set(el, {
@@ -921,11 +922,10 @@ $(window).on("load", function () {
         });
       });
 
-      // keep paragraph always visible (CSS controls expand/collapse)
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+      // ✅ Paragraph: visible ONLY when slide is active (hovered)
       if (paragraph) {
         gsap.set(paragraph, {
-          visibility: "visible",
+          visibility: isActive ? "visible" : "hidden",
           pointerEvents: isActive ? "auto" : "none",
         });
       }
@@ -990,7 +990,7 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
-    // Init (clear any leftover inline opacity)
+    // Init
     allSlides.forEach((slide) => {
       slide.classList.remove("is-active");
       gsap.set(slide, { opacity: 1 });
@@ -1016,7 +1016,6 @@ $(window).on("load", function () {
       targets.forEach((t) => {
         t.addEventListener("mouseenter", () => setHoverState(slide), { passive: true });
 
-        // ✅ FIX: when leaving the slide (and nothing else hovered), restore default (NO dim)
         t.addEventListener(
           "mouseleave",
           () => {
@@ -1031,7 +1030,6 @@ $(window).on("load", function () {
 
     allSlides.forEach(bindHover);
 
-    // leave whole block => default (no dim)
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
       if (toEl && sliderScope.contains(toEl)) return;
