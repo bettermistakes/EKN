@@ -1519,9 +1519,6 @@ document.addEventListener("DOMContentLoaded", () => {
     glow.style.opacity = "0";
     glow.style.transform = "translate(-50%, -50%)";
     glow.style.transition = "opacity 0.2s ease";
-    glow.style.background =
-      "radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0) 70%)";
-    glow.style.filter = "blur(2px)";
 
     wrapper.style.position = "relative";
     wrapper.appendChild(glow);
