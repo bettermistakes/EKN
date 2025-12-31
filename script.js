@@ -713,12 +713,10 @@ $(window).on("load", function () {
   handleNavbarScroll();
 })();
 
-
-// --------------------- Eyebrow Text Cycling Animation (FIXED - no overlap) --------------------- //
+// --------------------- Eyebrow Text Cycling Animation --------------------- //
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
-  if (typeof SplitText === "undefined") return;
 
   const phrases = [
     "From field to office",
@@ -729,83 +727,25 @@ $(window).on("load", function () {
 
   let currentIndex = 0;
   let isAnimating = false;
+  let currentSplit = null;
 
-  // container setup
-  eyebrowElement.style.position = "relative";
-  eyebrowElement.style.display = "inline-block";
-  eyebrowElement.style.overflow = "hidden";
-
-  // layers
-  const layerA = document.createElement("div");
-  const layerB = document.createElement("div");
-
-  [layerA, layerB].forEach((layer) => {
-    layer.style.position = "absolute";
-    layer.style.top = "0";
-    layer.style.left = "0";
-    layer.style.width = "100%";
-    layer.style.willChange = "transform, opacity";
-  });
-
-  eyebrowElement.innerHTML = "";
-  eyebrowElement.appendChild(layerA);
-  eyebrowElement.appendChild(layerB);
-
-  let currentLayer = layerA;
-  let nextLayer = layerB;
-
-  let splitCurrent = null;
-  let splitNext = null;
-
-  function setLayerText(layer, text) {
-    layer.innerHTML = text.replace(/ /g, '<span class="space"> </span>');
-  }
-
-  function rebuildSplits() {
-    if (splitCurrent) splitCurrent.revert();
-    if (splitNext) splitNext.revert();
-
-    splitCurrent = new SplitText(currentLayer, { type: "chars", charsClass: "char" });
-    splitNext = new SplitText(nextLayer, { type: "chars", charsClass: "char" });
-  }
-
-  function syncHeight() {
-    const h = currentLayer.getBoundingClientRect().height;
-    if (h) eyebrowElement.style.height = `${h}px`;
-  }
-
-  function init() {
-    setLayerText(currentLayer, phrases[currentIndex]);
-    setLayerText(nextLayer, "");
+  function initializeText() {
+    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
+    eyebrowElement.innerHTML = textWithSpaces;
     eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
 
-    gsap.set(currentLayer, { yPercent: 0, opacity: 1 });
-    gsap.set(nextLayer, { yPercent: 100, opacity: 0 });
-
-    rebuildSplits();
-    syncHeight();
-
-    setTimeout(animateTextChange, 2000);
+    currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
   }
 
   function animateTextChange() {
     if (isAnimating) return;
     isAnimating = true;
 
-    currentIndex = (currentIndex + 1) % phrases.length;
-    const nextText = phrases[currentIndex];
+    if (!currentSplit) {
+      currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
+    }
 
-    setLayerText(nextLayer, nextText);
-    eyebrowElement.setAttribute("aria-label", nextText);
-
-    rebuildSplits();
-    syncHeight();
-
-    const oldChars = splitCurrent.chars;
-    const newChars = splitNext.chars;
-
-    gsap.set(nextLayer, { yPercent: 100, opacity: 1 });
-    gsap.set(newChars, { yPercent: 100, opacity: 0 });
+    const oldChars = currentSplit.chars;
 
     gsap.to(oldChars, {
       yPercent: -100,
@@ -815,6 +755,22 @@ $(window).on("load", function () {
       ease: "power2.out",
     });
 
+    const tempDiv = document.createElement("div");
+    tempDiv.style.position = "absolute";
+    tempDiv.style.top = "0";
+    tempDiv.style.left = "0";
+    tempDiv.style.width = "100%";
+
+    currentIndex = (currentIndex + 1) % phrases.length;
+    const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
+    tempDiv.innerHTML = textWithSpaces;
+    eyebrowElement.appendChild(tempDiv);
+
+    const newSplit = new SplitText(tempDiv, { type: "chars", charsClass: "char" });
+    const newChars = newSplit.chars;
+
+    gsap.set(newChars, { yPercent: 100, opacity: 0 });
+
     gsap.to(newChars, {
       yPercent: 0,
       opacity: 1,
@@ -822,18 +778,11 @@ $(window).on("load", function () {
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
-        const tmp = currentLayer;
-        currentLayer = nextLayer;
-        nextLayer = tmp;
+        currentSplit.revert();
+        eyebrowElement.innerHTML = tempDiv.innerHTML;
+        eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
 
-        // reset hidden layer
-        gsap.set(nextLayer, { yPercent: 100, opacity: 0 });
-        nextLayer.innerHTML = "";
-
-        if (splitCurrent) splitCurrent.revert();
-        if (splitNext) splitNext.revert();
-        splitCurrent = new SplitText(currentLayer, { type: "chars", charsClass: "char" });
-        splitNext = null;
+        currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
 
         isAnimating = false;
         setTimeout(animateTextChange, 2000);
@@ -841,10 +790,9 @@ $(window).on("load", function () {
     });
   }
 
-  init();
-  window.addEventListener("resize", syncHeight);
+  initializeText();
+  setTimeout(animateTextChange, 2000);
 })();
-
 
 // --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
 (function () {
@@ -907,7 +855,6 @@ $(window).on("load", function () {
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
   observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
-
 
 // --------------------- ✅ Hover Circle Follow Mouse (FIXED - works like before) --------------------- //
 (function () {
@@ -997,7 +944,6 @@ $(window).on("load", function () {
     });
   }
 })();
-
 
 // --------------------- ✅ Offer Slide Hover Animation (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
 (function () {
@@ -1580,6 +1526,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // --------------------- Hero Button Hover Animation --------------------- //
+
 document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const svg = btn.querySelector(".hover--close-inner svg");
   if (!svg) return;
