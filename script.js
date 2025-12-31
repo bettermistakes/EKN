@@ -720,9 +720,9 @@ $(window).on("load", function () {
 
   const phrases = [
     "From field to office",
-    "From data to decision         ",
-    "From risk to reliability      ",
-    "From reactive to proactive.   ",
+    "From data to decision           ",
+    "From risk to reliability        ",
+    "From reactive to proactive.     ",
   ];
 
   let currentIndex = 0;
