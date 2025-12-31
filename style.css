@@ -204,10 +204,9 @@ body {
     transition: opacity 0.25s ease;
   }
 
-  /* We only toggle opacity/visibility/pointer-events (keep layout intact) */
+  /* Icon + content: can be hidden */
   .offer--slide-icon,
-  .offer--slide-content,
-  .offer--slide .offer--slide-titles .paragraph-large {
+  .offer--slide-content {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -215,11 +214,16 @@ body {
   }
 
   .offer--slide.is-active .offer--slide-icon,
-  .offer--slide.is-active .offer--slide-content,
-  .offer--slide.is-active .offer--slide-titles .paragraph-large {
+  .offer--slide.is-active .offer--slide-content {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+  }
+
+  /* Paragraph: DO NOT hide with visibility (keeps padding transition smooth) */
+  .offer--slide .offer--slide-titles .paragraph-large {
+    visibility: visible;
+    will-change: max-height, opacity, transform, padding;
   }
 
   /* Ensure content stacks above neighbors */
@@ -397,10 +401,7 @@ body {
 }
 
 /* --------------------- Offers' Padding -------------------------------------------- */
-
-
 @media (min-width: 992px) {
-
   /* Base state (applies to all offer slides) */
   .swiper-slide.offer--slide .paragraph-large {
     overflow: hidden;
@@ -414,7 +415,7 @@ body {
       opacity 0.35s ease,
       padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
       transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: max-height, opacity, transform;
+    will-change: max-height, opacity, transform, padding;
   }
 
   /* Inactive slides: fully collapsed */

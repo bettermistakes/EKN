@@ -889,9 +889,13 @@ $(window).on("load", function () {
     const desktopSwiper = section.querySelector(".swiper.offers-slider");
     if (!desktopSwiper) return;
 
-    const offerSlides = desktopSwiper.querySelectorAll(".swiper-slide.offer--slide");
     const firstSlide = desktopSwiper.querySelector(".swiper-slide.is--offer-first");
-    if (!offerSlides.length || !firstSlide) return;
+    const offerSlides = Array.from(desktopSwiper.querySelectorAll(".swiper-slide.offer--slide"));
+
+    if (!firstSlide || !offerSlides.length) return;
+
+    // Include first slide + all offer slides
+    const allSlides = [firstSlide, ...offerSlides];
 
     const sliderScope =
       section.querySelector(".grid--21.is--slider") ||
@@ -903,87 +907,87 @@ $(window).on("load", function () {
 
     let lockedActiveSlide = null;
 
+    // Only control icon + content visibility.
+    // Paragraph is animated by CSS only (padding/max-height/opacity) => smoother.
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      [icon, content, paragraph].forEach((el) => {
+      [icon, content].forEach((el) => {
         if (!el) return;
         gsap.set(el, {
           visibility: isActive ? "visible" : "hidden",
           pointerEvents: isActive ? "auto" : "none",
         });
       });
+
+      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
+      if (paragraph) {
+        gsap.set(paragraph, {
+          visibility: "visible",
+          pointerEvents: isActive ? "auto" : "none",
+        });
+      }
     }
 
-    function setInactive(slide) {
+    function setDimmed(slide) {
       if (!slide) return;
       slide.classList.remove("is-active");
       applyVisibility(slide, false);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 0.3, duration: 0.25, ease: "power2.out" });
       if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 0, duration: 0.25, ease: "power2.out" });
-      if (paragraph) gsap.to(paragraph, { x: "-1rem", opacity: 0, duration: 0.25, ease: "power2.out" });
     }
 
-    function setActive(slide) {
+    function setActivated(slide) {
       if (!slide) return;
-      if (lockedActiveSlide === slide) return;
-
-      offerSlides.forEach((s) => s.classList.remove("is-active"));
-      firstSlide.classList.remove("is-active");
-
-      if (lockedActiveSlide && lockedActiveSlide !== slide) setInactive(lockedActiveSlide);
 
       slide.classList.add("is-active");
       applyVisibility(slide, true);
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
       gsap.to(slide, { opacity: 1, duration: 0.25, ease: "power2.out" });
       if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
       if (content) gsap.to(content, { opacity: 1, duration: 0.25, ease: "power2.out" });
-      if (paragraph) gsap.to(paragraph, { x: "0rem", opacity: 1, duration: 0.25, ease: "power2.out" });
 
       lockedActiveSlide = slide;
     }
 
-    function setFirstAsDefault() {
-      offerSlides.forEach((s) => setInactive(s));
+    function setActive(slide) {
+      if (!slide) return;
+      if (lockedActiveSlide === slide) return;
 
-      firstSlide.classList.add("is-active");
-      applyVisibility(firstSlide, true);
-
-      const icon = firstSlide.querySelector(".offer--slide-icon");
-      const content = firstSlide.querySelector(".offer--slide-content");
-      const paragraph = firstSlide.querySelector(".offer--slide-titles .paragraph-large");
-
-      gsap.to(firstSlide, { opacity: 1, duration: 0.25, ease: "power2.out" });
-      if (icon) gsap.set(icon, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
-      if (content) gsap.set(content, { opacity: 1, visibility: "visible", pointerEvents: "auto" });
-      if (paragraph) gsap.set(paragraph, { x: "0rem", opacity: 1, visibility: "visible", pointerEvents: "auto" });
-
-      lockedActiveSlide = firstSlide;
+      // ✅ Dim all others when one is active
+      allSlides.forEach((s) => {
+        if (s === slide) setActivated(s);
+        else setDimmed(s);
+      });
     }
 
-    offerSlides.forEach((slide) => {
-      gsap.set(slide, { opacity: 0.3 });
+    function setFirstAsDefault() {
+      allSlides.forEach((s) => {
+        if (s === firstSlide) setActivated(s);
+        else setDimmed(s);
+      });
+    }
+
+    // Initial state
+    allSlides.forEach((slide) => {
+      gsap.set(slide, { opacity: slide === firstSlide ? 1 : 0.3 });
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-      const paragraph = slide.querySelector(".offer--slide-titles .paragraph-large");
 
-      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
-      if (content) gsap.set(content, { opacity: 0, visibility: "hidden", pointerEvents: "none" });
-      if (paragraph) gsap.set(paragraph, { x: "-1rem", opacity: 0, visibility: "hidden", pointerEvents: "none" });
+      if (icon) gsap.set(icon, { x: slide === firstSlide ? "0rem" : "-1rem", opacity: slide === firstSlide ? 1 : 0 });
+      if (content) gsap.set(content, { opacity: slide === firstSlide ? 1 : 0 });
+
+      applyVisibility(slide, slide === firstSlide);
     });
 
     setFirstAsDefault();
@@ -1001,8 +1005,7 @@ $(window).on("load", function () {
       });
     }
 
-    offerSlides.forEach(bindHover);
-    bindHover(firstSlide);
+    allSlides.forEach(bindHover);
 
     sliderScope.addEventListener("mouseout", (e) => {
       const toEl = e.relatedTarget;
