@@ -1092,25 +1092,32 @@ $(window).on("load", function () {
 })();
 
 // --------------------- How It Works Scroll Animation --------------------- //
+// ✅ UPDATED: blur sync "flou en bas -> net quand ça monte"
 (function () {
   if (window.innerWidth <= 992) return;
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const triggersParent = document.querySelector(".howitworks--triggers-parent");
   const triggers = document.querySelectorAll(".howitworks--trigger");
   const parents = document.querySelectorAll(".howitworks--parent");
+  const section = document.querySelector(".section.is--howworks");
 
-  if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
+  if (!triggersParent || triggers.length === 0 || parents.length === 0 || !section) return;
 
+  // ---------- Base state ----------
   parents.forEach((parent) => {
     const content = parent.querySelector(".howitworks--content");
     const response = parent.querySelector(".howitworks--response");
     const line = parent.querySelector(".howitworks--line");
+    const imgInner = parent.querySelector(".howitworks--img--inner");
 
     if (content) gsap.set(content, { opacity: 0.3 });
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
   });
 
+  // ---------- Image positions (wrapper .howitworks--img) ----------
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
 
@@ -1126,25 +1133,25 @@ $(window).on("load", function () {
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
-    if (img) {
-      const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      gsap.to(img, {
-        yPercent: finalYPercent[index],
-        y: remInPx,
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
-      });
-    }
+    if (!img) return;
 
-    const imgInner = parent.querySelector(".howitworks--img--inner");
-    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
+    const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    gsap.to(img, {
+      yPercent: finalYPercent[index],
+      y: remInPx,
+      ease: "none",
+      scrollTrigger: {
+        trigger: triggersParent,
+        start: "top bottom",
+        end: "bottom bottom",
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
+    });
   });
 
+  // ---------- Trigger-based text expand/collapse + line progress ----------
   triggers.forEach((trigger, index) => {
     const parent = parents[index];
     if (!parent) return;
@@ -1164,7 +1171,6 @@ $(window).on("load", function () {
             if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
-
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1191,54 +1197,35 @@ $(window).on("load", function () {
           start: "top bottom",
           end: "bottom bottom",
           scrub: true,
+          invalidateOnRefresh: true,
         },
       });
     }
   });
 
-  const section = document.querySelector(".section.is--howworks");
-
-  parents.forEach((parent, index) => {
+  // =========================================================
+  // ✅ BLUR SYNC (IMG INNER) — flou en bas -> net en haut
+  // =========================================================
+  parents.forEach((parent) => {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
-    if (index === 0) {
-      gsap.to(imgInner, {
-        yPercent: -10,
+    gsap.fromTo(
+      imgInner,
+      { filter: "blur(10rem)", yPercent: 0 },
+      {
         filter: "blur(0rem)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "top center",
-          scrub: true,
-        },
-      });
-    } else if (index === 1) {
-      gsap.to(imgInner, {
         yPercent: -10,
-        filter: "blur(0rem)",
         ease: "none",
         scrollTrigger: {
           trigger: triggersParent,
           start: "top bottom",
           end: "top center",
           scrub: true,
+          invalidateOnRefresh: true,
         },
-      });
-    } else if (index === 2) {
-      gsap.to(imgInner, {
-        yPercent: -10,
-        filter: "blur(0rem)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "center bottom",
-          end: "center center",
-          scrub: true,
-        },
-      });
-    }
+      }
+    );
   });
 })();
 
@@ -1561,8 +1548,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 })();
 
 // ===================== ✅ IMAGE SHRINK OPACITY (START AT 40%) ===================== //
-// Objectif: opacité reste à 1 jusqu'à 40% de la progression du scroll (mêmes bornes que le shrink),
-// puis fade 1 -> 0 entre 40% et 100%.
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
@@ -1572,13 +1557,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  // éviter double init (Netlify / rerun)
   if (img.__shrinkOpacityST) {
     img.__shrinkOpacityST.kill();
     img.__shrinkOpacityST = null;
   }
 
-  // ✅ Réglage: à quel % de progression commence le fade
   const START_FADE_AT = 0.7; // 40%
   const END_FADE_AT = 1.0;
 
@@ -1587,12 +1570,12 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
     img.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
-      start: "top bottom",   // garde la même fenêtre que ton shrink si elle est basée sur section
+      start: "top bottom",
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        const p = self.progress; // 0..1
+        const p = self.progress;
         const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
         gsap.set(img, { opacity: 1 - t });
