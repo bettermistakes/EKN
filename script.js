@@ -1565,25 +1565,25 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  // ✅ section suivante : la plus fiable = l’élément juste après
   const next = section.nextElementSibling;
   if (!next) return;
 
-  // cleanup
   if (img.__stFadePull) {
     img.__stFadePull.kill();
     img.__stFadePull = null;
   }
 
-  // À quel moment ça commence/termine (dans le scroll de la section)
-  const START_AT = 0.0; // commence à compresser dès le début
-  const END_AT = 1.0;   // terminé à la fin
+  // 🔹 Fade
+  const FADE_START = 0.6;
+  const FADE_END = 1.0;
+
+  // 🔹 Margin (démarre plus tard)
+  const MARGIN_START = 0.3;
+  const MARGIN_END = 1.0;
 
   function init() {
-    // ✅ calc dynamique : s’adapte à la hauteur de la section (donc au “vide” réel)
     const computeMaxPull = () => {
       const h = section.offsetHeight || 0;
-      // Ajuste le ratio si besoin (0.4 / 0.6 etc.)
       return gsap.utils.clamp(120, 1200, h * 0.6);
     };
 
@@ -1606,15 +1606,23 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
       onUpdate: (self) => {
         const p = self.progress;
 
-        // t = 0..1 sur la plage START_AT..END_AT
-        const tRaw = (p - START_AT) / (END_AT - START_AT);
-        const t = gsap.utils.clamp(0, 1, tRaw);
+        /* ---------- FADE ---------- */
+        const fadeT = gsap.utils.clamp(
+          0,
+          1,
+          (p - FADE_START) / (FADE_END - FADE_START)
+        );
+        gsap.set(img, { opacity: 1 - fadeT });
 
-        // 1) Fade (synchro)
-        gsap.set(img, { opacity: 1 - t });
-
-        // 2) ✅ Negative margin dynamique (synchro) pour supprimer le vide
-        gsap.set(next, { marginTop: -MAX_PULL * t });
+        /* ---------- MARGIN (retardé) ---------- */
+        const marginT = gsap.utils.clamp(
+          0,
+          1,
+          (p - MARGIN_START) / (MARGIN_END - MARGIN_START)
+        );
+        gsap.set(next, {
+          marginTop: -MAX_PULL * marginT,
+        });
       },
     });
 
@@ -1624,6 +1632,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   if (document.readyState === "complete") init();
   else window.addEventListener("load", init);
 })();
+
 
 
 // ===================== HOW IT WORKS – INDIVIDUAL IMAGE BLUR ===================== //
