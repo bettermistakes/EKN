@@ -1618,7 +1618,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const IMAGES = document.querySelectorAll(".howitworks--img--inner");
   if (!IMAGES.length) return;
 
-  const THRESHOLD = 0.6; // 60% du viewport
+  const THRESHOLD = 0.4; // 40% du viewport
   const BLUR_ON = "10rem";
   const BLUR_OFF = "0rem";
 
