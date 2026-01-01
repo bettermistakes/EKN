@@ -393,27 +393,3 @@ body {
   will-change: transform;
 }
 
-/* --------------------- OFFERS – Display + Opacity --------------------- */
-@media (min-width: 992px) {
-
-  /* Par défaut : caché */
-  .swiper-slide.offer--slide .paragraph-offer {
-    display: none;
-    opacity: 0;
-    transform: translateY(-0.5rem);
-
-    transition:
-      opacity 0.25s ease,
-      transform 0.35s ease;
-
-    pointer-events: none;
-  }
-
-  /* Actif */
-  .swiper-slide.offer--slide.is-offer-active .paragraph-offer {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-}
