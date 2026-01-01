@@ -397,7 +397,7 @@ body {
 @media (min-width: 992px) {
 
   /* Par défaut : caché */
-  .swiper-slide.offer--slide .paragraph-large {
+  .swiper-slide.offer--slide .paragraph-offer {
     overflow: hidden;
     max-height: 0;
     opacity: 0;
@@ -412,7 +412,7 @@ body {
   }
 
   /* Actif : visible en douceur */
-  .swiper-slide.offer--slide.is-offer-active .paragraph-large {
+  .swiper-slide.offer--slide.is-offer-active .paragraph-offer {
     max-height: 500px; /* valeur safe */
     opacity: 1;
     transform: translateY(0);
