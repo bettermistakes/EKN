@@ -37,6 +37,7 @@ $(window).on("load", function () {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
     if (!list) return;
 
     gsap.to(list, {
@@ -54,6 +55,7 @@ $(window).on("load", function () {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
     if (!list) return;
 
     gsap.set(list, { display: "flex", height: 0 });
@@ -61,7 +63,13 @@ $(window).on("load", function () {
 
     if (animate) {
       const items = list.querySelectorAll('[animate="dropdownnav"]');
-      gsap.to(items, { opacity: 1, y: "0rem", duration: 0.4, ease: "power4.out", stagger: 0.05 });
+      gsap.to(items, {
+        opacity: 1,
+        y: "0rem",
+        duration: 0.4,
+        ease: "power4.out",
+        stagger: 0.05,
+      });
     }
 
     if (trigger) gsap.to(trigger, { color: "#0133F6", duration: 0.3, ease: "power4.out" });
@@ -77,7 +85,6 @@ $(window).on("load", function () {
 
   function activateNavbarStyle() {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
-
     if (navbarBg) {
       gsap.to(navbarBg, {
         backgroundColor: "#F2F3F6",
@@ -86,23 +93,28 @@ $(window).on("load", function () {
         ease: "power4.out",
       });
     }
-
     gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
-
     navButtons.forEach((btn) => {
-      gsap.to(btn, { backgroundColor: "#040A44", color: "#F2F3F6", duration: 0.3, ease: "power4.out" });
+      gsap.to(btn, {
+        backgroundColor: "#040A44",
+        color: "#F2F3F6",
+        duration: 0.3,
+        ease: "power4.out",
+      });
     });
   }
 
   function deactivateNavbarStyle() {
     const navButtons = navbar.querySelectorAll(".btn.is--nav");
-
     if (navbarBg) {
-      gsap.to(navbarBg, { backgroundColor: "", borderBottomColor: "", duration: 0.3, ease: "power4.out" });
+      gsap.to(navbarBg, {
+        backgroundColor: "",
+        borderBottomColor: "",
+        duration: 0.3,
+        ease: "power4.out",
+      });
     }
-
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
     navButtons.forEach((btn) => {
       gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
     });
@@ -131,7 +143,6 @@ $(window).on("load", function () {
   });
 
   const navlinks = navbar.querySelectorAll(".navlink");
-
   navlinks.forEach((navlink) => {
     const line = navlink.querySelector(".dropdown--line");
     if (line) gsap.set(line, { width: "0%" });
@@ -157,7 +168,6 @@ $(window).on("load", function () {
 
   navbar.addEventListener("mouseleave", function () {
     if (window.innerWidth < 992) return;
-
     if (activeDropdown) {
       closeDropdown(activeDropdown);
       resetDropdownItems(activeDropdown);
@@ -172,7 +182,6 @@ $(window).on("load", function () {
   window.addEventListener("resize", function () {
     const isDesktop = window.innerWidth >= 992;
     if (isDesktop === wasDesktop) return;
-
     wasDesktop = isDesktop;
 
     if (isDesktop) {
@@ -226,7 +235,6 @@ $(window).on("load", function () {
       gsap.set(list, { display: "flex", x: "100vw" });
       gsap.to(list, { x: "0vw", duration: 0.5, ease: "power4.out" });
       if (bg) gsap.to(bg, { opacity: 1, duration: 0.5, ease: "power4.out" });
-
       activeDropdown = dropdown;
       activeCloseFunction = closeDropdown;
     }
@@ -238,7 +246,6 @@ $(window).on("load", function () {
         ease: "power4.out",
         onComplete: () => gsap.set(list, { display: "none" }),
       });
-
       if (bg) gsap.to(bg, { opacity: 0, duration: 0.5, ease: "power4.out" });
 
       if (activeDropdown === dropdown) {
@@ -269,7 +276,6 @@ $(window).on("load", function () {
     window.addEventListener("resize", function () {
       const isMobile = window.innerWidth < 992;
       if (isMobile === wasMobile) return;
-
       wasMobile = isMobile;
 
       if (isMobile) initMobileDropdown();
@@ -298,7 +304,6 @@ $(window).on("load", function () {
   solutionItems.forEach((item) => {
     const svgItem = item.querySelector(".solution--svg-item");
     const paragraph = item.querySelector(".paragraph-small-130");
-
     if (svgItem) gsap.set(svgItem, { opacity: 0, x: "-1.5rem" });
     if (paragraph) gsap.set(paragraph, { opacity: 1, x: "0rem" });
   });
@@ -308,14 +313,11 @@ $(window).on("load", function () {
   function resetAllItems() {
     solutionItems.forEach((item) => {
       gsap.to(item, { opacity: 1, duration: 0.3, ease: "power4.out" });
-
       const svgItem = item.querySelector(".solution--svg-item");
       const paragraph = item.querySelector(".paragraph-small-130");
-
       if (svgItem) gsap.to(svgItem, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
       if (paragraph) gsap.to(paragraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
     });
-
     currentlyHovered = null;
   }
 
@@ -481,7 +483,6 @@ $(window).on("load", function () {
     });
 
     gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
-
     if (navbarBg) {
       gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
     }
@@ -523,7 +524,6 @@ $(window).on("load", function () {
 
   menuTrigger.addEventListener("click", function () {
     if (window.innerWidth >= 992) return;
-
     if (typeof window.closeMobileDropdown === "function") window.closeMobileDropdown();
     if (isMenuOpen) closeMenu();
     else openMenu();
@@ -535,7 +535,6 @@ $(window).on("load", function () {
   window.addEventListener("resize", function () {
     const isMobile = window.innerWidth < 992;
     if (isMobile === wasMobile) return;
-
     wasMobile = isMobile;
 
     if (isMobile) {
@@ -545,10 +544,8 @@ $(window).on("load", function () {
       gsap.set(menuOpen, { opacity: 1 });
       gsap.set(menuClose, { opacity: 0 });
       gsap.set(menuInner, { display: "", x: "0vw" });
-
       const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
       gsap.set(menuItems, { opacity: 1, y: "0rem" });
-
       document.body.style.overflow = "";
       isMenuOpen = false;
     }
@@ -574,16 +571,18 @@ $(window).on("load", function () {
   }
 
   let ticking = false;
-  window.addEventListener("scroll", function () {
-    if (ticking) return;
-
-    window.requestAnimationFrame(function () {
-      handleNavbarScroll();
-      ticking = false;
-    });
-
-    ticking = true;
-  });
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (ticking) return;
+      window.requestAnimationFrame(function () {
+        handleNavbarScroll();
+        ticking = false;
+      });
+      ticking = true;
+    },
+    { passive: true }
+  );
 
   handleNavbarScroll();
 })();
@@ -594,10 +593,10 @@ $(window).on("load", function () {
   if (!eyebrowElement) return;
 
   const phrases = [
-    "From field to office                       ",
-    "From data to decision                       ",
-    "From risk to reliability                    ",
-    "From reactive to proactive.              ",
+    "From field to office ",
+    "From data to decision ",
+    "From risk to reliability ",
+    "From reactive to proactive. ",
   ];
 
   let currentIndex = 0;
@@ -616,7 +615,6 @@ $(window).on("load", function () {
     isAnimating = true;
 
     if (!currentSplit) currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-
     const oldChars = currentSplit.chars;
 
     gsap.to(oldChars, { yPercent: -100, opacity: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" });
@@ -629,14 +627,12 @@ $(window).on("load", function () {
 
     currentIndex = (currentIndex + 1) % phrases.length;
     tempDiv.innerHTML = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
-
     eyebrowElement.appendChild(tempDiv);
 
     const newSplit = new SplitText(tempDiv, { type: "chars", charsClass: "char" });
     const newChars = newSplit.chars;
 
     gsap.set(newChars, { yPercent: 100, opacity: 0 });
-
     gsap.to(newChars, {
       yPercent: 0,
       opacity: 1,
@@ -648,7 +644,6 @@ $(window).on("load", function () {
         eyebrowElement.innerHTML = tempDiv.innerHTML;
         eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
         currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
-
         isAnimating = false;
         setTimeout(animateTextChange, 2000);
       },
@@ -698,7 +693,6 @@ $(window).on("load", function () {
   function syncFromAriaLabel() {
     const label = (eyebrowEl.getAttribute("aria-label") || "").trim();
     if (!label) return;
-
     const idx = phrases.findIndex((p) => p === label);
     if (idx !== -1) setActiveByValue(idx + 1);
   }
@@ -760,15 +754,12 @@ $(window).on("load", function () {
       lines.forEach((line) => {
         const circle = line.querySelector(".hover--circle.is--100");
         if (!circle) return;
-
         if (!circle._follower) circle._follower = setupFollower(circle);
-
         const rect = line.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const halfW = circle.offsetWidth / 2;
         const halfH = circle.offsetHeight / 2;
-
         circle._follower.setX(x - halfW);
         circle._follower.setY(y - halfH);
       });
@@ -798,6 +789,7 @@ $(window).on("load", function () {
 // --------------------- ✅ Offer Slide Hover (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
 (function () {
   let swiperInstance = null;
+
   const SECTION_SELECTOR = ".section.is--home-offers";
   const ACTIVE_CLASS = "is-offer-active";
 
@@ -818,7 +810,6 @@ $(window).on("load", function () {
     if (!firstSlide || !offerSlides.length) return;
 
     const allSlides = [firstSlide, ...offerSlides];
-
     const sliderScope =
       section.querySelector(".grid--21.is--slider") ||
       desktopSwiper.closest(".grid--21") ||
@@ -959,6 +950,7 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
+    // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
@@ -990,7 +982,6 @@ $(window).on("load", function () {
 
       targets.forEach((t) => {
         t.addEventListener("mouseenter", () => setHoverState(slide), { passive: true });
-
         t.addEventListener(
           "mouseleave",
           () => {
@@ -1030,7 +1021,6 @@ $(window).on("load", function () {
 
     const mobileSwiperEl = section.querySelector(".swiper.is--offer-mobile");
     if (!mobileSwiperEl) return;
-
     if (typeof Swiper === "undefined") return;
 
     if (swiperInstance) {
@@ -1068,14 +1058,12 @@ $(window).on("load", function () {
   function updateSlideNumbers(swiper, sectionScope) {
     const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
     const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
-
     if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
     if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
   function updateSliderStateClasses(swiper, sliderEl) {
     if (!sliderEl) return;
-
     const isFirstSlide = swiper.activeIndex === 0;
     const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
@@ -1093,7 +1081,6 @@ $(window).on("load", function () {
   window.addEventListener("resize", function () {
     const isDesktopNow = window.innerWidth >= 992;
     if (isDesktopNow === wasDesktop) return;
-
     wasDesktop = isDesktopNow;
 
     if (isDesktopNow) {
@@ -1130,13 +1117,13 @@ $(window).on("load", function () {
 
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
+
   const finalYPercent = [-200, -100, 0];
   const finalYRem = [-6, -3, 0];
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
-
     const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
     gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
@@ -1149,7 +1136,12 @@ $(window).on("load", function () {
         yPercent: finalYPercent[index],
         y: remInPx,
         ease: "none",
-        scrollTrigger: { trigger: triggersParent, start: "top bottom", end: "bottom bottom", scrub: true },
+        scrollTrigger: {
+          trigger: triggersParent,
+          start: "top bottom",
+          end: "bottom bottom",
+          scrub: true,
+        },
       });
     }
 
@@ -1176,6 +1168,7 @@ $(window).on("load", function () {
             if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
+
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1197,12 +1190,18 @@ $(window).on("load", function () {
       gsap.to(line, {
         width: "100%",
         ease: "none",
-        scrollTrigger: { trigger, start: "top bottom", end: "bottom bottom", scrub: true },
+        scrollTrigger: {
+          trigger,
+          start: "top bottom",
+          end: "bottom bottom",
+          scrub: true,
+        },
       });
     }
   });
 
   const section = document.querySelector(".section.is--howworks");
+
   parents.forEach((parent, index) => {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
@@ -1212,21 +1211,36 @@ $(window).on("load", function () {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: { trigger: section, start: "top bottom", end: "top center", scrub: true },
+        scrollTrigger: {
+          trigger: section,
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
+        },
       });
     } else if (index === 1) {
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: { trigger: triggersParent, start: "top bottom", end: "top center", scrub: true },
+        scrollTrigger: {
+          trigger: triggersParent,
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
+        },
       });
     } else if (index === 2) {
       gsap.to(imgInner, {
         yPercent: -10,
         filter: "blur(0rem)",
         ease: "none",
-        scrollTrigger: { trigger: triggersParent, start: "center bottom", end: "center center", scrub: true },
+        scrollTrigger: {
+          trigger: triggersParent,
+          start: "center bottom",
+          end: "center center",
+          scrub: true,
+        },
       });
     }
   });
@@ -1237,6 +1251,7 @@ $(window).on("load", function () {
   const section = document.querySelector(".section.is--whatoffers");
   const container = document.querySelector(".relative.is--whatworks");
   const hoverCircle = document.querySelector(".hover--circle.is--what");
+
   if (!section || !container || !hoverCircle) return;
 
   gsap.set(hoverCircle, { opacity: 0 });
@@ -1283,12 +1298,10 @@ $(window).on("load", function () {
       const targetDigit = parseInt(targetString[i], 10);
       let columnHTML = "";
       const startDigit = (targetDigit + 1) % 10;
-
       for (let j = 0; j < 10; j++) {
         const digit = (startDigit + j) % 10;
         columnHTML += `<span class="digit-item">${digit}</span>`;
       }
-
       html += `<span class="digit-wrapper"><span class="digit-column">${columnHTML}</span></span>`;
     }
 
@@ -1301,7 +1314,11 @@ $(window).on("load", function () {
       onEnter: () => {
         const columns = counter.querySelectorAll(".digit-column");
         columns.forEach((column, index) => {
-          gsap.fromTo(column, { y: "0em" }, { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 });
+          gsap.fromTo(
+            column,
+            { y: "0em" },
+            { y: "-9em", duration: 2, ease: "power2.out", delay: 0.4 + index * 0.1 }
+          );
         });
       },
     });
@@ -1336,7 +1353,6 @@ $(window).on("load", function () {
           const prevColumn = activeParent.closest(".footer--column");
           const prevInner = prevColumn.querySelector(".footer--inner");
           const prevIcon = activeParent.querySelector(".footer-title-icon");
-
           gsap.to(prevInner, { height: 0, duration: 0.3, ease: "power2.out" });
           if (prevIcon) gsap.to(prevIcon, { rotation: 0, duration: 0.3, ease: "power2.out" });
         }
@@ -1360,14 +1376,12 @@ $(window).on("load", function () {
   window.addEventListener("resize", () => {
     const isMobile = window.innerWidth < 992;
     if (isMobile === wasMobile) return;
-
     wasMobile = isMobile;
 
     if (isMobile) initFooterAccordion();
     else {
       const footerInners = document.querySelectorAll(".footer--inner");
       const footerIcons = document.querySelectorAll(".footer-title-icon");
-
       footerInners.forEach((inner) => gsap.set(inner, { height: "auto", overflow: "visible" }));
       footerIcons.forEach((icon) => gsap.set(icon, { rotation: 0 }));
     }
@@ -1426,7 +1440,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function animate(time) {
       if (!startTime) startTime = time;
-
       const width = track.offsetWidth || 1;
 
       if (!paused) {
@@ -1478,7 +1491,10 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     gsap.set(svg, { y: 0 });
 
     tl = gsap
-      .timeline({ defaults: { ease: "power2.out" }, onComplete: () => (isRunning = false) })
+      .timeline({
+        defaults: { ease: "power2.out" },
+        onComplete: () => (isRunning = false),
+      })
       .to(svg, { y: 10, duration: 0.18 })
       .to(svg, { y: -6, duration: 0.22 })
       .to(svg, { y: 0, duration: 0.28 });
@@ -1497,6 +1513,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   const trigger = document.querySelector(".trigger-bg");
   const bgWrap = document.querySelector(".background-gradient");
+
   if (!trigger || !bgWrap) return;
 
   const DARK = "#08126D";
@@ -1507,7 +1524,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   bgWrap.style.willChange = "background-color";
 
   if (trigger.offsetHeight === 0) trigger.style.height = "1px";
-
   if (!bgWrap.style.backgroundColor) bgWrap.style.backgroundColor = DARK;
 
   let isLight = bgWrap.style.backgroundColor === LIGHT;
@@ -1532,59 +1548,62 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+
   update();
 })();
 
-// --------------------- Fix: prevent width "jump" + ✅ Opacity only AFTER final size --------------------- //
+// --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
 (function () {
   const wrap = document.querySelector(".section.is--image .home--image-wrapper");
   if (!wrap) return;
 
-  // Keep final width stable
   wrap.style.setProperty("width", "100%", "important");
 
-  // ✅ Hide during layout/animation, then fade in ONLY when size is stable
-  gsap.set(wrap, { opacity: 0 });
+  if (typeof ScrollTrigger !== "undefined") {
+    window.addEventListener("load", () => ScrollTrigger.refresh());
+  }
+})();
 
-  function waitForStableSize(el, cb) {
-    let lastW = -1;
-    let stableCount = 0;
-    let frames = 0;
+// ===================== ✅ IMAGE SHRINK OPACITY (SYNC WITH SCROLL) ===================== //
+// Objectif: quand l'animation de shrink commence, l'opacité passe de 1 -> 0
+// et atteint 0 EXACTEMENT quand l'image arrive à sa taille finale (fin de l'animation).
+(function () {
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
-    function tick() {
-      frames += 1;
+  const section = document.querySelector(".section.is--image");
+  if (!section) return;
 
-      const w = Math.round(el.getBoundingClientRect().width || 0);
+  const img = section.querySelector("img.absolute--img-big");
+  if (!img) return;
 
-      if (w > 0 && w === lastW) stableCount += 1;
-      else stableCount = 0;
-
-      lastW = w;
-
-      // Consider "final" when same width for 3 consecutive frames, or after safety timeout
-      if (stableCount >= 3 || frames >= 90) {
-        cb();
-        return;
-      }
-
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
+  // éviter double init (Netlify / re-run)
+  if (img.__shrinkOpacityST) {
+    img.__shrinkOpacityST.kill();
+    img.__shrinkOpacityST = null;
   }
 
-  function reveal() {
-    gsap.to(wrap, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+  // ✅ IMPORTANT:
+  // On utilise la même fenêtre "start/end" que la plupart des shrink scrolls.
+  // Si TON shrink utilise une autre fenêtre, change UNIQUEMENT start/end ici
+  // pour matcher exactement => l'opacité finira pile quand le shrink finit.
+  function init() {
+    gsap.set(img, { opacity: 1 });
+
+    img.__shrinkOpacityST = gsap.to(img, {
+      opacity: 0,
+      ease: "none",
+      scrollTrigger: {
+        trigger: section,
+        start: "top bottom",   // début (quand l'anim commence)
+        end: "bottom top",     // fin (quand l'image atteint sa taille finale)
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    ScrollTrigger.refresh();
   }
 
-  // If ScrollTrigger exists, refresh first, then wait for stability
-  const doInit = () => {
-    if (typeof ScrollTrigger !== "undefined") {
-      ScrollTrigger.refresh();
-    }
-    waitForStableSize(wrap, reveal);
-  };
-
-  if (document.readyState === "complete") doInit();
-  else window.addEventListener("load", doInit);
+  if (document.readyState === "complete") init();
+  else window.addEventListener("load", init);
 })();
