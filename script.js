@@ -1141,6 +1141,7 @@ $(window).on("load", function () {
       });
     }
 
+    // ✅ état initial blur (important)
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
   });
@@ -1196,50 +1197,44 @@ $(window).on("load", function () {
     }
   });
 
+  // ✅ BLUR animation: fromTo + immediateRender:false + reset au retour (fix)
   const section = document.querySelector(".section.is--howworks");
 
-  parents.forEach((parent, index) => {
-    const imgInner = parent.querySelector(".howitworks--img--inner");
-    if (!imgInner) return;
+  function blurScroll(imgInner, triggerEl, start, end) {
+    if (!imgInner || !triggerEl) return;
 
-    if (index === 0) {
-      gsap.to(imgInner, {
-        yPercent: -10,
-        filter: "blur(0rem)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "top center",
-          scrub: true,
-        },
-      });
-    } else if (index === 1) {
-      gsap.to(imgInner, {
-        yPercent: -10,
-        filter: "blur(0rem)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "top center",
-          scrub: true,
-        },
-      });
-    } else if (index === 2) {
-      gsap.to(imgInner, {
-        yPercent: -10,
-        filter: "blur(0rem)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "center bottom",
-          end: "center center",
-          scrub: true,
-        },
-      });
+    if (imgInner.__howBlurST) {
+      imgInner.__howBlurST.kill();
+      imgInner.__howBlurST = null;
     }
-  });
+
+    imgInner.__howBlurST = gsap.fromTo(
+      imgInner,
+      { yPercent: 0, filter: "blur(10rem)" },
+      {
+        yPercent: -10,
+        filter: "blur(0rem)",
+        ease: "none",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: triggerEl,
+          start,
+          end,
+          scrub: true,
+          invalidateOnRefresh: true,
+          onLeaveBack: () => gsap.set(imgInner, { filter: "blur(10rem)" }),
+        },
+      }
+    );
+  }
+
+  const img0 = parents[0] ? parents[0].querySelector(".howitworks--img--inner") : null;
+  const img1 = parents[1] ? parents[1].querySelector(".howitworks--img--inner") : null;
+  const img2 = parents[2] ? parents[2].querySelector(".howitworks--img--inner") : null;
+
+  blurScroll(img0, section, "top bottom", "top center");
+  blurScroll(img1, triggersParent, "top bottom", "top center");
+  blurScroll(img2, triggersParent, "center bottom", "center center");
 })();
 
 // --------------------- What Offers Hover Circle --------------------- //
@@ -1561,8 +1556,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 })();
 
 // ===================== ✅ IMAGE SHRINK OPACITY (START AT 40%) ===================== //
-// Objectif: opacité reste à 1 jusqu'à 40% de la progression du scroll (mêmes bornes que le shrink),
-// puis fade 1 -> 0 entre 40% et 100%.
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
@@ -1572,13 +1565,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  // éviter double init (Netlify / rerun)
   if (img.__shrinkOpacityST) {
     img.__shrinkOpacityST.kill();
     img.__shrinkOpacityST = null;
   }
 
-  // ✅ Réglage: à quel % de progression commence le fade
   const START_FADE_AT = 0.7; // 40%
   const END_FADE_AT = 1.0;
 
@@ -1587,7 +1578,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
     img.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
-      start: "top bottom",   // garde la même fenêtre que ton shrink si elle est basée sur section
+      start: "top bottom",
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
