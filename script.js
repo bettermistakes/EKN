@@ -338,7 +338,8 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph)
+        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -592,12 +593,7 @@ $(window).on("load", function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
 
-  const phrases = [
-    "From field to office ",
-    "From data to decision ",
-    "From risk to reliability ",
-    "From reactive to proactive. ",
-  ];
+  const phrases = ["From field to office ", "From data to decision ", "From risk to reliability ", "From reactive to proactive. "];
 
   let currentIndex = 0;
   let isAnimating = false;
@@ -1564,44 +1560,64 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   }
 })();
 
-// ===================== ✅ IMAGE SHRINK OPACITY (SYNC WITH SCROLL) ===================== //
-// Objectif: quand l'animation de shrink commence, l'opacité passe de 1 -> 0
-// et atteint 0 EXACTEMENT quand l'image arrive à sa taille finale (fin de l'animation).
+// ===================== ✅ IMAGE SHRINK OPACITY (EXACT SYNC) ===================== //
+// Objectif: opacity 1 -> 0 SMOOTH, et 0 tombe EXACTEMENT à la fin du shrink.
+// -> On tente de récupérer le ScrollTrigger du shrink existant (start/end).
+// -> Si on ne le trouve pas, fallback start/end par défaut.
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const section = document.querySelector(".section.is--image");
-  if (!section) return;
+  const img = section ? section.querySelector("img.absolute--img-big") : null;
+  if (!section || !img) return;
 
-  const img = section.querySelector("img.absolute--img-big");
-  if (!img) return;
-
-  // éviter double init (Netlify / re-run)
-  if (img.__shrinkOpacityST) {
-    img.__shrinkOpacityST.kill();
-    img.__shrinkOpacityST = null;
+  // éviter double init (Netlify / rerun)
+  if (img.__opacitySyncST) {
+    img.__opacitySyncST.kill();
+    img.__opacitySyncST = null;
   }
 
-  // ✅ IMPORTANT:
-  // On utilise la même fenêtre "start/end" que la plupart des shrink scrolls.
-  // Si TON shrink utilise une autre fenêtre, change UNIQUEMENT start/end ici
-  // pour matcher exactement => l'opacité finira pile quand le shrink finit.
+  function findShrinkST() {
+    const all = ScrollTrigger.getAll();
+
+    // 1) priorité: un ST dont l'animation cible directement l'image + trigger = section
+    let st = all.find((t) => {
+      const anim = t.animation;
+      const trig = t.vars && t.vars.trigger;
+      if (trig !== section) return false;
+      if (!anim || !anim.targets) return false;
+      const targets = anim.targets();
+      return targets && targets.includes(img);
+    });
+    if (st) return st;
+
+    // 2) fallback: un ST scrub lié à cette section (souvent celui du shrink)
+    st = all.find((t) => t.vars && t.vars.trigger === section && t.vars.scrub);
+    return st || null;
+  }
+
   function init() {
+    // important: être sûr que les ST existants ont calculé start/end
+    ScrollTrigger.refresh();
+
+    const shrinkST = findShrinkST();
+
     gsap.set(img, { opacity: 1 });
 
-    img.__shrinkOpacityST = gsap.to(img, {
+    const tween = gsap.to(img, {
       opacity: 0,
       ease: "none",
       scrollTrigger: {
         trigger: section,
-        start: "top bottom",   // début (quand l'anim commence)
-        end: "bottom top",     // fin (quand l'image atteint sa taille finale)
+        // ✅ si shrink ST trouvé => mêmes bornes exactes
+        start: shrinkST ? () => shrinkST.start : "top bottom",
+        end: shrinkST ? () => shrinkST.end : "bottom top",
         scrub: true,
         invalidateOnRefresh: true,
       },
     });
 
-    ScrollTrigger.refresh();
+    img.__opacitySyncST = tween.scrollTrigger;
   }
 
   if (document.readyState === "complete") init();
