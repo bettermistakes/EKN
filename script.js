@@ -1571,72 +1571,64 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
-  const section = document.querySelector(".section.is--image");
-  if (!section) return;
+  const triggers = document.querySelectorAll(".reduce-toright-trigger");
+  if (!triggers.length) return;
 
-  const img = section.querySelector("img.absolute--img-big");
-  if (!img) return;
+  triggers.forEach((trigger) => {
+    const section = trigger.closest(".section.is--image");
+    if (!section) return;
 
-  const START_FADE_AT = 0.7;
-  const END_FADE_AT = 1.0;
+    const img = section.querySelector("img.absolute--img-big");
+    if (!img) return;
 
-  // Clean old instances
-  if (section.__shrinkOpacityST) {
-    section.__shrinkOpacityST.kill();
-    section.__shrinkOpacityST = null;
-  }
+    const START_FADE_AT = 0.7;
+    const END_FADE_AT = 1.0;
 
-  let baseHeight = 0;
+    let baseHeight = 0;
 
-  function measureAndFreezeHeight() {
-    // Let it be auto to measure its real height
-    gsap.set(section, { height: "auto" });
+    function measureHeight() {
+      gsap.set(section, { height: "auto" });
+      baseHeight = section.offsetHeight || section.scrollHeight || 0;
+      gsap.set(section, { height: baseHeight, overflow: "hidden" });
+    }
 
-    // Measure (use offsetHeight for layout height)
-    baseHeight = section.offsetHeight || section.scrollHeight || 0;
+    if (section.__reduceToRightST) {
+      section.__reduceToRightST.kill();
+    }
 
-    // Freeze to px so we can animate to 0
-    gsap.set(section, { height: baseHeight, overflow: "hidden" });
-  }
+    function init() {
+      gsap.set(img, { opacity: 1 });
+      measureHeight();
 
-  function init() {
-    // Initial states
-    gsap.set(img, { opacity: 1 });
-    measureAndFreezeHeight();
+      section.__reduceToRightST = ScrollTrigger.create({
+        trigger: trigger,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true,
+        invalidateOnRefresh: true,
 
-    section.__shrinkOpacityST = ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom",
-      end: "bottom top",
-      scrub: true,
-      invalidateOnRefresh: true,
-      onRefresh: () => {
-        measureAndFreezeHeight();
-      },
-      onUpdate: (self) => {
-        const p = self.progress;
+        onRefresh: () => {
+          measureHeight();
+        },
 
-        // Same timing window as your opacity
-        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
-        const t = gsap.utils.clamp(0, 1, tRaw);
+        onUpdate: (self) => {
+          const p = self.progress;
+          const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
+          const t = gsap.utils.clamp(0, 1, tRaw);
 
-        // Opacity sync
-        gsap.set(img, { opacity: 1 - t });
+          // Opacity
+          gsap.set(img, { opacity: 1 - t });
 
-        // Height sync (auto -> 0px)
-        const h = gsap.utils.interpolate(baseHeight, 0, t);
-        gsap.set(section, { height: h });
+          // Height collapse
+          const h = gsap.utils.interpolate(baseHeight, 0, t);
+          gsap.set(section, { height: h });
+        },
+      });
+    }
 
-        // Optional: avoid clicks when collapsed
-        // gsap.set(section, { pointerEvents: t >= 1 ? "none" : "auto" });
-      },
-    });
-
-    ScrollTrigger.refresh();
-  }
-
-  if (document.readyState === "complete") init();
-  else window.addEventListener("load", init);
+    if (document.readyState === "complete") init();
+    else window.addEventListener("load", init);
+  });
 })();
 
 
