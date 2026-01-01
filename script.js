@@ -1539,16 +1539,49 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   update();
 })();
 
-// --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
+/* ===================================================================== */
+/* ✅ NEW: Opacity fade linked to the shrink scroll animation (section image) */
+/* ===================================================================== */
+(function () {
+  if (window.__imageShrinkOpacityInit) return;
+  window.__imageShrinkOpacityInit = true;
+
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
+
+  const section = document.querySelector(".section.is--image");
+  if (!section) return;
+
+  const img = section.querySelector("img.absolute--img-big");
+  if (!img) return;
+
+  // ensure clean baseline
+  gsap.set(img, { opacity: 1, willChange: "opacity" });
+
+  // This DOES NOT touch your shrink animation.
+  // It only fades the image out as scroll progresses through the same section.
+  gsap.timeline({
+    scrollTrigger: {
+      trigger: section,
+      start: "top center",
+      end: "bottom top",
+      scrub: true,
+      invalidateOnRefresh: true,
+    },
+  }).to(img, { opacity: 0, ease: "none" }, 0);
+})();
+
+/* ===================================================================== */
+/* ✅ Fix: keep layout stable without killing width animation             */
+/* (replaces your old width:100% !important)                              */
+/* ===================================================================== */
 (function () {
   const wrap = document.querySelector(".section.is--image .home--image-wrapper");
   if (!wrap) return;
 
-  wrap.style.setProperty("width", "100%", "important");
+  // Do NOT force width here (it would break your shrink animation)
+  wrap.style.willChange = "width, transform";
 
   if (typeof ScrollTrigger !== "undefined") {
     window.addEventListener("load", () => ScrollTrigger.refresh());
   }
 })();
-
-
