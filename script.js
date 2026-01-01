@@ -1,10 +1,4 @@
-// ===================== NETLIFY - MAIN.JS (UPDATED / ADJUSTED) ===================== //
-
-// --------------------- Helpers --------------------- //
-function onReady(fn) {
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once: true });
-  else fn();
-}
+// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 $(window).on("load", function () {
@@ -789,9 +783,6 @@ $(window).on("load", function () {
 })();
 
 // --------------------- ✅ Offer Slide Hover (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
-// ✅ Ajustement: on NE GÈRE PLUS le paragraphe en JS (pour éviter conflits).
-// Le reveal du paragraphe doit être géré en CSS via:
-// .swiper-slide.offer--slide.is-offer-active .paragraph-large { display:block; opacity:1; ... }
 (function () {
   let swiperInstance = null;
 
@@ -799,7 +790,7 @@ $(window).on("load", function () {
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP (hover states)
+  // DESKTOP
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -823,6 +814,68 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
+    function getParagraph(slide) {
+      return slide.querySelector(".offer--slide-titles .paragraph-large");
+    }
+
+    function measureAndSetParagraphHeight(slide) {
+      const p = getParagraph(slide);
+      if (!p) return;
+
+      const prev = {
+        maxHeight: p.style.maxHeight,
+        height: p.style.height,
+        overflow: p.style.overflow,
+        opacity: p.style.opacity,
+        transform: p.style.transform,
+      };
+
+      p.style.maxHeight = "none";
+      p.style.height = "auto";
+      p.style.overflow = "visible";
+      p.style.opacity = "1";
+      p.style.transform = "none";
+
+      const h = Math.ceil(p.scrollHeight || p.getBoundingClientRect().height || 0);
+      slide.style.setProperty("--offer-para-h", `${h}px`);
+
+      p.style.maxHeight = prev.maxHeight;
+      p.style.height = prev.height;
+      p.style.overflow = prev.overflow;
+      p.style.opacity = prev.opacity;
+      p.style.transform = prev.transform;
+    }
+
+    function showParagraph(slide) {
+      const p = getParagraph(slide);
+      if (!p) return;
+
+      measureAndSetParagraphHeight(slide);
+
+      gsap.to(p, {
+        opacity: 1,
+        y: 0,
+        duration: 0.22,
+        ease: "power2.out",
+        overwrite: "auto",
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
+      });
+    }
+
+    function hideParagraph(slide) {
+      const p = getParagraph(slide);
+      if (!p) return;
+
+      gsap.to(p, {
+        opacity: 0,
+        y: -10,
+        duration: 0.18,
+        ease: "power2.out",
+        overwrite: "auto",
+        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
+      });
+    }
+
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -834,7 +887,9 @@ $(window).on("load", function () {
           pointerEvents: isActive ? "auto" : "none",
         });
       });
-      // ✅ paragraphe: CSS only (no JS)
+
+      if (isActive) showParagraph(slide);
+      else hideParagraph(slide);
     }
 
     function setNeutral(slide) {
@@ -896,12 +951,19 @@ $(window).on("load", function () {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
 
+      const p = getParagraph(slide);
+      if (p) gsap.set(p, { opacity: 0, y: -10 });
+
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
       applyVisibility(slide, false);
+    });
+
+    requestAnimationFrame(() => {
+      allSlides.forEach(measureAndSetParagraphHeight);
     });
 
     setDefaultState();
@@ -934,6 +996,13 @@ $(window).on("load", function () {
       const toEl = e.relatedTarget;
       if (toEl && sliderScope.contains(toEl)) return;
       setDefaultState();
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth < 992) return;
+      requestAnimationFrame(() => {
+        allSlides.forEach(measureAndSetParagraphHeight);
+      });
     });
   }
 
@@ -1001,7 +1070,6 @@ $(window).on("load", function () {
     else sliderEl.classList.add("is--middle");
   }
 
-  // init depending on viewport
   if (window.innerWidth >= 992) initOfferSlidesDesktop();
   else initOfferSlidesMobileSwiper();
 
@@ -1342,12 +1410,11 @@ $(window).on("load", function () {
 })();
 
 // --------------------- Marquee Animation --------------------- //
-onReady(() => {
+document.addEventListener("DOMContentLoaded", () => {
   const scrollSpeed = 50; // px / second
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
-    if (!wrapper) return;
 
     let startTime = null;
     let paused = false;
@@ -1405,35 +1472,33 @@ onReady(() => {
 });
 
 // --------------------- Hero Button Hover Animation --------------------- //
-onReady(() => {
-  document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
-    const svg = btn.querySelector(".hover--close-inner svg");
-    if (!svg) return;
+document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
+  const svg = btn.querySelector(".hover--close-inner svg");
+  if (!svg) return;
 
-    let tl;
-    let isRunning = false;
+  let tl;
+  let isRunning = false;
 
-    btn.addEventListener("mouseenter", () => {
-      if (isRunning) return;
-      isRunning = true;
+  btn.addEventListener("mouseenter", () => {
+    if (isRunning) return;
+    isRunning = true;
 
-      if (tl) tl.kill();
-      gsap.set(svg, { y: 0 });
+    if (tl) tl.kill();
+    gsap.set(svg, { y: 0 });
 
-      tl = gsap
-        .timeline({
-          defaults: { ease: "power2.out" },
-          onComplete: () => (isRunning = false),
-        })
-        .to(svg, { y: 10, duration: 0.18 })
-        .to(svg, { y: -6, duration: 0.22 })
-        .to(svg, { y: 0, duration: 0.28 });
-    });
+    tl = gsap
+      .timeline({
+        defaults: { ease: "power2.out" },
+        onComplete: () => (isRunning = false),
+      })
+      .to(svg, { y: 10, duration: 0.18 })
+      .to(svg, { y: -6, duration: 0.22 })
+      .to(svg, { y: 0, duration: 0.28 });
+  });
 
-    btn.addEventListener("mouseleave", () => {
-      isRunning = false;
-      gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
-    });
+  btn.addEventListener("mouseleave", () => {
+    isRunning = false;
+    gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
   });
 });
 
@@ -1496,7 +1561,7 @@ onReady(() => {
 })();
 
 // ===================== ✅ IMAGE SHRINK OPACITY (START AT 40%) ===================== //
-// Objectif: opacité reste à 1 jusqu'à 40% de la progression du scroll,
+// Objectif: opacité reste à 1 jusqu'à 40% de la progression du scroll (mêmes bornes que le shrink),
 // puis fade 1 -> 0 entre 40% et 100%.
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
@@ -1514,7 +1579,7 @@ onReady(() => {
   }
 
   // ✅ Réglage: à quel % de progression commence le fade
-  const START_FADE_AT = 0.4; // 40%
+  const START_FADE_AT = 0.7; // 40%
   const END_FADE_AT = 1.0;
 
   function init() {
@@ -1522,7 +1587,7 @@ onReady(() => {
 
     img.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
-      start: "top bottom",
+      start: "top bottom",   // garde la même fenêtre que ton shrink si elle est basée sur section
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
