@@ -1,4 +1,4 @@
-/* ===================== NETLIFY - MAIN.CSS (UPDATED) ===================== */
+/* ===================== NETLIFY - MAIN.CSS (UPDATED - FULL FILE) ===================== */
 
 body {
   opacity: 0;
@@ -138,6 +138,7 @@ body {
   position: relative;
 }
 
+/* Base: all hero imgs are hidden by default */
 .section.is--home-hero img.absolute--img[image] {
   position: absolute;
   inset: 0;
@@ -146,10 +147,12 @@ body {
   will-change: opacity;
 }
 
+/* Active */
 .section.is--home-hero img.absolute--img.is-active {
   opacity: 1;
 }
 
+/* Optional: reduce flicker on some browsers */
 .section.is--home-hero img.absolute--img[image] {
   backface-visibility: hidden;
   transform: translateZ(0);
@@ -174,6 +177,7 @@ body {
   left: 0;
 }
 
+/* ✅ Layering fix so it looks like before */
 .trusted--logo {
   position: relative;
   z-index: 2;
@@ -193,13 +197,14 @@ body {
   transform: scale(1);
 }
 
-/* --------------------- ✅ Offer Slide Styles (DESKTOP) --------------------- */
+/* --------------------- ✅ Offer Slide Styles (DESKTOP - keep original display/position) --------------------- */
 @media (min-width: 992px) {
   .offer--slide {
     cursor: pointer;
     transition: opacity 0.25s ease;
   }
 
+  /* We only toggle opacity/visibility/pointer-events (keep layout intact) */
   .offer--slide-icon,
   .offer--slide-content {
     opacity: 0;
@@ -280,10 +285,8 @@ body {
     will-change: transform;
   }
 
-  /* ✅ DEFAULT: blur ON (so top is blurred) */
   .howitworks--img--inner {
     will-change: transform, filter;
-    filter: blur(10rem);
   }
 }
 
@@ -306,7 +309,6 @@ body {
 
   .howitworks--img--inner {
     transform: none !important;
-    filter: none !important;
   }
 }
 
@@ -334,6 +336,10 @@ body {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
+}
+
+.digit {
+  display: inline-block;
 }
 
 .digit-column {

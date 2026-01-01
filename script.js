@@ -1,4 +1,4 @@
-// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
+// ===================== NETLIFY - MAIN.JS (UPDATED - FULL FILE) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 $(window).on("load", function () {
@@ -28,7 +28,6 @@ $(window).on("load", function () {
         const items = list.querySelectorAll('[animate="dropdownnav"]');
         gsap.set(items, { opacity: 0, y: "1rem" });
       }
-
       if (line) gsap.set(line, { width: "0%" });
     });
   }
@@ -37,6 +36,7 @@ $(window).on("load", function () {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
     if (!list) return;
 
     gsap.to(list, {
@@ -54,6 +54,7 @@ $(window).on("load", function () {
     const list = dropdown.querySelector(".navbar--dropdown-list");
     const trigger = dropdown.querySelector(".navbar--dropdown-trigger");
     const line = trigger ? trigger.querySelector(".dropdown--line") : null;
+
     if (!list) return;
 
     gsap.set(list, { display: "flex", height: 0 });
@@ -92,7 +93,6 @@ $(window).on("load", function () {
       });
     }
     gsap.to(navbar, { color: "#040A44", duration: 0.3, ease: "power4.out" });
-
     navButtons.forEach((btn) => {
       gsap.to(btn, {
         backgroundColor: "#040A44",
@@ -114,7 +114,6 @@ $(window).on("load", function () {
       });
     }
     gsap.to(navbar, { color: "", duration: 0.3, ease: "power4.out" });
-
     navButtons.forEach((btn) => {
       gsap.to(btn, { backgroundColor: "", color: "", duration: 0.3, ease: "power4.out" });
     });
@@ -156,7 +155,6 @@ $(window).on("load", function () {
         activeDropdown = null;
         deactivateNavbarStyle();
       }
-
       if (line) gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
     });
 
@@ -168,6 +166,7 @@ $(window).on("load", function () {
 
   navbar.addEventListener("mouseleave", function () {
     if (window.innerWidth < 992) return;
+
     if (activeDropdown) {
       closeDropdown(activeDropdown);
       resetDropdownItems(activeDropdown);
@@ -200,7 +199,6 @@ $(window).on("load", function () {
         const items = list.querySelectorAll('[animate="dropdownnav"]');
         gsap.set(items, { opacity: "", y: "" });
       }
-
       if (trigger) gsap.set(trigger, { color: "" });
       if (line) gsap.set(line, { width: "" });
     });
@@ -235,7 +233,6 @@ $(window).on("load", function () {
       gsap.set(list, { display: "flex", x: "100vw" });
       gsap.to(list, { x: "0vw", duration: 0.5, ease: "power4.out" });
       if (bg) gsap.to(bg, { opacity: 1, duration: 0.5, ease: "power4.out" });
-
       activeDropdown = dropdown;
       activeCloseFunction = closeDropdown;
     }
@@ -314,14 +311,11 @@ $(window).on("load", function () {
   function resetAllItems() {
     solutionItems.forEach((item) => {
       gsap.to(item, { opacity: 1, duration: 0.3, ease: "power4.out" });
-
       const svgItem = item.querySelector(".solution--svg-item");
       const paragraph = item.querySelector(".paragraph-small-130");
-
       if (svgItem) gsap.to(svgItem, { opacity: 0, x: "-1.5rem", duration: 0.3, ease: "power4.out" });
       if (paragraph) gsap.to(paragraph, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
     });
-
     currentlyHovered = null;
   }
 
@@ -414,7 +408,6 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-
       currentlyHovered = currentLink;
     });
 
@@ -547,10 +540,8 @@ $(window).on("load", function () {
       gsap.set(menuOpen, { opacity: 1 });
       gsap.set(menuClose, { opacity: 0 });
       gsap.set(menuInner, { display: "", x: "0vw" });
-
       const menuItems = menuInner.querySelectorAll('[animate="navbar"]');
       gsap.set(menuItems, { opacity: 1, y: "0rem" });
-
       document.body.style.overflow = "";
       isMenuOpen = false;
     }
@@ -596,8 +587,10 @@ $(window).on("load", function () {
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
+  if (typeof SplitText === "undefined" || typeof gsap === "undefined") return;
 
   const phrases = ["From field to office ", "From data to decision ", "From risk to reliability ", "From reactive to proactive. "];
+
   let currentIndex = 0;
   let isAnimating = false;
   let currentSplit = null;
@@ -616,6 +609,7 @@ $(window).on("load", function () {
     if (!currentSplit) currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
 
     const oldChars = currentSplit.chars;
+
     gsap.to(oldChars, { yPercent: -100, opacity: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" });
 
     const tempDiv = document.createElement("div");
@@ -721,7 +715,6 @@ $(window).on("load", function () {
     if (!hoverCircle) return;
 
     gsap.set(hoverCircle, { opacity: 0, scale: 0.85, x: 0, y: 0 });
-
     const { setX, setY } = setupFollower(hoverCircle);
 
     parent.addEventListener("mousemove", (e) => {
@@ -761,7 +754,6 @@ $(window).on("load", function () {
         const y = e.clientY - rect.top;
         const halfW = circle.offsetWidth / 2;
         const halfH = circle.offsetHeight / 2;
-
         circle._follower.setX(x - halfW);
         circle._follower.setY(y - halfH);
       });
@@ -855,7 +847,6 @@ $(window).on("load", function () {
     function showParagraph(slide) {
       const p = getParagraph(slide);
       if (!p) return;
-
       measureAndSetParagraphHeight(slide);
       gsap.to(p, {
         opacity: 1,
@@ -870,7 +861,6 @@ $(window).on("load", function () {
     function hideParagraph(slide) {
       const p = getParagraph(slide);
       if (!p) return;
-
       gsap.to(p, {
         opacity: 0,
         y: -10,
@@ -961,7 +951,6 @@ $(window).on("load", function () {
 
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
-
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
@@ -1097,7 +1086,7 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- How It Works Scroll Animation --------------------- //
+// --------------------- How It Works Scroll Animation (FIX BLUR BACK ON TOP) --------------------- //
 (function () {
   if (window.innerWidth <= 992) return;
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
@@ -1105,20 +1094,33 @@ $(window).on("load", function () {
   const triggersParent = document.querySelector(".howitworks--triggers-parent");
   const triggers = document.querySelectorAll(".howitworks--trigger");
   const parents = document.querySelectorAll(".howitworks--parent");
+  const section = document.querySelector(".section.is--howworks");
 
-  if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
+  if (!triggersParent || triggers.length === 0 || parents.length === 0 || !section) return;
 
-  // reset states
+  // ✅ avoid double init
+  if (window.__howItWorksSTInit) return;
+  window.__howItWorksSTInit = true;
+
+  const BLUR_ON = "blur(10rem)";
+  const BLUR_OFF = "blur(0rem)";
+
+  // Init states
   parents.forEach((parent) => {
     const content = parent.querySelector(".howitworks--content");
     const response = parent.querySelector(".howitworks--response");
     const line = parent.querySelector(".howitworks--line");
+    const imgInner = parent.querySelector(".howitworks--img--inner");
+
     if (content) gsap.set(content, { opacity: 0.3 });
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
+
+    // ✅ initial blur ON
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
   });
 
-  // images position
+  // Images positions (outer wrapper)
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
   const finalYPercent = [-200, -100, 0];
@@ -1128,29 +1130,31 @@ $(window).on("load", function () {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
 
-    const remInPx = (initialYRem[index] || 0) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-    gsap.set(img, { yPercent: initialYPercent[index] || 0, y: remInPx });
+    const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
-    if (img) {
-      const remInPx = (finalYRem[index] || 0) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      gsap.to(img, {
-        yPercent: finalYPercent[index] || 0,
-        y: remInPx,
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
-      });
-    }
+    if (!img) return;
+
+    const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    gsap.to(img, {
+      yPercent: finalYPercent[index],
+      y: remInPx,
+      ease: "none",
+      scrollTrigger: {
+        trigger: triggersParent,
+        start: "top bottom",
+        end: "bottom bottom",
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
+    });
   });
 
-  // accordion behavior + line
+  // Content expand/collapse + line progress
   triggers.forEach((trigger, index) => {
     const parent = parents[index];
     if (!parent) return;
@@ -1170,7 +1174,6 @@ $(window).on("load", function () {
             if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
-
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1197,48 +1200,53 @@ $(window).on("load", function () {
           start: "top bottom",
           end: "bottom bottom",
           scrub: true,
+          invalidateOnRefresh: true,
         },
       });
     }
   });
 
-  // ✅ FIX BLUR (blur ON at top, blur OFF when scrolling, blur returns when going back up)
-  const BLUR_ON = "blur(10rem)";
-  const BLUR_OFF = "blur(0rem)";
-
-  parents.forEach((parent, index) => {
+  // ✅ Blur + parallax inner (FIX: blur comes back when going back up)
+  function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
-    const trig = triggers[index];
-    if (!imgInner || !trig) return;
+    if (!imgInner) return;
 
-    // default at top
-    gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
-
-    // avoid double init
     if (imgInner.__blurTween) {
       if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
       imgInner.__blurTween.kill();
       imgInner.__blurTween = null;
     }
 
-    imgInner.__blurTween = gsap.to(imgInner, {
-      filter: BLUR_OFF,
-      yPercent: -10,
-      ease: "none",
-      overwrite: "auto",
-      immediateRender: false,
-      scrollTrigger: {
-        trigger: trig,
-        start: "top 85%",
-        end: "top 45%",
-        scrub: true,
-        invalidateOnRefresh: true,
-        onLeaveBack: () => gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 }),
-      },
-    });
+    imgInner.__blurTween = gsap.fromTo(
+      imgInner,
+      { yPercent: 0, filter: BLUR_ON },
+      {
+        yPercent: -10,
+        filter: BLUR_OFF,
+        ease: "none",
+        overwrite: "auto",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: triggerEl,
+          start,
+          end,
+          scrub: true,
+          invalidateOnRefresh: true,
+          onLeaveBack: () => {
+            gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
+          },
+        },
+      }
+    );
+  }
+
+  parents.forEach((parent, index) => {
+    if (index === 0) bindInnerBlur(parent, section, "top bottom", "top center");
+    else if (index === 1) bindInnerBlur(parent, triggersParent, "top bottom", "top center");
+    else if (index === 2) bindInnerBlur(parent, triggersParent, "center bottom", "center center");
   });
 
-  ScrollTrigger.refresh();
+  window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
 
 // --------------------- What Offers Hover Circle --------------------- //
@@ -1276,24 +1284,24 @@ $(window).on("load", function () {
 (function () {
   const numberCounters = document.querySelectorAll(".number--count");
   if (numberCounters.length === 0) return;
-  if (typeof ScrollTrigger === "undefined") return;
+  if (typeof ScrollTrigger === "undefined" || typeof gsap === "undefined") return;
 
   numberCounters.forEach((counter) => {
     const originalText = counter.textContent.trim();
     const targetNumber = parseInt(originalText, 10);
     const digitCount = originalText.length;
+
     if (isNaN(targetNumber)) return;
 
     counter.setAttribute("data-target", String(targetNumber));
-
     const targetString = targetNumber.toString().padStart(digitCount, "0");
 
     let html = "";
     for (let i = 0; i < digitCount; i++) {
       const targetDigit = parseInt(targetString[i], 10);
       let columnHTML = "";
-
       const startDigit = (targetDigit + 1) % 10;
+
       for (let j = 0; j < 10; j++) {
         const digit = (startDigit + j) % 10;
         columnHTML += `<span class="digit-item">${digit}</span>`;
@@ -1411,13 +1419,11 @@ $(window).on("load", function () {
 })();
 
 // --------------------- Marquee Animation --------------------- //
-(function () {
+document.addEventListener("DOMContentLoaded", () => {
   const scrollSpeed = 50; // px / second
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
-    if (!wrapper) return;
-
     let startTime = null;
     let paused = false;
     let pausedAt = 0;
@@ -1471,40 +1477,38 @@ $(window).on("load", function () {
       glow.style.opacity = "0";
     });
   });
-})();
+});
 
 // --------------------- Hero Button Hover Animation --------------------- //
-(function () {
-  document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
-    const svg = btn.querySelector(".hover--close-inner svg");
-    if (!svg) return;
+document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
+  const svg = btn.querySelector(".hover--close-inner svg");
+  if (!svg) return;
 
-    let tl;
-    let isRunning = false;
+  let tl;
+  let isRunning = false;
 
-    btn.addEventListener("mouseenter", () => {
-      if (isRunning) return;
-      isRunning = true;
+  btn.addEventListener("mouseenter", () => {
+    if (isRunning) return;
+    isRunning = true;
 
-      if (tl) tl.kill();
-      gsap.set(svg, { y: 0 });
+    if (tl) tl.kill();
+    gsap.set(svg, { y: 0 });
 
-      tl = gsap
-        .timeline({
-          defaults: { ease: "power2.out" },
-          onComplete: () => (isRunning = false),
-        })
-        .to(svg, { y: 10, duration: 0.18 })
-        .to(svg, { y: -6, duration: 0.22 })
-        .to(svg, { y: 0, duration: 0.28 });
-    });
-
-    btn.addEventListener("mouseleave", () => {
-      isRunning = false;
-      gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
-    });
+    tl = gsap
+      .timeline({
+        defaults: { ease: "power2.out" },
+        onComplete: () => (isRunning = false),
+      })
+      .to(svg, { y: 10, duration: 0.18 })
+      .to(svg, { y: -6, duration: 0.22 })
+      .to(svg, { y: 0, duration: 0.28 });
   });
-})();
+
+  btn.addEventListener("mouseleave", () => {
+    isRunning = false;
+    gsap.to(svg, { y: 0, duration: 0.2, ease: "power2.out" });
+  });
+});
 
 // ===================== BG COLOR SWITCH (trigger-bg) ===================== //
 (function () {
@@ -1547,6 +1551,7 @@ $(window).on("load", function () {
 
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+
   update();
 })();
 
@@ -1562,7 +1567,7 @@ $(window).on("load", function () {
   }
 })();
 
-// ===================== ✅ IMAGE SHRINK OPACITY ===================== //
+// ===================== ✅ IMAGE SHRINK OPACITY (START AT 70%) ===================== //
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
