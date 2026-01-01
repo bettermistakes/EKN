@@ -398,18 +398,13 @@ body {
 
   /* Hidden */
   .swiper-slide.offer--slide .paragraph-large {
-    max-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition: 
-      max-height 0.4s ease,
-      opacity 0.25s ease;
     pointer-events: none;
   }
 
   /* Visible */
   .swiper-slide.offer--slide.is-offer-active .paragraph-large {
-    max-height: 400px; /* large enough */
     opacity: 1;
     pointer-events: auto;
   }
