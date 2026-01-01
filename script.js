@@ -1609,49 +1609,46 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   else window.addEventListener("load", init);
 })();
 
-// ===================== IMAGE BLUR ON THRESHOLD (60% viewport) ===================== //
-// Règle: si le TOP de l'image est au-dessus de 60% de la hauteur de l'écran => blur ON
-// Sinon => blur OFF
+
+// ===================== HOW IT WORKS – INDIVIDUAL IMAGE BLUR ===================== //
+// Chaque image est traitée indépendamment
+// Blur ON quand son top dépasse -60% du viewport
 
 (function () {
-  const IMG_SELECTOR = ".howitworks--img--inner"; // change si besoin
+  const IMAGES = document.querySelectorAll(".howitworks--img--inner");
+  if (!IMAGES.length) return;
+
   const THRESHOLD = 0.6; // 60% du viewport
-  const BLUR = "10rem";  // intensité
+  const BLUR_ON = "10rem";
   const BLUR_OFF = "0rem";
 
-  const img = document.querySelector(IMG_SELECTOR);
-  if (!img) return;
-
-  let lastState = null;
   let rafId = null;
-
-  function apply(state) {
-    if (state === lastState) return;
-    lastState = state;
-
-    img.style.filter = state ? `blur(${BLUR})` : `blur(${BLUR_OFF})`;
-    // optionnel: petit mouvement comme dans ton code
-    img.style.transform = state ? "translate(0%, 0%)" : "translate(0%, -10%)";
-  }
 
   function update() {
     rafId = null;
-    const rect = img.getBoundingClientRect();
-    const triggerY = window.innerHeight * THRESHOLD;
 
-    // rect.top < triggerY  => le top de l'image est passé au-dessus du point 60% viewport
-    const shouldBlur = rect.top <= triggerY;
+    IMAGES.forEach((img) => {
+      const rect = img.getBoundingClientRect();
+      const limit = -window.innerHeight * THRESHOLD;
 
-    apply(shouldBlur);
+      const shouldBlur = rect.top <= limit;
+
+      // évite les reflows inutiles
+      if (img.__isBlurred === shouldBlur) return;
+      img.__isBlurred = shouldBlur;
+
+      img.style.filter = shouldBlur
+        ? `blur(${BLUR_ON})`
+        : `blur(${BLUR_OFF})`;
+    });
   }
 
-  function onScrollResize() {
-    if (rafId) return;
-    rafId = requestAnimationFrame(update);
+  function onScroll() {
+    if (!rafId) rafId = requestAnimationFrame(update);
   }
 
-  window.addEventListener("scroll", onScrollResize, { passive: true });
-  window.addEventListener("resize", onScrollResize);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
 
   // init
   update();
