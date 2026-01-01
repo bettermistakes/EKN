@@ -1577,28 +1577,58 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  if (img.__shrinkOpacityST) {
-    img.__shrinkOpacityST.kill();
-    img.__shrinkOpacityST = null;
-  }
-
   const START_FADE_AT = 0.7;
   const END_FADE_AT = 1.0;
 
-  function init() {
-    gsap.set(img, { opacity: 1 });
+  // Clean old instances
+  if (section.__shrinkOpacityST) {
+    section.__shrinkOpacityST.kill();
+    section.__shrinkOpacityST = null;
+  }
 
-    img.__shrinkOpacityST = ScrollTrigger.create({
+  let baseHeight = 0;
+
+  function measureAndFreezeHeight() {
+    // Let it be auto to measure its real height
+    gsap.set(section, { height: "auto" });
+
+    // Measure (use offsetHeight for layout height)
+    baseHeight = section.offsetHeight || section.scrollHeight || 0;
+
+    // Freeze to px so we can animate to 0
+    gsap.set(section, { height: baseHeight, overflow: "hidden" });
+  }
+
+  function init() {
+    // Initial states
+    gsap.set(img, { opacity: 1 });
+    measureAndFreezeHeight();
+
+    section.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
+      onRefresh: () => {
+        measureAndFreezeHeight();
+      },
       onUpdate: (self) => {
         const p = self.progress;
+
+        // Same timing window as your opacity
         const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
+
+        // Opacity sync
         gsap.set(img, { opacity: 1 - t });
+
+        // Height sync (auto -> 0px)
+        const h = gsap.utils.interpolate(baseHeight, 0, t);
+        gsap.set(section, { height: h });
+
+        // Optional: avoid clicks when collapsed
+        // gsap.set(section, { pointerEvents: t >= 1 ? "none" : "auto" });
       },
     });
 
@@ -1618,7 +1648,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const IMAGES = document.querySelectorAll(".howitworks--img--inner");
   if (!IMAGES.length) return;
 
-  const THRESHOLD = 0.4; // 40% du viewport
+  const THRESHOLD = 0.4; // 90% du viewport
   const BLUR_ON = "10rem";
   const BLUR_OFF = "0rem";
 
