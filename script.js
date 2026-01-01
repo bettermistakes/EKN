@@ -1578,7 +1578,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const FADE_END = 1.0;
 
   // 🔹 Margin (démarre plus tard)
-  const MARGIN_START = 0.8;
+  const MARGIN_START = 1.0;
   const MARGIN_END = 1.0;
 
   function init() {
