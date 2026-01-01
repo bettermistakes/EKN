@@ -400,7 +400,6 @@ body {
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transform: translateY(-0.5rem);
 
     transition:
       max-height 0.45s ease,
@@ -413,7 +412,6 @@ body {
   .swiper-slide.offer--slide.is-offer-active .paragraph-large {
     max-height: 500px; /* large enough to fit content */
     opacity: 1;
-    transform: translateY(0);
     pointer-events: auto;
   }
 }
