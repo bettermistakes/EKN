@@ -1571,64 +1571,42 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
-  const triggers = document.querySelectorAll(".reduce-toright-trigger");
-  if (!triggers.length) return;
+  const section = document.querySelector(".section.is--image");
+  if (!section) return;
 
-  triggers.forEach((trigger) => {
-    const section = trigger.closest(".section.is--image");
-    if (!section) return;
+  const img = section.querySelector("img.absolute--img-big");
+  if (!img) return;
 
-    const img = section.querySelector("img.absolute--img-big");
-    if (!img) return;
+  if (img.__shrinkOpacityST) {
+    img.__shrinkOpacityST.kill();
+    img.__shrinkOpacityST = null;
+  }
 
-    const START_FADE_AT = 0.7;
-    const END_FADE_AT = 1.0;
+  const START_FADE_AT = 0.7;
+  const END_FADE_AT = 1.0;
 
-    let baseHeight = 0;
+  function init() {
+    gsap.set(img, { opacity: 1 });
 
-    function measureHeight() {
-      gsap.set(section, { height: "auto" });
-      baseHeight = section.offsetHeight || section.scrollHeight || 0;
-      gsap.set(section, { height: baseHeight, overflow: "hidden" });
-    }
+    img.__shrinkOpacityST = ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: true,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
+        const t = gsap.utils.clamp(0, 1, tRaw);
+        gsap.set(img, { opacity: 1 - t });
+      },
+    });
 
-    if (section.__reduceToRightST) {
-      section.__reduceToRightST.kill();
-    }
+    ScrollTrigger.refresh();
+  }
 
-    function init() {
-      gsap.set(img, { opacity: 1 });
-      measureHeight();
-
-      section.__reduceToRightST = ScrollTrigger.create({
-        trigger: trigger,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true,
-        invalidateOnRefresh: true,
-
-        onRefresh: () => {
-          measureHeight();
-        },
-
-        onUpdate: (self) => {
-          const p = self.progress;
-          const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
-          const t = gsap.utils.clamp(0, 1, tRaw);
-
-          // Opacity
-          gsap.set(img, { opacity: 1 - t });
-
-          // Height collapse
-          const h = gsap.utils.interpolate(baseHeight, 0, t);
-          gsap.set(section, { height: h });
-        },
-      });
-    }
-
-    if (document.readyState === "complete") init();
-    else window.addEventListener("load", init);
-  });
+  if (document.readyState === "complete") init();
+  else window.addEventListener("load", init);
 })();
 
 
