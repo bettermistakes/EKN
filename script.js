@@ -1608,3 +1608,51 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   if (document.readyState === "complete") init();
   else window.addEventListener("load", init);
 })();
+
+// ===================== IMAGE BLUR ON THRESHOLD (60% viewport) ===================== //
+// Règle: si le TOP de l'image est au-dessus de 60% de la hauteur de l'écran => blur ON
+// Sinon => blur OFF
+
+(function () {
+  const IMG_SELECTOR = ".howitworks--img--inner"; // change si besoin
+  const THRESHOLD = 0.6; // 60% du viewport
+  const BLUR = "10rem";  // intensité
+  const BLUR_OFF = "0rem";
+
+  const img = document.querySelector(IMG_SELECTOR);
+  if (!img) return;
+
+  let lastState = null;
+  let rafId = null;
+
+  function apply(state) {
+    if (state === lastState) return;
+    lastState = state;
+
+    img.style.filter = state ? `blur(${BLUR})` : `blur(${BLUR_OFF})`;
+    // optionnel: petit mouvement comme dans ton code
+    img.style.transform = state ? "translate(0%, 0%)" : "translate(0%, -10%)";
+  }
+
+  function update() {
+    rafId = null;
+    const rect = img.getBoundingClientRect();
+    const triggerY = window.innerHeight * THRESHOLD;
+
+    // rect.top < triggerY  => le top de l'image est passé au-dessus du point 60% viewport
+    const shouldBlur = rect.top <= triggerY;
+
+    apply(shouldBlur);
+  }
+
+  function onScrollResize() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener("scroll", onScrollResize, { passive: true });
+  window.addEventListener("resize", onScrollResize);
+
+  // init
+  update();
+})();
