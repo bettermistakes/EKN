@@ -1557,18 +1557,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
 // --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
 (function () {
-  const wrap = document.querySelector(".section.is--image .home--image-wrapper");
-  if (!wrap) return;
-
-  wrap.style.setProperty("width", "100%", "important");
-
-  if (typeof ScrollTrigger !== "undefined") {
-    window.addEventListener("load", () => ScrollTrigger.refresh());
-  }
-})();
-
-// ===================== ✅ IMAGE SHRINK OPACITY (START AT 70%) ===================== //
-(function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const section = document.querySelector(".section.is--image");
@@ -1577,55 +1565,56 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  // Section suivante à remonter
-  const next = document.querySelector(".relative.z-index-3");
+  // ✅ section suivante : la plus fiable = l’élément juste après
+  const next = section.nextElementSibling;
   if (!next) return;
 
-  // Nettoyage si déjà initialisé
-  if (img.__shrinkOpacityST) {
-    img.__shrinkOpacityST.kill();
-    img.__shrinkOpacityST = null;
+  // cleanup
+  if (img.__stFadePull) {
+    img.__stFadePull.kill();
+    img.__stFadePull = null;
   }
 
-  const START_FADE_AT = 0.7;
-  const END_FADE_AT = 1.0;
-
-  // Ajuste cette valeur si nécessaire
-  const MAX_NEGATIVE_MARGIN = 200; // px
+  // À quel moment ça commence/termine (dans le scroll de la section)
+  const START_AT = 0.0; // commence à compresser dès le début
+  const END_AT = 1.0;   // terminé à la fin
 
   function init() {
+    // ✅ calc dynamique : s’adapte à la hauteur de la section (donc au “vide” réel)
+    const computeMaxPull = () => {
+      const h = section.offsetHeight || 0;
+      // Ajuste le ratio si besoin (0.4 / 0.6 etc.)
+      return gsap.utils.clamp(120, 1200, h * 0.6);
+    };
+
+    let MAX_PULL = computeMaxPull();
+
     gsap.set(img, { opacity: 1 });
     gsap.set(next, { marginTop: 0 });
 
-    img.__shrinkOpacityST = ScrollTrigger.create({
+    img.__stFadePull = ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
 
+      onRefresh: () => {
+        MAX_PULL = computeMaxPull();
+      },
+
       onUpdate: (self) => {
         const p = self.progress;
 
-        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
+        // t = 0..1 sur la plage START_AT..END_AT
+        const tRaw = (p - START_AT) / (END_AT - START_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
 
-        // Fade image
+        // 1) Fade (synchro)
         gsap.set(img, { opacity: 1 - t });
 
-        // Remontée progressive de la section suivante
-        gsap.set(next, {
-          marginTop: -MAX_NEGATIVE_MARGIN * t,
-        });
-      },
-
-      onRefresh: (self) => {
-        const p = self.progress;
-        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
-        const t = gsap.utils.clamp(0, 1, tRaw);
-
-        gsap.set(img, { opacity: 1 - t });
-        gsap.set(next, { marginTop: -MAX_NEGATIVE_MARGIN * t });
+        // 2) ✅ Negative margin dynamique (synchro) pour supprimer le vide
+        gsap.set(next, { marginTop: -MAX_PULL * t });
       },
     });
 
