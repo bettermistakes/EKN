@@ -1560,64 +1560,46 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   }
 })();
 
-// ===================== ✅ IMAGE SHRINK OPACITY (EXACT SYNC) ===================== //
-// Objectif: opacity 1 -> 0 SMOOTH, et 0 tombe EXACTEMENT à la fin du shrink.
-// -> On tente de récupérer le ScrollTrigger du shrink existant (start/end).
-// -> Si on ne le trouve pas, fallback start/end par défaut.
+// ===================== ✅ IMAGE SHRINK OPACITY (START AT 40%) ===================== //
+// Objectif: opacité reste à 1 jusqu'à 40% de la progression du scroll (mêmes bornes que le shrink),
+// puis fade 1 -> 0 entre 40% et 100%.
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const section = document.querySelector(".section.is--image");
-  const img = section ? section.querySelector("img.absolute--img-big") : null;
-  if (!section || !img) return;
+  if (!section) return;
+
+  const img = section.querySelector("img.absolute--img-big");
+  if (!img) return;
 
   // éviter double init (Netlify / rerun)
-  if (img.__opacitySyncST) {
-    img.__opacitySyncST.kill();
-    img.__opacitySyncST = null;
+  if (img.__shrinkOpacityST) {
+    img.__shrinkOpacityST.kill();
+    img.__shrinkOpacityST = null;
   }
 
-  function findShrinkST() {
-    const all = ScrollTrigger.getAll();
-
-    // 1) priorité: un ST dont l'animation cible directement l'image + trigger = section
-    let st = all.find((t) => {
-      const anim = t.animation;
-      const trig = t.vars && t.vars.trigger;
-      if (trig !== section) return false;
-      if (!anim || !anim.targets) return false;
-      const targets = anim.targets();
-      return targets && targets.includes(img);
-    });
-    if (st) return st;
-
-    // 2) fallback: un ST scrub lié à cette section (souvent celui du shrink)
-    st = all.find((t) => t.vars && t.vars.trigger === section && t.vars.scrub);
-    return st || null;
-  }
+  // ✅ Réglage: à quel % de progression commence le fade
+  const START_FADE_AT = 0.4; // 40%
+  const END_FADE_AT = 1.0;
 
   function init() {
-    // important: être sûr que les ST existants ont calculé start/end
-    ScrollTrigger.refresh();
-
-    const shrinkST = findShrinkST();
-
     gsap.set(img, { opacity: 1 });
 
-    const tween = gsap.to(img, {
-      opacity: 0,
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        // ✅ si shrink ST trouvé => mêmes bornes exactes
-        start: shrinkST ? () => shrinkST.start : "top bottom",
-        end: shrinkST ? () => shrinkST.end : "bottom top",
-        scrub: true,
-        invalidateOnRefresh: true,
+    img.__shrinkOpacityST = ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",   // garde la même fenêtre que ton shrink si elle est basée sur section
+      end: "bottom top",
+      scrub: true,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const p = self.progress; // 0..1
+        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
+        const t = gsap.utils.clamp(0, 1, tRaw);
+        gsap.set(img, { opacity: 1 - t });
       },
     });
 
-    img.__opacitySyncST = tween.scrollTrigger;
+    ScrollTrigger.refresh();
   }
 
   if (document.readyState === "complete") init();
