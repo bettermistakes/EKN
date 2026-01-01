@@ -393,33 +393,33 @@ body {
   will-change: transform;
 }
 
-/* --------------------- ✅ OFFERS: paragraph ONLY (SplitText safe) --------------------- */
+/* --------------------- OFFERS – Smooth paragraph reveal --------------------- */
 @media (min-width: 992px) {
-  /* Base: collapsed */
+
+  /* Base (collapsed) */
   .swiper-slide.offer--slide .paragraph-large {
     overflow: hidden;
-    height: 0;              /* ✅ required */
-    max-height: 0;          /* ✅ smooth */
+    height: 0;
+    max-height: 0;
     opacity: 0;
     transform: translateY(-0.6rem);
     padding-top: 0;
     padding-bottom: 0;
+
     transition:
-      max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.25s ease,
-      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.3s ease,
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+
     will-change: max-height, opacity, transform;
     pointer-events: none;
   }
 
-  /* Active: expanded */
+  /* Active */
   .swiper-slide.offer--slide.is-offer-active .paragraph-large {
-    height: auto;
-    max-height: var(--offer-para-h, 240px); /* ✅ set by JS */
+    max-height: var(--offer-para-h, 260px);
     opacity: 1;
     transform: translateY(0);
-    padding-top: 0;         /* ✅ no 0.5rem */
-    padding-bottom: 0;      /* ✅ no 0.5rem */
     pointer-events: auto;
   }
 }
