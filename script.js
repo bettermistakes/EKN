@@ -831,7 +831,6 @@ $(window).on("load", function () {
       return slide.querySelector(".offer--slide-titles .paragraph-large");
     }
 
-    // ✅ SplitText-safe: measure paragraph height by temporarily expanding ONLY the paragraph
     function measureAndSetParagraphHeight(slide) {
       const p = getParagraph(slide);
       if (!p) return;
@@ -960,7 +959,6 @@ $(window).on("load", function () {
       return allSlides.some((s) => s.matches(":hover"));
     }
 
-    // INIT
     allSlides.forEach((slide) => {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
@@ -976,7 +974,6 @@ $(window).on("load", function () {
       applyVisibility(slide, false);
     });
 
-    // ✅ Measure AFTER SplitText has created lines
     requestAnimationFrame(() => {
       allSlides.forEach(measureAndSetParagraphHeight);
     });
@@ -1014,7 +1011,6 @@ $(window).on("load", function () {
       setDefaultState();
     });
 
-    // ✅ Re-measure on resize (desktop only)
     window.addEventListener("resize", () => {
       if (window.innerWidth < 992) return;
       requestAnimationFrame(() => {
@@ -1539,16 +1535,56 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   update();
 })();
 
-// --------------------- Fix: prevent width "jump" on .section.is--image --------------------- //
+// --------------------- Fix: prevent width "jump" + ✅ Opacity only AFTER final size --------------------- //
 (function () {
   const wrap = document.querySelector(".section.is--image .home--image-wrapper");
   if (!wrap) return;
 
+  // Keep final width stable
   wrap.style.setProperty("width", "100%", "important");
 
-  if (typeof ScrollTrigger !== "undefined") {
-    window.addEventListener("load", () => ScrollTrigger.refresh());
+  // ✅ Hide during layout/animation, then fade in ONLY when size is stable
+  gsap.set(wrap, { opacity: 0 });
+
+  function waitForStableSize(el, cb) {
+    let lastW = -1;
+    let stableCount = 0;
+    let frames = 0;
+
+    function tick() {
+      frames += 1;
+
+      const w = Math.round(el.getBoundingClientRect().width || 0);
+
+      if (w > 0 && w === lastW) stableCount += 1;
+      else stableCount = 0;
+
+      lastW = w;
+
+      // Consider "final" when same width for 3 consecutive frames, or after safety timeout
+      if (stableCount >= 3 || frames >= 90) {
+        cb();
+        return;
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
   }
+
+  function reveal() {
+    gsap.to(wrap, { opacity: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+  }
+
+  // If ScrollTrigger exists, refresh first, then wait for stability
+  const doInit = () => {
+    if (typeof ScrollTrigger !== "undefined") {
+      ScrollTrigger.refresh();
+    }
+    waitForStableSize(wrap, reveal);
+  };
+
+  if (document.readyState === "complete") doInit();
+  else window.addEventListener("load", doInit);
 })();
-
-
