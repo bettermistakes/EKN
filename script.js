@@ -1,4 +1,4 @@
-// ===================== NETLIFY - MAIN.JS (UPDATED) ===================== //
+// ===================== NETLIFY - MAIN.JS (UPDATED - FULL FILE) ===================== //
 
 // --------------------- Loading Animation --------------------- //
 $(window).on("load", function () {
@@ -28,7 +28,6 @@ $(window).on("load", function () {
         const items = list.querySelectorAll('[animate="dropdownnav"]');
         gsap.set(items, { opacity: 0, y: "1rem" });
       }
-
       if (line) gsap.set(line, { width: "0%" });
     });
   }
@@ -156,7 +155,6 @@ $(window).on("load", function () {
         activeDropdown = null;
         deactivateNavbarStyle();
       }
-
       if (line) gsap.to(line, { width: "100%", duration: 0.3, ease: "power4.out" });
     });
 
@@ -168,6 +166,7 @@ $(window).on("load", function () {
 
   navbar.addEventListener("mouseleave", function () {
     if (window.innerWidth < 992) return;
+
     if (activeDropdown) {
       closeDropdown(activeDropdown);
       resetDropdownItems(activeDropdown);
@@ -200,7 +199,6 @@ $(window).on("load", function () {
         const items = list.querySelectorAll('[animate="dropdownnav"]');
         gsap.set(items, { opacity: "", y: "" });
       }
-
       if (trigger) gsap.set(trigger, { color: "" });
       if (line) gsap.set(line, { width: "" });
     });
@@ -338,8 +336,7 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph)
-        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -484,9 +481,7 @@ $(window).on("load", function () {
     });
 
     gsap.to(navbar, { color: "#040a44", duration: 0.3, ease: "power4.out" });
-    if (navbarBg) {
-      gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
-    }
+    if (navbarBg) gsap.to(navbarBg, { backgroundColor: "rgba(242, 243, 246, 0.6)", duration: 0.3, ease: "power4.out" });
 
     navButtons.forEach((btn) => {
       gsap.to(btn, { backgroundColor: "#040a44", color: "#f2f3f6", duration: 0.3, ease: "power4.out" });
@@ -592,6 +587,7 @@ $(window).on("load", function () {
 (function () {
   const eyebrowElement = document.querySelector('[animation="eyebrow"]');
   if (!eyebrowElement) return;
+  if (typeof SplitText === "undefined" || typeof gsap === "undefined") return;
 
   const phrases = ["From field to office ", "From data to decision ", "From risk to reliability ", "From reactive to proactive. "];
 
@@ -611,6 +607,7 @@ $(window).on("load", function () {
     isAnimating = true;
 
     if (!currentSplit) currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
+
     const oldChars = currentSplit.chars;
 
     gsap.to(oldChars, { yPercent: -100, opacity: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" });
@@ -629,6 +626,7 @@ $(window).on("load", function () {
     const newChars = newSplit.chars;
 
     gsap.set(newChars, { yPercent: 100, opacity: 0 });
+
     gsap.to(newChars, {
       yPercent: 0,
       opacity: 1,
@@ -660,7 +658,6 @@ $(window).on("load", function () {
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
-
   if (!heroScope || !eyebrowEl) return;
 
   const heroImgs = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
@@ -751,6 +748,7 @@ $(window).on("load", function () {
         const circle = line.querySelector(".hover--circle.is--100");
         if (!circle) return;
         if (!circle._follower) circle._follower = setupFollower(circle);
+
         const rect = line.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -849,9 +847,7 @@ $(window).on("load", function () {
     function showParagraph(slide) {
       const p = getParagraph(slide);
       if (!p) return;
-
       measureAndSetParagraphHeight(slide);
-
       gsap.to(p, {
         opacity: 1,
         y: 0,
@@ -865,7 +861,6 @@ $(window).on("load", function () {
     function hideParagraph(slide) {
       const p = getParagraph(slide);
       if (!p) return;
-
       gsap.to(p, {
         opacity: 0,
         y: -10,
@@ -1017,6 +1012,7 @@ $(window).on("load", function () {
 
     const mobileSwiperEl = section.querySelector(".swiper.is--offer-mobile");
     if (!mobileSwiperEl) return;
+
     if (typeof Swiper === "undefined") return;
 
     if (swiperInstance) {
@@ -1064,7 +1060,6 @@ $(window).on("load", function () {
     const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
     sliderEl.classList.remove("is--first", "is--middle", "is--last");
-
     if (isFirstSlide) sliderEl.classList.add("is--first");
     else if (isLastSlide) sliderEl.classList.add("is--last");
     else sliderEl.classList.add("is--middle");
@@ -1091,61 +1086,75 @@ $(window).on("load", function () {
   });
 })();
 
-// --------------------- How It Works Scroll Animation --------------------- //
+// --------------------- How It Works Scroll Animation (FIX BLUR BACK ON TOP) --------------------- //
 (function () {
   if (window.innerWidth <= 992) return;
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const triggersParent = document.querySelector(".howitworks--triggers-parent");
   const triggers = document.querySelectorAll(".howitworks--trigger");
   const parents = document.querySelectorAll(".howitworks--parent");
+  const section = document.querySelector(".section.is--howworks");
 
-  if (!triggersParent || triggers.length === 0 || parents.length === 0) return;
+  if (!triggersParent || triggers.length === 0 || parents.length === 0 || !section) return;
 
+  // ✅ avoid double init
+  if (window.__howItWorksSTInit) return;
+  window.__howItWorksSTInit = true;
+
+  const BLUR_ON = "blur(10rem)";
+  const BLUR_OFF = "blur(0rem)";
+
+  // Init states
   parents.forEach((parent) => {
     const content = parent.querySelector(".howitworks--content");
     const response = parent.querySelector(".howitworks--response");
     const line = parent.querySelector(".howitworks--line");
+    const imgInner = parent.querySelector(".howitworks--img--inner");
 
     if (content) gsap.set(content, { opacity: 0.3 });
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
+
+    // ✅ initial blur ON
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
   });
 
+  // Images positions (outer wrapper)
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
-
   const finalYPercent = [-200, -100, 0];
   const finalYRem = [-6, -3, 0];
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
+
     const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
     gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
-    if (img) {
-      const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
-      gsap.to(img, {
-        yPercent: finalYPercent[index],
-        y: remInPx,
-        ease: "none",
-        scrollTrigger: {
-          trigger: triggersParent,
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: true,
-        },
-      });
-    }
+    if (!img) return;
 
-    // ✅ état initial blur (important)
-    const imgInner = parent.querySelector(".howitworks--img--inner");
-    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: "blur(10rem)" });
+    const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    gsap.to(img, {
+      yPercent: finalYPercent[index],
+      y: remInPx,
+      ease: "none",
+      scrollTrigger: {
+        trigger: triggersParent,
+        start: "top bottom",
+        end: "bottom bottom",
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
+    });
   });
 
+  // Content expand/collapse + line progress
   triggers.forEach((trigger, index) => {
     const parent = parents[index];
     if (!parent) return;
@@ -1165,7 +1174,6 @@ $(window).on("load", function () {
             if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
             if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
-
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1192,29 +1200,31 @@ $(window).on("load", function () {
           start: "top bottom",
           end: "bottom bottom",
           scrub: true,
+          invalidateOnRefresh: true,
         },
       });
     }
   });
 
-  // ✅ BLUR animation: fromTo + immediateRender:false + reset au retour (fix)
-  const section = document.querySelector(".section.is--howworks");
+  // ✅ Blur + parallax inner (FIX: blur comes back when going back up)
+  function bindInnerBlur(parent, triggerEl, start, end) {
+    const imgInner = parent.querySelector(".howitworks--img--inner");
+    if (!imgInner) return;
 
-  function blurScroll(imgInner, triggerEl, start, end) {
-    if (!imgInner || !triggerEl) return;
-
-    if (imgInner.__howBlurST) {
-      imgInner.__howBlurST.kill();
-      imgInner.__howBlurST = null;
+    if (imgInner.__blurTween) {
+      if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
+      imgInner.__blurTween.kill();
+      imgInner.__blurTween = null;
     }
 
-    imgInner.__howBlurST = gsap.fromTo(
+    imgInner.__blurTween = gsap.fromTo(
       imgInner,
-      { yPercent: 0, filter: "blur(10rem)" },
+      { yPercent: 0, filter: BLUR_ON },
       {
         yPercent: -10,
-        filter: "blur(0rem)",
+        filter: BLUR_OFF,
         ease: "none",
+        overwrite: "auto",
         immediateRender: false,
         scrollTrigger: {
           trigger: triggerEl,
@@ -1222,19 +1232,21 @@ $(window).on("load", function () {
           end,
           scrub: true,
           invalidateOnRefresh: true,
-          onLeaveBack: () => gsap.set(imgInner, { filter: "blur(10rem)" }),
+          onLeaveBack: () => {
+            gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
+          },
         },
       }
     );
   }
 
-  const img0 = parents[0] ? parents[0].querySelector(".howitworks--img--inner") : null;
-  const img1 = parents[1] ? parents[1].querySelector(".howitworks--img--inner") : null;
-  const img2 = parents[2] ? parents[2].querySelector(".howitworks--img--inner") : null;
+  parents.forEach((parent, index) => {
+    if (index === 0) bindInnerBlur(parent, section, "top bottom", "top center");
+    else if (index === 1) bindInnerBlur(parent, triggersParent, "top bottom", "top center");
+    else if (index === 2) bindInnerBlur(parent, triggersParent, "center bottom", "center center");
+  });
 
-  blurScroll(img0, section, "top bottom", "top center");
-  blurScroll(img1, triggersParent, "top bottom", "top center");
-  blurScroll(img2, triggersParent, "center bottom", "center center");
+  window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
 
 // --------------------- What Offers Hover Circle --------------------- //
@@ -1242,7 +1254,6 @@ $(window).on("load", function () {
   const section = document.querySelector(".section.is--whatoffers");
   const container = document.querySelector(".relative.is--whatworks");
   const hoverCircle = document.querySelector(".hover--circle.is--what");
-
   if (!section || !container || !hoverCircle) return;
 
   gsap.set(hoverCircle, { opacity: 0 });
@@ -1273,12 +1284,13 @@ $(window).on("load", function () {
 (function () {
   const numberCounters = document.querySelectorAll(".number--count");
   if (numberCounters.length === 0) return;
-  if (typeof ScrollTrigger === "undefined") return;
+  if (typeof ScrollTrigger === "undefined" || typeof gsap === "undefined") return;
 
   numberCounters.forEach((counter) => {
     const originalText = counter.textContent.trim();
     const targetNumber = parseInt(originalText, 10);
     const digitCount = originalText.length;
+
     if (isNaN(targetNumber)) return;
 
     counter.setAttribute("data-target", String(targetNumber));
@@ -1289,10 +1301,12 @@ $(window).on("load", function () {
       const targetDigit = parseInt(targetString[i], 10);
       let columnHTML = "";
       const startDigit = (targetDigit + 1) % 10;
+
       for (let j = 0; j < 10; j++) {
         const digit = (startDigit + j) % 10;
         columnHTML += `<span class="digit-item">${digit}</span>`;
       }
+
       html += `<span class="digit-wrapper"><span class="digit-column">${columnHTML}</span></span>`;
     }
 
@@ -1410,7 +1424,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".is--scrolling").forEach((track) => {
     const wrapper = track.parentElement;
-
     let startTime = null;
     let paused = false;
     let pausedAt = 0;
@@ -1504,7 +1517,6 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   const trigger = document.querySelector(".trigger-bg");
   const bgWrap = document.querySelector(".background-gradient");
-
   if (!trigger || !bgWrap) return;
 
   const DARK = "#08126D";
@@ -1555,7 +1567,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   }
 })();
 
-// ===================== ✅ IMAGE SHRINK OPACITY (START AT 40%) ===================== //
+// ===================== ✅ IMAGE SHRINK OPACITY (START AT 70%) ===================== //
 (function () {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
@@ -1570,7 +1582,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     img.__shrinkOpacityST = null;
   }
 
-  const START_FADE_AT = 0.7; // 40%
+  const START_FADE_AT = 0.7;
   const END_FADE_AT = 1.0;
 
   function init() {
@@ -1583,7 +1595,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        const p = self.progress; // 0..1
+        const p = self.progress;
         const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
         gsap.set(img, { opacity: 1 - t });
