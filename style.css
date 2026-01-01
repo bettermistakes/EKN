@@ -393,14 +393,16 @@ body {
   will-change: transform;
 }
 
-/* --------------------- OFFERS – Smooth paragraph reveal --------------------- */
+/* --------------------- OFFERS – Smooth paragraph reveal (FIX) --------------------- */
 @media (min-width: 992px) {
 
   /* Base (collapsed) */
   .swiper-slide.offer--slide .paragraph-large {
     overflow: hidden;
-    height: 0;
-    max-height: 0;
+
+    height: 0;        /* collapsed */
+    max-height: 0;    /* animated */
+
     opacity: 0;
     transform: translateY(-0.6rem);
     padding-top: 0;
@@ -415,9 +417,11 @@ body {
     pointer-events: none;
   }
 
-  /* Active */
+  /* Active (expanded) */
   .swiper-slide.offer--slide.is-offer-active .paragraph-large {
+    height: auto; /* ✅ IMPORTANT: allow content to render */
     max-height: var(--offer-para-h, 260px);
+
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
