@@ -1577,37 +1577,28 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
-  // Kill previous instance (if any)
   if (img.__shrinkOpacityST) {
     img.__shrinkOpacityST.kill();
     img.__shrinkOpacityST = null;
   }
 
-  // Fade happens earlier => less “empty space” feeling at the end
-  const START_FADE_AT = 0.6;
-  const END_FADE_AT = 0.85;
+  const START_FADE_AT = 0.7;
+  const END_FADE_AT = 1.0;
 
   function init() {
-    gsap.set(img, { opacity: 1, willChange: "opacity, transform" });
+    gsap.set(img, { opacity: 1 });
 
     img.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
-      end: "center top", // ✅ stop earlier than "bottom top"
+      end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         const p = self.progress;
         const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
-
-        // opacity + tiny scale to reduce the “blank area” perception
-        gsap.set(img, {
-          opacity: 1 - t,
-          scale: 1 - t * 0.04,
-          transformOrigin: "center top",
-          pointerEvents: t > 0.98 ? "none" : "auto",
-        });
+        gsap.set(img, { opacity: 1 - t });
       },
     });
 
