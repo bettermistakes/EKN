@@ -1577,6 +1577,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const img = section.querySelector("img.absolute--img-big");
   if (!img) return;
 
+  // Section suivante à remonter
+  const next = document.querySelector(".relative.z-index-3");
+  if (!next) return;
+
+  // Nettoyage si déjà initialisé
   if (img.__shrinkOpacityST) {
     img.__shrinkOpacityST.kill();
     img.__shrinkOpacityST = null;
@@ -1585,8 +1590,12 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const START_FADE_AT = 0.7;
   const END_FADE_AT = 1.0;
 
+  // Ajuste cette valeur si nécessaire
+  const MAX_NEGATIVE_MARGIN = 200; // px
+
   function init() {
     gsap.set(img, { opacity: 1 });
+    gsap.set(next, { marginTop: 0 });
 
     img.__shrinkOpacityST = ScrollTrigger.create({
       trigger: section,
@@ -1594,11 +1603,29 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
+
       onUpdate: (self) => {
+        const p = self.progress;
+
+        const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
+        const t = gsap.utils.clamp(0, 1, tRaw);
+
+        // Fade image
+        gsap.set(img, { opacity: 1 - t });
+
+        // Remontée progressive de la section suivante
+        gsap.set(next, {
+          marginTop: -MAX_NEGATIVE_MARGIN * t,
+        });
+      },
+
+      onRefresh: (self) => {
         const p = self.progress;
         const tRaw = (p - START_FADE_AT) / (END_FADE_AT - START_FADE_AT);
         const t = gsap.utils.clamp(0, 1, tRaw);
+
         gsap.set(img, { opacity: 1 - t });
+        gsap.set(next, { marginTop: -MAX_NEGATIVE_MARGIN * t });
       },
     });
 
