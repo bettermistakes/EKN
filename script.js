@@ -831,63 +831,42 @@ $(window).on("load", function () {
       return slide.querySelector(".offer--slide-titles .paragraph-large");
     }
 
-    // ✅ SplitText-safe: measure paragraph height by temporarily expanding ONLY the paragraph
+    // ✅ Reliable measurement even when collapsed
     function measureAndSetParagraphHeight(slide) {
       const p = getParagraph(slide);
       if (!p) return;
 
+      // Save inline styles we might touch
       const prev = {
         maxHeight: p.style.maxHeight,
-        height: p.style.height,
         overflow: p.style.overflow,
         opacity: p.style.opacity,
         transform: p.style.transform,
+        display: p.style.display,
+        position: p.style.position,
+        visibility: p.style.visibility,
       };
 
+      // Make it measurable without affecting layout
       p.style.maxHeight = "none";
-      p.style.height = "auto";
       p.style.overflow = "visible";
       p.style.opacity = "1";
       p.style.transform = "none";
+      p.style.display = "block";
+      p.style.position = "absolute";
+      p.style.visibility = "hidden";
 
       const h = Math.ceil(p.scrollHeight || p.getBoundingClientRect().height || 0);
       slide.style.setProperty("--offer-para-h", `${h}px`);
 
+      // Restore
       p.style.maxHeight = prev.maxHeight;
-      p.style.height = prev.height;
       p.style.overflow = prev.overflow;
       p.style.opacity = prev.opacity;
       p.style.transform = prev.transform;
-    }
-
-    function showParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      measureAndSetParagraphHeight(slide);
-
-      gsap.to(p, {
-        opacity: 1,
-        y: 0,
-        duration: 0.22,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
-    }
-
-    function hideParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      gsap.to(p, {
-        opacity: 0,
-        y: -10,
-        duration: 0.18,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
+      p.style.display = prev.display;
+      p.style.position = prev.position;
+      p.style.visibility = prev.visibility;
     }
 
     function applyVisibility(slide, isActive) {
@@ -902,8 +881,8 @@ $(window).on("load", function () {
         });
       });
 
-      if (isActive) showParagraph(slide);
-      else hideParagraph(slide);
+      // ✅ When becoming active, re-measure right before expand (content can differ)
+      if (isActive) measureAndSetParagraphHeight(slide);
     }
 
     function setNeutral(slide) {
@@ -976,9 +955,11 @@ $(window).on("load", function () {
       applyVisibility(slide, false);
     });
 
-    // ✅ Measure AFTER SplitText has created lines
+    // ✅ Measure AFTER SplitText has created lines (and again later when needed)
     requestAnimationFrame(() => {
       allSlides.forEach(measureAndSetParagraphHeight);
+      // Ensure first slide has correct value right away
+      measureAndSetParagraphHeight(firstSlide);
     });
 
     setDefaultState();
