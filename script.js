@@ -1550,3 +1550,29 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     window.addEventListener("load", () => ScrollTrigger.refresh());
   }
 })();
+
+
+function setOfferParaHeight(slide) {
+  const p = slide.querySelector(".paragraph-large");
+  if (!p) return;
+
+  // temporary reset to measure cleanly
+  p.style.maxHeight = "none";
+  const h = p.scrollHeight;
+  p.style.maxHeight = "";
+  slide.style.setProperty("--offer-para-h", `${h}px`);
+}
+
+function activateOfferSlide(slide) {
+  // 1) compute height first
+  setOfferParaHeight(slide);
+
+  // 2) then activate next frame so transition starts with correct value
+  requestAnimationFrame(() => {
+    slide.classList.add("is-offer-active");
+  });
+}
+
+function deactivateOfferSlide(slide) {
+  slide.classList.remove("is-offer-active");
+}
