@@ -336,7 +336,8 @@ $(window).on("load", function () {
       });
 
       if (currentSvg) gsap.to(currentSvg, { opacity: 1, x: "0rem", duration: 0.3, ease: "power4.out" });
-      if (currentParagraph) gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
+      if (currentParagraph)
+        gsap.to(currentParagraph, { opacity: 0, x: "1.5rem", duration: 0.3, ease: "power4.out" });
 
       currentlyHovered = currentItem;
     });
@@ -796,13 +797,14 @@ $(window).on("load", function () {
 })();
 
 // --------------------- ✅ Offer Slide Hover (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
+// ✅ Paragraph reveal is NOT handled in JS anymore (CSS only) to avoid conflicts.
 (function () {
   let swiperInstance = null;
   const SECTION_SELECTOR = ".section.is--home-offers";
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP
+  // DESKTOP (NO paragraph management)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -827,69 +829,7 @@ $(window).on("load", function () {
 
     if (!sliderScope) return;
 
-    function getParagraph(slide) {
-      return slide.querySelector(".offer--slide-titles .paragraph-large");
-    }
-
-    // ✅ SplitText-safe: measure paragraph height by temporarily expanding ONLY the paragraph
-    function measureAndSetParagraphHeight(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      const prev = {
-        maxHeight: p.style.maxHeight,
-        height: p.style.height,
-        overflow: p.style.overflow,
-        opacity: p.style.opacity,
-        transform: p.style.transform,
-      };
-
-      p.style.maxHeight = "none";
-      p.style.height = "auto";
-      p.style.overflow = "visible";
-      p.style.opacity = "1";
-      p.style.transform = "none";
-
-      const h = Math.ceil(p.scrollHeight || p.getBoundingClientRect().height || 0);
-      slide.style.setProperty("--offer-para-h", `${h}px`);
-
-      p.style.maxHeight = prev.maxHeight;
-      p.style.height = prev.height;
-      p.style.overflow = prev.overflow;
-      p.style.opacity = prev.opacity;
-      p.style.transform = prev.transform;
-    }
-
-    function showParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      measureAndSetParagraphHeight(slide);
-
-      gsap.to(p, {
-        opacity: 1,
-        y: 0,
-        duration: 0.22,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
-    }
-
-    function hideParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      gsap.to(p, {
-        opacity: 0,
-        y: -10,
-        duration: 0.18,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
-    }
-
+    // JS manages only icon/content visibility, paragraph stays CSS-driven
     function applyVisibility(slide, isActive) {
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
@@ -901,9 +841,6 @@ $(window).on("load", function () {
           pointerEvents: isActive ? "auto" : "none",
         });
       });
-
-      if (isActive) showParagraph(slide);
-      else hideParagraph(slide);
     }
 
     function setNeutral(slide) {
@@ -965,20 +902,12 @@ $(window).on("load", function () {
       slide.classList.remove(ACTIVE_CLASS);
       gsap.set(slide, { opacity: 1 });
 
-      const p = getParagraph(slide);
-      if (p) gsap.set(p, { opacity: 0, y: -10 });
-
       const icon = slide.querySelector(".offer--slide-icon");
       const content = slide.querySelector(".offer--slide-content");
       if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
       if (content) gsap.set(content, { opacity: 0 });
 
       applyVisibility(slide, false);
-    });
-
-    // ✅ Measure AFTER SplitText has created lines
-    requestAnimationFrame(() => {
-      allSlides.forEach(measureAndSetParagraphHeight);
     });
 
     setDefaultState();
@@ -1012,14 +941,6 @@ $(window).on("load", function () {
       const toEl = e.relatedTarget;
       if (toEl && sliderScope.contains(toEl)) return;
       setDefaultState();
-    });
-
-    // ✅ Re-measure on resize (desktop only)
-    window.addEventListener("resize", () => {
-      if (window.innerWidth < 992) return;
-      requestAnimationFrame(() => {
-        allSlides.forEach(measureAndSetParagraphHeight);
-      });
     });
   }
 
@@ -1550,5 +1471,3 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     window.addEventListener("load", () => ScrollTrigger.refresh());
   }
 })();
-
-
