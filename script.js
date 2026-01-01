@@ -1579,7 +1579,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   }
 
   // ✅ Réglage: à quel % de progression commence le fade
-  const START_FADE_AT = 0.4; // 40%
+  const START_FADE_AT = 0.6; // 40%
   const END_FADE_AT = 1.0;
 
   function init() {
