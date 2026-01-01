@@ -393,27 +393,25 @@ body {
   will-change: transform;
 }
 
-/* --------------------- OFFERS – Smooth reveal --------------------- */
+/* --------------------- OFFERS – Display + Opacity --------------------- */
 @media (min-width: 992px) {
 
   /* Par défaut : caché */
   .swiper-slide.offer--slide .paragraph-offer {
-    overflow: hidden;
-    max-height: 0;
+    display: none;
     opacity: 0;
     transform: translateY(-0.5rem);
 
     transition:
-      max-height 0.45s ease,
       opacity 0.25s ease,
       transform 0.35s ease;
 
     pointer-events: none;
   }
 
-  /* Actif : visible en douceur */
+  /* Actif */
   .swiper-slide.offer--slide.is-offer-active .paragraph-offer {
-    max-height: 500px; /* valeur safe */
+    display: block;
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
