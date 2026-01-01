@@ -393,19 +393,29 @@ body {
   will-change: transform;
 }
 
-/* --------------------- OFFERS – Clean smooth reveal --------------------- */
+/* --------------------- OFFERS – Smooth reveal --------------------- */
 @media (min-width: 992px) {
 
-  /* Hidden */
+  /* Par défaut : caché */
   .swiper-slide.offer--slide .paragraph-large {
-    opacity: 0;
     overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+
+    transition:
+      max-height 0.45s ease,
+      opacity 0.25s ease,
+      transform 0.35s ease;
+
     pointer-events: none;
   }
 
-  /* Visible */
+  /* Actif : visible en douceur */
   .swiper-slide.offer--slide.is-offer-active .paragraph-large {
+    max-height: 500px; /* valeur safe */
     opacity: 1;
+    transform: translateY(0);
     pointer-events: auto;
   }
 }
