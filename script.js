@@ -1088,7 +1088,6 @@ $(window).on("load", function () {
 
 // --------------------- How It Works Scroll Animation (FIX BLUR BACK ON TOP) --------------------- //
 (function () {
-  // Desktop only
   if (window.innerWidth <= 992) return;
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
@@ -1097,26 +1096,16 @@ $(window).on("load", function () {
   const parents = document.querySelectorAll(".howitworks--parent");
   const section = document.querySelector(".section.is--howworks");
 
-  if (!triggersParent || !triggers.length || !parents.length || !section) return;
+  if (!triggersParent || triggers.length === 0 || parents.length === 0 || !section) return;
 
-  // Avoid double init
+  // ✅ avoid double init
   if (window.__howItWorksSTInit) return;
   window.__howItWorksSTInit = true;
 
   const BLUR_ON = "blur(10rem)";
   const BLUR_OFF = "blur(0rem)";
 
-  // --------------------- Helpers --------------------- //
-  function remToPx(rem) {
-    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
-  }
-
-  function killST(target) {
-    if (target && target.scrollTrigger) target.scrollTrigger.kill();
-    if (target && target.kill) target.kill();
-  }
-
-  // --------------------- Init states --------------------- //
+  // Init states
   parents.forEach((parent) => {
     const content = parent.querySelector(".howitworks--content");
     const response = parent.querySelector(".howitworks--response");
@@ -1127,14 +1116,13 @@ $(window).on("load", function () {
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
 
-    // initial blur ON
+    // ✅ initial blur ON (same logic)
     if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
   });
 
-  // --------------------- Images positions (outer wrapper) --------------------- //
+  // Images positions (outer wrapper)
   const initialYPercent = [0, 100, 200];
   const initialYRem = [0, 3, 6];
-
   const finalYPercent = [-200, -100, 0];
   const finalYRem = [-6, -3, 0];
 
@@ -1142,19 +1130,19 @@ $(window).on("load", function () {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
 
-    gsap.set(img, {
-      yPercent: initialYPercent[index] ?? 0,
-      y: remToPx(initialYRem[index] ?? 0),
-    });
+    const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
 
+    const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
     gsap.to(img, {
-      yPercent: finalYPercent[index] ?? 0,
-      y: remToPx(finalYRem[index] ?? 0),
+      yPercent: finalYPercent[index],
+      y: remInPx,
       ease: "none",
       scrollTrigger: {
         trigger: triggersParent,
@@ -1166,7 +1154,7 @@ $(window).on("load", function () {
     });
   });
 
-  // --------------------- Content expand/collapse + line progress --------------------- //
+  // Content expand/collapse + line progress
   triggers.forEach((trigger, index) => {
     const parent = parents[index];
     if (!parent) return;
@@ -1180,37 +1168,24 @@ $(window).on("load", function () {
         trigger,
         start: "top bottom",
         onEnter: () => {
-          // collapse previous
           if (index > 0 && parents[index - 1]) {
-            const prev = parents[index - 1];
-            const prevContent = prev.querySelector(".howitworks--content");
-            const prevResponse = prev.querySelector(".howitworks--response");
-
-            if (prevContent)
-              gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
-            if (prevResponse)
-              gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
+            if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
-
-          // expand current
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
         onLeaveBack: () => {
-          // collapse current
           if (content) gsap.to(content, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: 0, duration: 0.4, ease: "power2.out" });
 
-          // restore previous
           if (index > 0 && parents[index - 1]) {
-            const prev = parents[index - 1];
-            const prevContent = prev.querySelector(".howitworks--content");
-            const prevResponse = prev.querySelector(".howitworks--response");
-
-            if (prevContent)
-              gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
-            if (prevResponse)
-              gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
+            const prevContent = parents[index - 1].querySelector(".howitworks--content");
+            const prevResponse = parents[index - 1].querySelector(".howitworks--response");
+            if (prevContent) gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
+            if (prevResponse) gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
           }
         },
       },
@@ -1231,54 +1206,68 @@ $(window).on("load", function () {
     }
   });
 
-  // --------------------- Blur + parallax inner (blur returns when scrolling back up) --------------------- //
+  // ✅ Blur + parallax inner (same logic, but blur transitions VERY smooth)
   function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
-    // kill previous if exists
-    if (imgInner.__blurTween) {
-      killST(imgInner.__blurTween);
-      imgInner.__blurTween = null;
+    // kill previous
+    if (imgInner.__blurST) {
+      imgInner.__blurST.kill();
+      imgInner.__blurST = null;
     }
 
-    imgInner.__blurTween = gsap.fromTo(
-      imgInner,
-      { yPercent: 0, filter: BLUR_ON },
-      {
-        yPercent: -10,
-        filter: BLUR_OFF,
-        ease: "none",
-        overwrite: "auto",
-        immediateRender: false,
-        scrollTrigger: {
-          trigger: triggerEl,
-          start,
-          end,
-          scrub: true,
-          invalidateOnRefresh: true,
+    // ✅ smooth "transition" layer (inertia)
+    const setFilterSmooth = gsap.quickTo(imgInner, "filter", {
+      duration: 0.35, // increase to 0.5 for even smoother
+      ease: "power2.out",
+      overwrite: true,
+    });
 
-          // when going back up, force blur back ON smoothly via scrub position
-          onLeaveBack: () => {
-            gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
-          },
-        },
-      }
-    );
+    const setYSmooth = gsap.quickTo(imgInner, "yPercent", {
+      duration: 0.35,
+      ease: "power2.out",
+      overwrite: true,
+    });
+
+    // keep initial state as you had
+    gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
+
+    imgInner.__blurST = ScrollTrigger.create({
+      trigger: triggerEl,
+      start,
+      end,
+      scrub: true,
+      invalidateOnRefresh: true,
+
+      // ✅ preserve your "from blur ON to blur OFF" logic,
+      // but apply with smoothing
+      onUpdate: (self) => {
+        const p = self.progress; // 0 -> 1 within your start/end range
+        // blur goes from BLUR_ON to BLUR_OFF
+        // We can't interpolate rem strings reliably, so we blend via a px proxy:
+        // We'll map 10rem -> 0rem using a numeric value and rebuild a rem string.
+        const blurRem = (1 - p) * 10; // 10 -> 0
+        setFilterSmooth(`blur(${blurRem.toFixed(3)}rem)`);
+        setYSmooth(-10 * p);
+      },
+
+      // ✅ when scrolling back above start, restore blur smoothly
+      onLeaveBack: () => {
+        setFilterSmooth(BLUR_ON);
+        setYSmooth(0);
+      },
+    });
   }
 
   parents.forEach((parent, index) => {
     if (index === 0) bindInnerBlur(parent, section, "top bottom", "top center");
-    if (index === 1) bindInnerBlur(parent, triggersParent, "top bottom", "top center");
-    if (index === 2) bindInnerBlur(parent, triggersParent, "center bottom", "center center");
+    else if (index === 1) bindInnerBlur(parent, triggersParent, "top bottom", "top center");
+    else if (index === 2) bindInnerBlur(parent, triggersParent, "center bottom", "center center");
   });
 
-  // Ensure proper measurements after load
-  window.addEventListener("load", function () {
-    ScrollTrigger.refresh();
-  });
+  window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
-
 
 // --------------------- What Offers Hover Circle --------------------- //
 (function () {
