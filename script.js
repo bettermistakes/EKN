@@ -1116,7 +1116,7 @@ $(window).on("load", function () {
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
 
-    // ✅ initial blur ON (same logic)
+    // ✅ initial blur ON
     if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
   });
 
@@ -1206,58 +1206,38 @@ $(window).on("load", function () {
     }
   });
 
-  // ✅ Blur + parallax inner (same logic, but blur transitions VERY smooth)
+  // ✅ Blur + parallax inner (FIX: blur comes back when going back up)
   function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
-    // kill previous
-    if (imgInner.__blurST) {
-      imgInner.__blurST.kill();
-      imgInner.__blurST = null;
+    if (imgInner.__blurTween) {
+      if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
+      imgInner.__blurTween.kill();
+      imgInner.__blurTween = null;
     }
 
-    // ✅ smooth "transition" layer (inertia)
-    const setFilterSmooth = gsap.quickTo(imgInner, "filter", {
-      duration: 0.35, // increase to 0.5 for even smoother
-      ease: "power2.out",
-      overwrite: true,
-    });
-
-    const setYSmooth = gsap.quickTo(imgInner, "yPercent", {
-      duration: 0.35,
-      ease: "power2.out",
-      overwrite: true,
-    });
-
-    // keep initial state as you had
-    gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
-
-    imgInner.__blurST = ScrollTrigger.create({
-      trigger: triggerEl,
-      start,
-      end,
-      scrub: true,
-      invalidateOnRefresh: true,
-
-      // ✅ preserve your "from blur ON to blur OFF" logic,
-      // but apply with smoothing
-      onUpdate: (self) => {
-        const p = self.progress; // 0 -> 1 within your start/end range
-        // blur goes from BLUR_ON to BLUR_OFF
-        // We can't interpolate rem strings reliably, so we blend via a px proxy:
-        // We'll map 10rem -> 0rem using a numeric value and rebuild a rem string.
-        const blurRem = (1 - p) * 10; // 10 -> 0
-        setFilterSmooth(`blur(${blurRem.toFixed(3)}rem)`);
-        setYSmooth(-10 * p);
-      },
-
-      // ✅ when scrolling back above start, restore blur smoothly
-      onLeaveBack: () => {
-        setFilterSmooth(BLUR_ON);
-        setYSmooth(0);
-      },
-    });
+    imgInner.__blurTween = gsap.fromTo(
+      imgInner,
+      { yPercent: 0, filter: BLUR_ON },
+      {
+        yPercent: -10,
+        filter: BLUR_OFF,
+        ease: "none",
+        overwrite: "auto",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: triggerEl,
+          start,
+          end,
+          scrub: true,
+          invalidateOnRefresh: true,
+          onLeaveBack: () => {
+            gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
+          },
+        },
+      }
+    );
   }
 
   parents.forEach((parent, index) => {
