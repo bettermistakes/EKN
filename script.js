@@ -1577,8 +1577,8 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   const FADE_START = 0.6;
   const FADE_END = 1.0;
 
-  // 🔹 Margin → UNIQUEMENT dernier tiers
-  const MARGIN_START = 0.66; // ← ici le décalage
+  // 🔹 Margin (démarre plus tard)
+  const MARGIN_START = 0.8;
   const MARGIN_END = 1.0;
 
   function init() {
@@ -1606,7 +1606,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
       onUpdate: (self) => {
         const p = self.progress;
 
-        /* -------- FADE -------- */
+        /* ---------- FADE ---------- */
         const fadeT = gsap.utils.clamp(
           0,
           1,
@@ -1614,13 +1614,12 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
         );
         gsap.set(img, { opacity: 1 - fadeT });
 
-        /* -------- MARGIN (dernier tiers) -------- */
+        /* ---------- MARGIN (retardé) ---------- */
         const marginT = gsap.utils.clamp(
           0,
           1,
           (p - MARGIN_START) / (MARGIN_END - MARGIN_START)
         );
-
         gsap.set(next, {
           marginTop: -MAX_PULL * marginT,
         });
@@ -1632,4 +1631,50 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   if (document.readyState === "complete") init();
   else window.addEventListener("load", init);
+})();
+
+
+
+// ===================== HOW IT WORKS – INDIVIDUAL IMAGE BLUR ===================== //
+// Chaque image est traitée indépendamment
+// Blur ON quand son top dépasse -60% du viewport
+
+(function () {
+  const IMAGES = document.querySelectorAll(".howitworks--img--inner");
+  if (!IMAGES.length) return;
+
+  const THRESHOLD = 0.4; // 90% du viewport
+  const BLUR_ON = "10rem";
+  const BLUR_OFF = "0rem";
+
+  let rafId = null;
+
+  function update() {
+    rafId = null;
+
+    IMAGES.forEach((img) => {
+      const rect = img.getBoundingClientRect();
+      const limit = -window.innerHeight * THRESHOLD;
+
+      const shouldBlur = rect.top <= limit;
+
+      // évite les reflows inutiles
+      if (img.__isBlurred === shouldBlur) return;
+      img.__isBlurred = shouldBlur;
+
+      img.style.filter = shouldBlur
+        ? `blur(${BLUR_ON})`
+        : `blur(${BLUR_OFF})`;
+    });
+  }
+
+  function onScroll() {
+    if (!rafId) rafId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  // init
+  update();
 })();
