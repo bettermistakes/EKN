@@ -1102,8 +1102,8 @@ $(window).on("load", function () {
   if (window.__howItWorksSTInit) return;
   window.__howItWorksSTInit = true;
 
-  const BLUR_ON = "blur(10rem)";
-  const BLUR_OFF = "blur(0rem)";
+  const BLUR_ON_VAL = 10; // rem
+  const BLUR_OFF_VAL = 0; // rem
 
   // Init states
   parents.forEach((parent) => {
@@ -1117,7 +1117,7 @@ $(window).on("load", function () {
     if (line) gsap.set(line, { width: "0%" });
 
     // ✅ initial blur ON
-    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
+    if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: `blur(${BLUR_ON_VAL}rem)` });
   });
 
   // Images positions (outer wrapper)
@@ -1129,7 +1129,6 @@ $(window).on("load", function () {
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
-
     const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
     gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
@@ -1137,7 +1136,6 @@ $(window).on("load", function () {
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
-
     const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     gsap.to(img, {
@@ -1206,34 +1204,56 @@ $(window).on("load", function () {
     }
   });
 
-  // ✅ Blur + parallax inner (FIX: blur comes back when going back up)
+  // ✅ Blur + parallax inner (SAME logic, but blur is now ULTRA SMOOTH)
   function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
+    // kill previous
     if (imgInner.__blurTween) {
       if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
       imgInner.__blurTween.kill();
       imgInner.__blurTween = null;
     }
 
+    // proxy numeric blur (smooth)
+    const blurProxy = { v: BLUR_ON_VAL };
+    imgInner.__blurProxy = blurProxy;
+
+    const applyBlur = () => {
+      // petites décimales = rendu plus fluide
+      const val = Math.max(0, blurProxy.v);
+      imgInner.style.filter = `blur(${val.toFixed(3)}rem)`;
+    };
+
+    // init state (important to keep your original behavior)
+    gsap.set(imgInner, { yPercent: 0 });
+    applyBlur();
+
     imgInner.__blurTween = gsap.fromTo(
       imgInner,
-      { yPercent: 0, filter: BLUR_ON },
+      { yPercent: 0 },
       {
         yPercent: -10,
-        filter: BLUR_OFF,
         ease: "none",
-        overwrite: "auto",
         immediateRender: false,
+        overwrite: "auto",
         scrollTrigger: {
           trigger: triggerEl,
           start,
           end,
           scrub: true,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            // progress 0->1 maps blur 10rem -> 0rem
+            blurProxy.v = BLUR_ON_VAL + (BLUR_OFF_VAL - BLUR_ON_VAL) * self.progress;
+            applyBlur();
+          },
           onLeaveBack: () => {
-            gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
+            // ✅ keep the same "blur comes back when going back up"
+            blurProxy.v = BLUR_ON_VAL;
+            gsap.set(imgInner, { yPercent: 0 });
+            applyBlur();
           },
         },
       }
@@ -1248,6 +1268,7 @@ $(window).on("load", function () {
 
   window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
+
 
 // --------------------- What Offers Hover Circle --------------------- //
 (function () {
