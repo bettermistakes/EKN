@@ -1102,6 +1102,7 @@ $(window).on("load", function () {
   if (window.__howItWorksSTInit) return;
   window.__howItWorksSTInit = true;
 
+  // ✅ Blur values (keep same visual)
   const BLUR_ON_VAL = 10; // rem
   const BLUR_OFF_VAL = 0; // rem
 
@@ -1116,7 +1117,7 @@ $(window).on("load", function () {
     if (response) gsap.set(response, { height: 0, overflow: "hidden" });
     if (line) gsap.set(line, { width: "0%" });
 
-    // ✅ initial blur ON
+    // ✅ initial blur ON (same logic)
     if (imgInner) gsap.set(imgInner, { yPercent: 0, filter: `blur(${BLUR_ON_VAL}rem)` });
   });
 
@@ -1129,14 +1130,19 @@ $(window).on("load", function () {
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
-    const remInPx = initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    const remInPx =
+      initialYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
     gsap.set(img, { yPercent: initialYPercent[index], y: remInPx });
   });
 
   parents.forEach((parent, index) => {
     const img = parent.querySelector(".howitworks--img");
     if (!img) return;
-    const remInPx = finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    const remInPx =
+      finalYRem[index] * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     gsap.to(img, {
       yPercent: finalYPercent[index],
@@ -1169,9 +1175,13 @@ $(window).on("load", function () {
           if (index > 0 && parents[index - 1]) {
             const prevContent = parents[index - 1].querySelector(".howitworks--content");
             const prevResponse = parents[index - 1].querySelector(".howitworks--response");
-            if (prevContent) gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
-            if (prevResponse) gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
+
+            if (prevContent)
+              gsap.to(prevContent, { opacity: 0.3, duration: 0.4, ease: "power2.out" });
+            if (prevResponse)
+              gsap.to(prevResponse, { height: 0, duration: 0.4, ease: "power2.out" });
           }
+
           if (content) gsap.to(content, { opacity: 1, duration: 0.4, ease: "power2.out" });
           if (response) gsap.to(response, { height: "auto", duration: 0.4, ease: "power2.out" });
         },
@@ -1182,8 +1192,11 @@ $(window).on("load", function () {
           if (index > 0 && parents[index - 1]) {
             const prevContent = parents[index - 1].querySelector(".howitworks--content");
             const prevResponse = parents[index - 1].querySelector(".howitworks--response");
-            if (prevContent) gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
-            if (prevResponse) gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
+
+            if (prevContent)
+              gsap.to(prevContent, { opacity: 1, duration: 0.4, ease: "power2.out" });
+            if (prevResponse)
+              gsap.to(prevResponse, { height: "auto", duration: 0.4, ease: "power2.out" });
           }
         },
       },
@@ -1204,60 +1217,71 @@ $(window).on("load", function () {
     }
   });
 
-  // ✅ Blur + parallax inner (SAME logic, but blur is now ULTRA SMOOTH)
+  // ✅ Blur + parallax inner (same logic + VERY SMOOTH blur + blur comes back on top)
   function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
-    // kill previous
+    // cleanup
     if (imgInner.__blurTween) {
       if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
       imgInner.__blurTween.kill();
       imgInner.__blurTween = null;
     }
 
-    // proxy numeric blur (smooth)
+    // numeric proxy for blur (smooth)
     const blurProxy = { v: BLUR_ON_VAL };
-    imgInner.__blurProxy = blurProxy;
-
     const applyBlur = () => {
-      // petites décimales = rendu plus fluide
-      const val = Math.max(0, blurProxy.v);
-      imgInner.style.filter = `blur(${val.toFixed(3)}rem)`;
+      imgInner.style.filter = `blur(${Math.max(0, blurProxy.v).toFixed(3)}rem)`;
     };
 
-    // init state (important to keep your original behavior)
+    // ensure initial state
     gsap.set(imgInner, { yPercent: 0 });
     applyBlur();
 
-    imgInner.__blurTween = gsap.fromTo(
-      imgInner,
-      { yPercent: 0 },
-      {
-        yPercent: -10,
-        ease: "none",
-        immediateRender: false,
-        overwrite: "auto",
-        scrollTrigger: {
-          trigger: triggerEl,
-          start,
-          end,
-          scrub: true,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            // progress 0->1 maps blur 10rem -> 0rem
-            blurProxy.v = BLUR_ON_VAL + (BLUR_OFF_VAL - BLUR_ON_VAL) * self.progress;
-            applyBlur();
-          },
-          onLeaveBack: () => {
-            // ✅ keep the same "blur comes back when going back up"
-            blurProxy.v = BLUR_ON_VAL;
-            gsap.set(imgInner, { yPercent: 0 });
-            applyBlur();
-          },
+    // animate inner parallax; blur is driven by scroll progress
+    imgInner.__blurTween = gsap.to(imgInner, {
+      yPercent: -10,
+      ease: "none",
+      overwrite: "auto",
+      immediateRender: false,
+      scrollTrigger: {
+        trigger: triggerEl,
+        start,
+        end,
+        scrub: true,
+        invalidateOnRefresh: true,
+
+        // smooth blur inside the range
+        onUpdate: (self) => {
+          blurProxy.v = BLUR_ON_VAL + (BLUR_OFF_VAL - BLUR_ON_VAL) * self.progress;
+          applyBlur();
         },
-      }
-    );
+
+        // ✅ before start => blur ON (this is the "comes back when going up")
+        onLeaveBack: () => {
+          blurProxy.v = BLUR_ON_VAL;
+          gsap.set(imgInner, { yPercent: 0 });
+          applyBlur();
+        },
+
+        // ✅ after end => blur OFF (stay sharp below)
+        onLeave: () => {
+          blurProxy.v = BLUR_OFF_VAL;
+          applyBlur();
+        },
+
+        // avoid 1-frame wrong state when re-entering
+        onEnter: () => {
+          blurProxy.v = BLUR_ON_VAL;
+          applyBlur();
+        },
+        onEnterBack: (self) => {
+          blurProxy.v = BLUR_ON_VAL + (BLUR_OFF_VAL - BLUR_ON_VAL) * self.progress;
+          applyBlur();
+        },
+      },
+    });
   }
 
   parents.forEach((parent, index) => {
