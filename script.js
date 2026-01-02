@@ -1102,10 +1102,8 @@ $(window).on("load", function () {
   if (window.__howItWorksSTInit) return;
   window.__howItWorksSTInit = true;
 
-  // ⚠️ Big rem blur is heavy + can feel jumpy. We'll use px for smoother perf.
-  const BLUR_MAX_PX = 80; // tweak 60–120
-  const BLUR_ON = `blur(${BLUR_MAX_PX}px)`;
-  const BLUR_OFF = "blur(0px)";
+  const BLUR_ON = "blur(10rem)";
+  const BLUR_OFF = "blur(0rem)";
 
   // Init states
   parents.forEach((parent) => {
@@ -1208,44 +1206,38 @@ $(window).on("load", function () {
     }
   });
 
-  // ✅ Blur + parallax inner (VERY SMOOTH with inertia)
+  // ✅ Blur + parallax inner (FIX: blur comes back when going back up)
   function bindInnerBlur(parent, triggerEl, start, end) {
     const imgInner = parent.querySelector(".howitworks--img--inner");
     if (!imgInner) return;
 
-    // kill previous ST if any
-    if (imgInner.__blurST) {
-      imgInner.__blurST.kill();
-      imgInner.__blurST = null;
+    if (imgInner.__blurTween) {
+      if (imgInner.__blurTween.scrollTrigger) imgInner.__blurTween.scrollTrigger.kill();
+      imgInner.__blurTween.kill();
+      imgInner.__blurTween = null;
     }
 
-    // smooth setters (adds inertia so blur feels buttery)
-    const toBlur = gsap.quickTo(imgInner, "filter", { duration: 0.35, ease: "power2.out" });
-    const toY = gsap.quickTo(imgInner, "yPercent", { duration: 0.35, ease: "power2.out" });
-
-    // ensure initial state
-    gsap.set(imgInner, { yPercent: 0, filter: BLUR_ON });
-
-    imgInner.__blurST = ScrollTrigger.create({
-      trigger: triggerEl,
-      start,
-      end,
-      scrub: true,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        const p = self.progress; // 0→1
-        const blurPx = (1 - p) * BLUR_MAX_PX; // max→0
-        const y = p * -10; // 0→-10
-
-        toBlur(`blur(${blurPx.toFixed(1)}px)`);
-        toY(y);
-      },
-      onLeaveBack: () => {
-        // smooth reset when going back up
-        toBlur(BLUR_ON);
-        toY(0);
-      },
-    });
+    imgInner.__blurTween = gsap.fromTo(
+      imgInner,
+      { yPercent: 0, filter: BLUR_ON },
+      {
+        yPercent: -10,
+        filter: BLUR_OFF,
+        ease: "none",
+        overwrite: "auto",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: triggerEl,
+          start,
+          end,
+          scrub: true,
+          invalidateOnRefresh: true,
+          onLeaveBack: () => {
+            gsap.set(imgInner, { filter: BLUR_ON, yPercent: 0 });
+          },
+        },
+      }
+    );
   }
 
   parents.forEach((parent, index) => {
