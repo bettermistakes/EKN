@@ -1257,7 +1257,6 @@ $(window).on("load", function () {
   window.addEventListener("load", () => ScrollTrigger.refresh());
 })();
 
-
 // --------------------- What Offers Hover Circle --------------------- //
 (function () {
   const section = document.querySelector(".section.is--whatoffers");
