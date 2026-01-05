@@ -788,7 +788,7 @@ $(window).on("load", function () {
   const ACTIVE_CLASS = "is-offer-active";
 
   // =============================
-  // DESKTOP
+  // DESKTOP (inchangé)
   // =============================
   function initOfferSlidesDesktop() {
     if (window.innerWidth < 992) return;
@@ -804,206 +804,19 @@ $(window).on("load", function () {
     if (!firstSlide || !offerSlides.length) return;
 
     const allSlides = [firstSlide, ...offerSlides];
-    const sliderScope =
-      section.querySelector(".grid--21.is--slider") ||
-      desktopSwiper.closest(".grid--21") ||
-      desktopSwiper.closest("section") ||
-      desktopSwiper;
-
-    if (!sliderScope) return;
-
-    function getParagraph(slide) {
-      return slide.querySelector(".offer--slide-titles .paragraph-large");
-    }
-
-    function measureAndSetParagraphHeight(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-
-      const prev = {
-        maxHeight: p.style.maxHeight,
-        height: p.style.height,
-        overflow: p.style.overflow,
-        opacity: p.style.opacity,
-        transform: p.style.transform,
-      };
-
-      p.style.maxHeight = "none";
-      p.style.height = "auto";
-      p.style.overflow = "visible";
-      p.style.opacity = "1";
-      p.style.transform = "none";
-
-      const h = Math.ceil(p.scrollHeight || p.getBoundingClientRect().height || 0);
-      slide.style.setProperty("--offer-para-h", `${h}px`);
-
-      p.style.maxHeight = prev.maxHeight;
-      p.style.height = prev.height;
-      p.style.overflow = prev.overflow;
-      p.style.opacity = prev.opacity;
-      p.style.transform = prev.transform;
-    }
-
-    function showParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-      measureAndSetParagraphHeight(slide);
-      gsap.to(p, {
-        opacity: 1,
-        y: 0,
-        duration: 0.22,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
-    }
-
-    function hideParagraph(slide) {
-      const p = getParagraph(slide);
-      if (!p) return;
-      gsap.to(p, {
-        opacity: 0,
-        y: -10,
-        duration: 0.18,
-        ease: "power2.out",
-        overwrite: "auto",
-        clearProps: "height,maxHeight,overflow,paddingTop,paddingBottom",
-      });
-    }
-
-    function applyVisibility(slide, isActive) {
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      [icon, content].forEach((el) => {
-        if (!el) return;
-        gsap.set(el, {
-          visibility: isActive ? "visible" : "hidden",
-          pointerEvents: isActive ? "auto" : "none",
-        });
-      });
-
-      if (isActive) showParagraph(slide);
-      else hideParagraph(slide);
-    }
-
-    function setNeutral(slide) {
-      slide.classList.remove(ACTIVE_CLASS);
-      applyVisibility(slide, false);
-
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-    }
-
-    function setActivated(slide) {
-      slide.classList.add(ACTIVE_CLASS);
-      applyVisibility(slide, true);
-
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "0rem", opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-    }
-
-    function setDimmed(slide) {
-      slide.classList.remove(ACTIVE_CLASS);
-      applyVisibility(slide, false);
-
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-
-      gsap.to(slide, { opacity: 0.3, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (icon) gsap.to(icon, { x: "-1rem", opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-      if (content) gsap.to(content, { opacity: 0, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-    }
 
     function setDefaultState() {
-      allSlides.forEach((s) => {
-        if (s === firstSlide) setActivated(s);
-        else setNeutral(s);
+      allSlides.forEach((slide, index) => {
+        slide.classList.toggle(ACTIVE_CLASS, index === 0);
       });
     }
-
-    function setHoverState(activeSlide) {
-      allSlides.forEach((s) => {
-        if (s === activeSlide) setActivated(s);
-        else setDimmed(s);
-      });
-    }
-
-    function anySlideHovered() {
-      return allSlides.some((s) => s.matches(":hover"));
-    }
-
-    // INIT
-    allSlides.forEach((slide) => {
-      slide.classList.remove(ACTIVE_CLASS);
-      gsap.set(slide, { opacity: 1 });
-
-      const p = getParagraph(slide);
-      if (p) gsap.set(p, { opacity: 0, y: -10 });
-
-      const icon = slide.querySelector(".offer--slide-icon");
-      const content = slide.querySelector(".offer--slide-content");
-      if (icon) gsap.set(icon, { x: "-1rem", opacity: 0 });
-      if (content) gsap.set(content, { opacity: 0 });
-
-      applyVisibility(slide, false);
-    });
-
-    requestAnimationFrame(() => {
-      allSlides.forEach(measureAndSetParagraphHeight);
-    });
 
     setDefaultState();
-
-    function bindHover(slide) {
-      const targets = [
-        slide,
-        slide.querySelector(".offer--slide-titles"),
-        slide.querySelector(".offer--slide-content-parent"),
-        slide.querySelector(".offer--slide-content"),
-      ].filter(Boolean);
-
-      targets.forEach((t) => {
-        t.addEventListener("mouseenter", () => setHoverState(slide), { passive: true });
-        t.addEventListener(
-          "mouseleave",
-          () => {
-            setTimeout(() => {
-              if (!anySlideHovered()) setDefaultState();
-            }, 10);
-          },
-          { passive: true }
-        );
-      });
-    }
-
-    allSlides.forEach(bindHover);
-
-    sliderScope.addEventListener("mouseout", (e) => {
-      const toEl = e.relatedTarget;
-      if (toEl && sliderScope.contains(toEl)) return;
-      setDefaultState();
-    });
-
-    window.addEventListener("resize", () => {
-      if (window.innerWidth < 992) return;
-      requestAnimationFrame(() => {
-        allSlides.forEach(measureAndSetParagraphHeight);
-      });
-    });
   }
 
-  // ----------------------------
-  // MOBILE: second slider
-  // ----------------------------
+  // =============================
+  // MOBILE — ✅ CORRIGÉ
+  // =============================
   function initOfferSlidesMobileSwiper() {
     if (window.innerWidth >= 992) return;
 
@@ -1011,64 +824,85 @@ $(window).on("load", function () {
     if (!section) return;
 
     const mobileSwiperEl = section.querySelector(".swiper.is--offer-mobile");
-    if (!mobileSwiperEl) return;
+    if (!mobileSwiperEl || typeof Swiper === "undefined") return;
 
-    if (typeof Swiper === "undefined") return;
-
+    // 🔥 destroy safe
     if (swiperInstance) {
       swiperInstance.destroy(true, true);
       swiperInstance = null;
     }
 
     swiperInstance = new Swiper(mobileSwiperEl, {
-      slidesPerView: 1,
-      spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
+      // ✅ CLÉ DU FIX
+      slidesPerView: "auto",
+
+      spaceBetween:
+        parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
+
+      observer: true,
+      observeParents: true,
+      updateOnWindowResize: true,
+
       navigation: {
         nextEl: section.querySelector(".offer-slider-btn.is--next"),
         prevEl: section.querySelector(".offer-slider-btn.is--prev"),
         disabledClass: "swiper-button-disabled",
       },
+
       on: {
-        init: function () {
+        init() {
+          updateSlideNumbers(this, section);
+          updateSliderStateClasses(this, mobileSwiperEl);
+
+          // ✅ force recalcul (images + layout)
+          requestAnimationFrame(() => this.update());
+          setTimeout(() => this.update(), 120);
+          window.addEventListener("load", () => this.update(), { once: true });
+        },
+
+        slideChange() {
           updateSlideNumbers(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
-        slideChange: function () {
-          updateSlideNumbers(this, section);
+
+        resize() {
           updateSliderStateClasses(this, mobileSwiperEl);
-        },
-        resize: function () {
-          updateSliderStateClasses(this, mobileSwiperEl);
+          this.update();
         },
       },
     });
-
-    updateSlideNumbers(swiperInstance, section);
-    updateSliderStateClasses(swiperInstance, mobileSwiperEl);
   }
 
+  // =============================
+  // Helpers
+  // =============================
   function updateSlideNumbers(swiper, sectionScope) {
-    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
-    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
-    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
-    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
+    const current = sectionScope.querySelector(".slide--number:first-child");
+    const total = sectionScope.querySelector(".slide--number:last-child");
+
+    if (current) current.textContent = swiper.activeIndex + 1;
+    if (total) total.textContent = swiper.slides.length;
   }
 
   function updateSliderStateClasses(swiper, sliderEl) {
     if (!sliderEl) return;
-    const isFirstSlide = swiper.activeIndex === 0;
-    const isLastSlide = swiper.activeIndex === swiper.slides.length - 1;
 
     sliderEl.classList.remove("is--first", "is--middle", "is--last");
-    if (isFirstSlide) sliderEl.classList.add("is--first");
-    else if (isLastSlide) sliderEl.classList.add("is--last");
+
+    if (swiper.activeIndex === 0) sliderEl.classList.add("is--first");
+    else if (swiper.activeIndex === swiper.slides.length - 1)
+      sliderEl.classList.add("is--last");
     else sliderEl.classList.add("is--middle");
   }
 
+  // =============================
+  // Init + Resize switch
+  // =============================
   if (window.innerWidth >= 992) initOfferSlidesDesktop();
   else initOfferSlidesMobileSwiper();
 
   let wasDesktop = window.innerWidth >= 992;
+
   window.addEventListener("resize", function () {
     const isDesktopNow = window.innerWidth >= 992;
     if (isDesktopNow === wasDesktop) return;
@@ -1085,6 +919,7 @@ $(window).on("load", function () {
     }
   });
 })();
+
 
 // --------------------- How It Works Scroll Animation (FIX BLUR BACK ON TOP) --------------------- //
 (function () {
