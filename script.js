@@ -1644,7 +1644,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   if (!IMAGES.length) return;
 
   const THRESHOLD = 0.4; // 90% du viewport
-  const BLUR_ON = "3rem";
+  const BLUR_ON = "1rem";
   const BLUR_OFF = "0rem";
 
   let rafId = null;
