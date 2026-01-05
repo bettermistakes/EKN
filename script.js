@@ -589,7 +589,7 @@ $(window).on("load", function () {
   if (!eyebrowElement) return;
   if (typeof SplitText === "undefined" || typeof gsap === "undefined") return;
 
-  const phrases = ["From field to office ", "From data to decision ", "From risk to reliability ", "From reactive to proactive. "];
+  const phrases = ["From field to office        ", "From data to decision      ", "From risk to reliability              ", "From reactive to proactive.        "];
 
   let currentIndex = 0;
   let isAnimating = false;
