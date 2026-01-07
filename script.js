@@ -1679,9 +1679,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   update();
 })();
 
+
 /* =========================================================
    Desktop (>=992)
-   section.is--image : sticky → relative after 30vh scroll
+   Switch section.is--image sticky -> relative
+   when .home--image-wrapper width < 70vw
    ========================================================= */
 (() => {
   const ready = (cb) => {
@@ -1694,45 +1696,48 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   ready(() => {
     const section = document.querySelector(".section.is--image");
-    if (!section) return;
+    const wrapper = section?.querySelector(".home--image-wrapper");
+    if (!section || !wrapper) return;
 
     const mql = window.matchMedia("(min-width: 992px)");
-    let thresholdPx = window.innerHeight * 0.1; // 10vh
 
-    const updateThreshold = () => {
-      thresholdPx = window.innerHeight * 0.3;
-    };
+    const getThresholdPx = () => window.innerWidth * 0.7; // 70vw
 
-    const update = () => {
+    const apply = () => {
       if (!mql.matches) {
         section.classList.remove("is--relative");
         return;
       }
 
-      const rect = section.getBoundingClientRect();
-      const sectionTop = window.scrollY + rect.top;
-      const scrollInSection = window.scrollY - sectionTop;
+      const wrapperWidth = wrapper.getBoundingClientRect().width; // width réel en px
+      const thresholdPx = getThresholdPx();
 
-      if (scrollInSection >= thresholdPx) {
+      if (wrapperWidth < thresholdPx) {
         section.classList.add("is--relative");
       } else {
         section.classList.remove("is--relative");
       }
     };
 
-    updateThreshold();
-    update();
+    // 1) run once
+    apply();
 
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", () => {
-      updateThreshold();
-      update();
-    });
-
-    if (mql.addEventListener) {
-      mql.addEventListener("change", update);
-    } else {
-      mql.addListener(update);
+    // 2) observe width changes of wrapper
+    let ro = null;
+    if ("ResizeObserver" in window) {
+      ro = new ResizeObserver(() => apply());
+      ro.observe(wrapper);
     }
+
+    // 3) window changes (vw changes)
+    window.addEventListener("resize", apply);
+
+    // 4) breakpoint changes
+    const onMql = () => apply();
+    if (mql.addEventListener) mql.addEventListener("change", onMql);
+    else mql.addListener(onMql);
+
+    // 5) fallback: some cases change without resize (optional but safe)
+    window.addEventListener("scroll", apply, { passive: true });
   });
 })();
