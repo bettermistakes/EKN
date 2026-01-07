@@ -1697,7 +1697,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
     if (!section) return;
 
     const mql = window.matchMedia("(min-width: 992px)");
-    let thresholdPx = window.innerHeight * 0.3; // 30vh
+    let thresholdPx = window.innerHeight * 0.1; // 10vh
 
     const updateThreshold = () => {
       thresholdPx = window.innerHeight * 0.3;
