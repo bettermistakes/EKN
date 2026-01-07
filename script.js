@@ -1679,9 +1679,9 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   update();
 })();
 
-
 /* =========================================================
-   Desktop (>=992): Sticky until 30vh inside section, then force relative
+   Desktop (>=992)
+   section.is--image : sticky → relative after 30vh scroll
    ========================================================= */
 (() => {
   const ready = (cb) => {
@@ -1694,49 +1694,45 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   ready(() => {
     const section = document.querySelector(".section.is--image");
-    const wrapper = section?.querySelector(".home--image-wrapper");
-    if (!section || !wrapper) return;
+    if (!section) return;
 
     const mql = window.matchMedia("(min-width: 992px)");
-    let thresholdPx = 0;
+    let thresholdPx = window.innerHeight * 0.3; // 30vh
 
-    const compute = () => {
-      thresholdPx = window.innerHeight * 0.3; // 30vh
+    const updateThreshold = () => {
+      thresholdPx = window.innerHeight * 0.3;
     };
 
-    const apply = () => {
+    const update = () => {
       if (!mql.matches) {
-        wrapper.classList.remove("is--relative");
-        wrapper.style.marginTop = "";
+        section.classList.remove("is--relative");
         return;
       }
 
       const rect = section.getBoundingClientRect();
-      const sectionTopInDoc = window.scrollY + rect.top;
-
-      // combien on a scrollé "dans" la section
-      const scrollInSection = window.scrollY - sectionTopInDoc;
+      const sectionTop = window.scrollY + rect.top;
+      const scrollInSection = window.scrollY - sectionTop;
 
       if (scrollInSection >= thresholdPx) {
-        wrapper.classList.add("is--relative");
-        // On "décolle" au point 30vh: on le place dans le flux à cette hauteur
-        wrapper.style.marginTop = `${thresholdPx}px`;
+        section.classList.add("is--relative");
       } else {
-        wrapper.classList.remove("is--relative");
-        wrapper.style.marginTop = "";
+        section.classList.remove("is--relative");
       }
     };
 
-    const onScroll = () => apply();
-    const onResize = () => { compute(); apply(); };
-    const onMqlChange = () => { compute(); apply(); };
+    updateThreshold();
+    update();
 
-    compute();
-    apply();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", () => {
+      updateThreshold();
+      update();
+    });
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-    if (mql.addEventListener) mql.addEventListener("change", onMqlChange);
-    else mql.addListener(onMqlChange);
+    if (mql.addEventListener) {
+      mql.addEventListener("change", update);
+    } else {
+      mql.addListener(update);
+    }
   });
 })();
