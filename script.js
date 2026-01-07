@@ -1678,3 +1678,65 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   // init
   update();
 })();
+
+
+/* =========================================================
+   Desktop (>=992): Sticky until 30vh inside section, then force relative
+   ========================================================= */
+(() => {
+  const ready = (cb) => {
+    const tick = () => {
+      if (document.readyState === "interactive" || document.readyState === "complete") cb();
+      else setTimeout(tick, 16);
+    };
+    tick();
+  };
+
+  ready(() => {
+    const section = document.querySelector(".section.is--image");
+    const wrapper = section?.querySelector(".home--image-wrapper");
+    if (!section || !wrapper) return;
+
+    const mql = window.matchMedia("(min-width: 992px)");
+    let thresholdPx = 0;
+
+    const compute = () => {
+      thresholdPx = window.innerHeight * 0.3; // 30vh
+    };
+
+    const apply = () => {
+      if (!mql.matches) {
+        wrapper.classList.remove("is--relative");
+        wrapper.style.marginTop = "";
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const sectionTopInDoc = window.scrollY + rect.top;
+
+      // combien on a scrollé "dans" la section
+      const scrollInSection = window.scrollY - sectionTopInDoc;
+
+      if (scrollInSection >= thresholdPx) {
+        wrapper.classList.add("is--relative");
+        // On "décolle" au point 30vh: on le place dans le flux à cette hauteur
+        wrapper.style.marginTop = `${thresholdPx}px`;
+      } else {
+        wrapper.classList.remove("is--relative");
+        wrapper.style.marginTop = "";
+      }
+    };
+
+    const onScroll = () => apply();
+    const onResize = () => { compute(); apply(); };
+    const onMqlChange = () => { compute(); apply(); };
+
+    compute();
+    apply();
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    if (mql.addEventListener) mql.addEventListener("change", onMqlChange);
+    else mql.addListener(onMqlChange);
+  });
+})();

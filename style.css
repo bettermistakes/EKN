@@ -399,3 +399,14 @@ body {
   transition: filter 0.6s ease;
   will-change: filter;
 }
+
+
+/* --------------------- image relative --------------------- */
+
+@media (min-width: 992px) {
+
+  .section.is--image .home--image-wrapper.is--relative {
+    position: relative;
+    top: auto;
+  }
+}
