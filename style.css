@@ -404,8 +404,7 @@ body {
 /* --------------------- image relative --------------------- */
 
 @media (min-width: 992px) {
-
-  .section.is--image .home--image-wrapper.is--relative {
+  .section.is--image.is--relative {
     position: relative;
     top: auto;
   }
