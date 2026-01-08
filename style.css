@@ -266,34 +266,6 @@ body {
   }
 }
 
-/* --------------------- ✅ FIX iOS TEXT "BLINK" ON SLIDE NUMBERS --------------------- */
-/* Apply to your "1 / 6" numbers (both spans have class .slide--number) */
-.slide--number {
-  display: inline-block;
-
-  /* prevent micro reflow + GPU layer stability */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: contents;
-  text-rendering: geometricPrecision;
-
-  /* stop any implicit transitions/animations */
-  transition: none !important;
-  animation: none !important;
-
-  /* keep width stable when number changes (9 -> 10 etc.) */
-  min-width: 2ch;
-  text-align: center;
-}
-
-/* If you have a wrapper around them, this helps isolate paints */
-.slide--numbers,
-.slide--numbers-wrapper,
-.slide--numbers-parent {
-  contain: layout paint;
-}
-
 /* --------------------- How It Works Scroll Animation Styles --------------------- */
 @media (min-width: 992px) {
   .howitworks--content {
@@ -433,5 +405,49 @@ body {
   .section.is--image.is--relative {
     position: relative;
     top: auto;
+  }
+}
+
+/* =========================================================
+   ✅ iOS / Safari FIXES (Offer slider blur flash + number blink)
+   - Stabilize compositing layers
+   - Reduce sub-pixel jitter
+========================================================= */
+
+/* Stabilize slider layers on iOS Safari */
+.swiper.is--offer-mobile,
+.swiper.is--offer-mobile .swiper-wrapper,
+.swiper.is--offer-mobile .swiper-slide,
+.swiper.is--offer-mobile .mask--blur,
+.swiper.is--offer-mobile .swiper-mobile-top,
+.swiper.is--offer-mobile .swiper-mobile-bottom {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+}
+
+/* During swipe/transition: keep blur layer stable */
+.swiper.is--offer-mobile.is--swiping .mask--blur {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Digits: avoid width changes + improve iOS text rendering */
+.swiper.is--offer-mobile .heading-display--xxlarge {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* Prefer backdrop-filter when available (less “flashy” than filter: blur) */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .swiper.is--offer-mobile .mask--blur {
+    /* keep your background color as-is from Webflow */
+    filter: none !important;
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
   }
 }

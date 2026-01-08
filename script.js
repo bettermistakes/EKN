@@ -589,7 +589,12 @@ $(window).on("load", function () {
   if (!eyebrowElement) return;
   if (typeof SplitText === "undefined" || typeof gsap === "undefined") return;
 
-  const phrases = ["From field to office        ", "From data to decision      ", "From risk to reliability              ", "From reactive to proactive.        "];
+  const phrases = [
+    "From field to office        ",
+    "From data to decision      ",
+    "From risk to reliability              ",
+    "From reactive to proactive.        ",
+  ];
 
   let currentIndex = 0;
   let isAnimating = false;
@@ -598,7 +603,7 @@ $(window).on("load", function () {
   function initializeText() {
     const textWithSpaces = phrases[currentIndex].replace(/ /g, '<span class="space"> </span>');
     eyebrowElement.innerHTML = textWithSpaces;
-    eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+    eyebrowElement.setAttribute("aria-label", phrases[currentIndex].trim());
     currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
   }
 
@@ -636,7 +641,7 @@ $(window).on("load", function () {
       onComplete: () => {
         currentSplit.revert();
         eyebrowElement.innerHTML = tempDiv.innerHTML;
-        eyebrowElement.setAttribute("aria-label", phrases[currentIndex]);
+        eyebrowElement.setAttribute("aria-label", phrases[currentIndex].trim());
         currentSplit = new SplitText(eyebrowElement, { type: "chars", charsClass: "char" });
         isAnimating = false;
         setTimeout(animateTextChange, 2000);
@@ -780,26 +785,13 @@ $(window).on("load", function () {
   }
 })();
 
-/* ======================================================================
-   ✅ OFFER SLIDE HOVER (DESKTOP) + ✅ MOBILE SWIPER (SECOND SLIDER)
-   FIX: numbers blink => updateSlideNumbersSafe() (RAF)
-====================================================================== */
-
-// ✅ RAF-safe slide number update (prevents iOS repaint blink)
-let __slideNumbersRAF = null;
-function updateSlideNumbersSafe(swiper, sectionScope) {
-  if (!swiper || !sectionScope) return;
-  if (__slideNumbersRAF) cancelAnimationFrame(__slideNumbersRAF);
-
-  __slideNumbersRAF = requestAnimationFrame(() => {
-    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
-    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
-
-    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
-    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
-  });
-}
-
+/* =========================================================
+   ✅ Offer Slide Hover (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER)
+   Fix iOS Safari:
+   - roundLengths (no subpixel jitter)
+   - speed + observer
+   - "is--swiping" class during transition (stabilize blur layer)
+========================================================= */
 (function () {
   let swiperInstance = null;
 
@@ -1041,31 +1033,56 @@ function updateSlideNumbersSafe(swiper, sectionScope) {
 
     swiperInstance = new Swiper(mobileSwiperEl, {
       slidesPerView: 1,
+      roundLengths: true, // ✅ iOS: no subpixel widths
+      speed: 450,
+      observer: true,
+      observeParents: true,
+      watchSlidesProgress: true,
+
       spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
-      roundLengths: true, // ✅ helps reduce subpixel jitter on iOS
+
       navigation: {
         nextEl: section.querySelector(".offer-slider-btn.is--next"),
         prevEl: section.querySelector(".offer-slider-btn.is--prev"),
         disabledClass: "swiper-button-disabled",
       },
+
       on: {
         init: function () {
-          updateSlideNumbersSafe(this, section);
+          updateSlideNumbers(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
+
         slideChange: function () {
-          updateSlideNumbersSafe(this, section);
+          updateSlideNumbers(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
+
+        slideChangeTransitionStart: function () {
+          // ✅ stabilize blur + prevent repaint “flash” in Safari
+          mobileSwiperEl.classList.add("is--swiping");
+          void mobileSwiperEl.offsetHeight; // repaint barrier
+        },
+
+        slideChangeTransitionEnd: function () {
+          mobileSwiperEl.classList.remove("is--swiping");
+        },
+
         resize: function () {
-          updateSlideNumbersSafe(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
       },
     });
 
-    updateSlideNumbersSafe(swiperInstance, section);
+    updateSlideNumbers(swiperInstance, section);
     updateSliderStateClasses(swiperInstance, mobileSwiperEl);
+  }
+
+  function updateSlideNumbers(swiper, sectionScope) {
+    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
+    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
+    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
+    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
   function updateSliderStateClasses(swiper, sliderEl) {
@@ -1626,9 +1643,7 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
         /* ---------- MARGIN (retardé) ---------- */
         const marginT = gsap.utils.clamp(0, 1, (p - MARGIN_START) / (MARGIN_END - MARGIN_START));
-        gsap.set(next, {
-          marginTop: -MAX_PULL * marginT,
-        });
+        gsap.set(next, { marginTop: -MAX_PULL * marginT });
       },
     });
 
@@ -1640,13 +1655,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 })();
 
 // ===================== HOW IT WORKS – INDIVIDUAL IMAGE BLUR ===================== //
-// Chaque image est traitée indépendamment
-// Blur ON quand son top dépasse -60% du viewport
 (function () {
   const IMAGES = document.querySelectorAll(".howitworks--img--inner");
   if (!IMAGES.length) return;
 
-  const THRESHOLD = 0.4; // 40% du viewport vers le haut (rect.top <= -0.4*vh)
+  const THRESHOLD = 0.4;
   const BLUR_ON = "1rem";
   const BLUR_OFF = "0rem";
 
