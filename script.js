@@ -780,7 +780,26 @@ $(window).on("load", function () {
   }
 })();
 
-// --------------------- ✅ Offer Slide Hover (DESKTOP) + ✅ Mobile Swiper (SECOND SLIDER) --------------------- //
+/* ======================================================================
+   ✅ OFFER SLIDE HOVER (DESKTOP) + ✅ MOBILE SWIPER (SECOND SLIDER)
+   FIX: numbers blink => updateSlideNumbersSafe() (RAF)
+====================================================================== */
+
+// ✅ RAF-safe slide number update (prevents iOS repaint blink)
+let __slideNumbersRAF = null;
+function updateSlideNumbersSafe(swiper, sectionScope) {
+  if (!swiper || !sectionScope) return;
+  if (__slideNumbersRAF) cancelAnimationFrame(__slideNumbersRAF);
+
+  __slideNumbersRAF = requestAnimationFrame(() => {
+    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
+    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
+
+    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
+    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
+  });
+}
+
 (function () {
   let swiperInstance = null;
 
@@ -1023,6 +1042,7 @@ $(window).on("load", function () {
     swiperInstance = new Swiper(mobileSwiperEl, {
       slidesPerView: 1,
       spaceBetween: parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25,
+      roundLengths: true, // ✅ helps reduce subpixel jitter on iOS
       navigation: {
         nextEl: section.querySelector(".offer-slider-btn.is--next"),
         prevEl: section.querySelector(".offer-slider-btn.is--prev"),
@@ -1030,28 +1050,22 @@ $(window).on("load", function () {
       },
       on: {
         init: function () {
-          updateSlideNumbers(this, section);
+          updateSlideNumbersSafe(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
         slideChange: function () {
-          updateSlideNumbers(this, section);
+          updateSlideNumbersSafe(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
         resize: function () {
+          updateSlideNumbersSafe(this, section);
           updateSliderStateClasses(this, mobileSwiperEl);
         },
       },
     });
 
-    updateSlideNumbers(swiperInstance, section);
+    updateSlideNumbersSafe(swiperInstance, section);
     updateSliderStateClasses(swiperInstance, mobileSwiperEl);
-  }
-
-  function updateSlideNumbers(swiper, sectionScope) {
-    const currentSlideNumber = sectionScope.querySelector(".slide--number:first-child");
-    const totalSlideNumber = sectionScope.querySelector(".slide--number:last-child");
-    if (currentSlideNumber) currentSlideNumber.textContent = swiper.activeIndex + 1;
-    if (totalSlideNumber) totalSlideNumber.textContent = swiper.slides.length;
   }
 
   function updateSliderStateClasses(swiper, sliderEl) {
@@ -1607,19 +1621,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
         const p = self.progress;
 
         /* ---------- FADE ---------- */
-        const fadeT = gsap.utils.clamp(
-          0,
-          1,
-          (p - FADE_START) / (FADE_END - FADE_START)
-        );
+        const fadeT = gsap.utils.clamp(0, 1, (p - FADE_START) / (FADE_END - FADE_START));
         gsap.set(img, { opacity: 1 - fadeT });
 
         /* ---------- MARGIN (retardé) ---------- */
-        const marginT = gsap.utils.clamp(
-          0,
-          1,
-          (p - MARGIN_START) / (MARGIN_END - MARGIN_START)
-        );
+        const marginT = gsap.utils.clamp(0, 1, (p - MARGIN_START) / (MARGIN_END - MARGIN_START));
         gsap.set(next, {
           marginTop: -MAX_PULL * marginT,
         });
@@ -1633,17 +1639,14 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   else window.addEventListener("load", init);
 })();
 
-
-
 // ===================== HOW IT WORKS – INDIVIDUAL IMAGE BLUR ===================== //
 // Chaque image est traitée indépendamment
 // Blur ON quand son top dépasse -60% du viewport
-
 (function () {
   const IMAGES = document.querySelectorAll(".howitworks--img--inner");
   if (!IMAGES.length) return;
 
-  const THRESHOLD = 0.4; // 90% du viewport
+  const THRESHOLD = 0.4; // 40% du viewport vers le haut (rect.top <= -0.4*vh)
   const BLUR_ON = "1rem";
   const BLUR_OFF = "0rem";
 
@@ -1658,13 +1661,10 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
       const shouldBlur = rect.top <= limit;
 
-      // évite les reflows inutiles
       if (img.__isBlurred === shouldBlur) return;
       img.__isBlurred = shouldBlur;
 
-      img.style.filter = shouldBlur
-        ? `blur(${BLUR_ON})`
-        : `blur(${BLUR_OFF})`;
+      img.style.filter = shouldBlur ? `blur(${BLUR_ON})` : `blur(${BLUR_OFF})`;
     });
   }
 
@@ -1675,7 +1675,5 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
 
-  // init
   update();
 })();
-

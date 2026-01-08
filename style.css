@@ -154,9 +154,7 @@ body {
 
 /* Optional: reduce flicker on some browsers */
 .section.is--home-hero img.absolute--img[image] {
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
 
@@ -232,7 +230,6 @@ body {
 }
 
 /* --------------------- ✅ Offer Slider (MOBILE) - SECOND SWIPER --------------------- */
-/* ✅ FIX iOS "blur flash" during swipe (CSS-only mitigation) */
 @media (max-width: 991px) {
   .offer-slider-btn {
     cursor: pointer;
@@ -247,37 +244,8 @@ body {
     transition: padding 0.5s ease-in-out;
     padding-left: 0;
     padding-right: 0;
-
-    /* ✅ stabilize iOS rendering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-    transform-style: preserve-3d;
   }
 
-  .swiper.is--offer-mobile .swiper-wrapper {
-    /* ✅ reduce re-raster / resampling */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-  }
-
-  .swiper.is--offer-mobile .swiper-slide {
-    width: 78.66vw;
-
-    /* ✅ keep each slide on its own layer */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-  }
-
-  /* Existing padding states */
   .swiper.is--offer-mobile.is--first {
     padding-left: 0;
     padding-right: 0;
@@ -293,20 +261,37 @@ body {
     padding-right: 0;
   }
 
-  /* ✅ stabilize images + overlay blur layer */
-  .swiper.is--offer-mobile .img--bg,
-  .swiper.is--offer-mobile .mask--blur {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
+  .swiper.is--offer-mobile .swiper-slide {
+    width: 78.66vw;
   }
+}
 
-  .swiper.is--offer-mobile .img--bg {
-    /* ✅ helps iOS keep the bitmap crisp while translating */
-    image-rendering: auto;
-  }
+/* --------------------- ✅ FIX iOS TEXT "BLINK" ON SLIDE NUMBERS --------------------- */
+/* Apply to your "1 / 6" numbers (both spans have class .slide--number) */
+.slide--number {
+  display: inline-block;
+
+  /* prevent micro reflow + GPU layer stability */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: contents;
+  text-rendering: geometricPrecision;
+
+  /* stop any implicit transitions/animations */
+  transition: none !important;
+  animation: none !important;
+
+  /* keep width stable when number changes (9 -> 10 etc.) */
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* If you have a wrapper around them, this helps isolate paints */
+.slide--numbers,
+.slide--numbers-wrapper,
+.slide--numbers-parent {
+  contain: layout paint;
 }
 
 /* --------------------- How It Works Scroll Animation Styles --------------------- */
