@@ -1701,46 +1701,43 @@ Webflow.push(function() {
 
 
 
-
-// ===================== ✅ FORCE RELOAD ON VIEWPORT SIZE CHANGE ===================== //
-// Reloads the page when the viewport size *really* changes.
-// - Debounced (avoids multiple reloads while resizing)
-// - Ignores tiny height-only changes (mobile address bar / browser UI)
-// - Prevents reload loops (sessionStorage guard)
+// ===================== ✅ FORCE RELOAD ON VIEWPORT SIZE CHANGE (REPEATABLE) ===================== //
+// - Reloads on real viewport size changes
+// - Debounced
+// - Ignores tiny height-only changes (mobile address bar)
+// - Uses cooldown to prevent reload loops, but keeps working afterwards
 
 (function () {
   const DEBOUNCE_MS = 250;
+  const COOLDOWN_MS = 1200;
 
-  // ignore tiny height changes (mobile chrome/safari UI expanding/collapsing)
-  const MIN_WIDTH_DELTA = 1;     // any real width change
-  const MIN_HEIGHT_DELTA = 80;   // height change must be meaningful
+  const MIN_WIDTH_DELTA = 1;   // any width change
+  const MIN_HEIGHT_DELTA = 80; // big height change only (avoid mobile UI chrome)
 
-  // loop protection
-  const LOCK_KEY = "__viewport_reload_lock__";
-  const LOCK_TTL = 1500; // ms
-
-  const now = () => Date.now();
-
-  // if we reloaded very recently, don't do it again
-  const lastLock = Number(sessionStorage.getItem(LOCK_KEY) || "0");
-  if (lastLock && now() - lastLock < LOCK_TTL) return;
+  const KEY_LAST_RELOAD = "__viewport_last_reload__";
 
   let lastW = window.innerWidth;
   let lastH = window.innerHeight;
 
-  let t = null;
+  let debounceId = null;
 
   function shouldReload(newW, newH) {
     const dw = Math.abs(newW - lastW);
     const dh = Math.abs(newH - lastH);
 
-    // width change -> always reload
     if (dw >= MIN_WIDTH_DELTA) return true;
-
-    // height change -> only if big (avoid mobile UI chrome)
     if (dh >= MIN_HEIGHT_DELTA) return true;
 
     return false;
+  }
+
+  function canReloadNow() {
+    const last = Number(sessionStorage.getItem(KEY_LAST_RELOAD) || "0");
+    return Date.now() - last >= COOLDOWN_MS;
+  }
+
+  function markReload() {
+    sessionStorage.setItem(KEY_LAST_RELOAD, String(Date.now()));
   }
 
   function onResize() {
@@ -1748,11 +1745,15 @@ Webflow.push(function() {
     const h = window.innerHeight;
 
     if (!shouldReload(w, h)) return;
+    if (!canReloadNow()) return;
 
-    clearTimeout(t);
-    t = setTimeout(() => {
-      sessionStorage.setItem(LOCK_KEY, String(now()));
-      // keep URL/params, but reload layout + recalculations
+    clearTimeout(debounceId);
+    debounceId = setTimeout(() => {
+      // update last known size (so we don't re-trigger from tiny subsequent events)
+      lastW = w;
+      lastH = h;
+
+      markReload();
       window.location.reload();
     }, DEBOUNCE_MS);
   }
