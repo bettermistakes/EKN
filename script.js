@@ -1698,3 +1698,65 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 Webflow.push(function() {
   $('.footer-year').text(new Date().getFullYear());
 });
+
+
+
+
+// ===================== ✅ FORCE RELOAD ON VIEWPORT SIZE CHANGE ===================== //
+// Reloads the page when the viewport size *really* changes.
+// - Debounced (avoids multiple reloads while resizing)
+// - Ignores tiny height-only changes (mobile address bar / browser UI)
+// - Prevents reload loops (sessionStorage guard)
+
+(function () {
+  const DEBOUNCE_MS = 250;
+
+  // ignore tiny height changes (mobile chrome/safari UI expanding/collapsing)
+  const MIN_WIDTH_DELTA = 1;     // any real width change
+  const MIN_HEIGHT_DELTA = 80;   // height change must be meaningful
+
+  // loop protection
+  const LOCK_KEY = "__viewport_reload_lock__";
+  const LOCK_TTL = 1500; // ms
+
+  const now = () => Date.now();
+
+  // if we reloaded very recently, don't do it again
+  const lastLock = Number(sessionStorage.getItem(LOCK_KEY) || "0");
+  if (lastLock && now() - lastLock < LOCK_TTL) return;
+
+  let lastW = window.innerWidth;
+  let lastH = window.innerHeight;
+
+  let t = null;
+
+  function shouldReload(newW, newH) {
+    const dw = Math.abs(newW - lastW);
+    const dh = Math.abs(newH - lastH);
+
+    // width change -> always reload
+    if (dw >= MIN_WIDTH_DELTA) return true;
+
+    // height change -> only if big (avoid mobile UI chrome)
+    if (dh >= MIN_HEIGHT_DELTA) return true;
+
+    return false;
+  }
+
+  function onResize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    if (!shouldReload(w, h)) return;
+
+    clearTimeout(t);
+    t = setTimeout(() => {
+      sessionStorage.setItem(LOCK_KEY, String(now()));
+      // keep URL/params, but reload layout + recalculations
+      window.location.reload();
+    }, DEBOUNCE_MS);
+  }
+
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", onResize);
+})();
