@@ -1690,3 +1690,11 @@ document.querySelectorAll(".hero--btn-wrapper .btn").forEach((btn) => {
 
   update();
 })();
+
+
+
+// ===================== FOOTER YEAR ===================== //
+
+Webflow.push(function() {
+  $('.footer-year').text(new Date().getFullYear());
+});
