@@ -653,54 +653,87 @@ $(window).on("load", function () {
   setTimeout(animateTextChange, 2000);
 })();
 
-// --------------------- ✅ HERO IMAGES SYNC WITH EYEBROW --------------------- //
-(function () {
+// --------------------- ✅ HERO VISUALS SYNC WITH EYEBROW (DIVs + VIDEOS) --------------------- //
+(() => {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = '.absolute--img[image]';
- 
-  const phrases = ["From field to office", "From data to decision", "From risk to reliability", "From reactive to proactive."];
+
+  // ✅ EXACTEMENT les mêmes phrases que ton script eyebrow (trim)
+  const phrases = [
+    "From field to office",
+    "From data to decision",
+    "From risk to reliability",
+    "From reactive to proactive",
+  ];
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
   if (!heroScope || !eyebrowEl) return;
 
-  const heroImgs = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR));
-  if (!heroImgs.length) return;
+  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR))
+    .sort((a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0));
 
-  heroImgs.forEach((img) => {
-    img.style.position = img.style.position || "absolute";
-    img.style.inset = img.style.inset || "0";
-    img.style.transition = img.style.transition || "opacity 450ms ease";
-  });
+  if (!visuals.length) return;
 
   function forceOpacity(el, value) {
     el.style.setProperty("opacity", String(value), "important");
   }
 
+  function playVideoInside(el) {
+    const v = el.querySelector("video");
+    if (!v) return;
+    v.muted = true;
+    v.playsInline = true;
+
+    // ✅ forcer relance quand ça redevient visible
+    const p = v.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  }
+
+  function pauseVideoInside(el) {
+    const v = el.querySelector("video");
+    if (!v) return;
+    try { v.pause(); } catch (_) {}
+  }
+
   function setActiveByValue(imageValue) {
-    heroImgs.forEach((img) => {
-      const isMatch = img.getAttribute("image") === String(imageValue);
-      img.classList.toggle("is-active", isMatch);
-      img.setAttribute("aria-hidden", isMatch ? "false" : "true");
-      forceOpacity(img, isMatch ? 1 : 0);
-      img.style.pointerEvents = isMatch ? "auto" : "none";
+    visuals.forEach((el) => {
+      const isMatch = el.getAttribute("image") === String(imageValue);
+
+      el.classList.toggle("is-active", isMatch);
+      el.setAttribute("aria-hidden", isMatch ? "false" : "true");
+      el.style.pointerEvents = isMatch ? "auto" : "none";
+      forceOpacity(el, isMatch ? 1 : 0);
+
+      // ✅ gérer les vidéos (sinon certaines restent figées / ne reprennent pas)
+      if (isMatch) playVideoInside(el);
+      else pauseVideoInside(el);
     });
   }
 
+  // ✅ normalise le label (enlève point final + espaces)
+  function normalizeLabel(s) {
+    return (s || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace(/[.。۔]+$/g, ""); // retire ponctuation finale
+  }
+
   function syncFromAriaLabel() {
-    const label = (eyebrowEl.getAttribute("aria-label") || "").trim();
+    const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
     if (!label) return;
+
     const idx = phrases.findIndex((p) => p === label);
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
+  // init
   syncFromAriaLabel();
-  setActiveByValue(1);
+  if (!heroScope.querySelector('.absolute--img.is-active')) setActiveByValue(1);
 
-  const observer = new MutationObserver(() => syncFromAriaLabel());
+  const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
-  observer.observe(eyebrowEl, { childList: true, subtree: true });
 })();
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
