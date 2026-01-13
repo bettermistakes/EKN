@@ -659,7 +659,6 @@ $(window).on("load", function () {
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = '.absolute--img[image]';
 
-  // ✅ mêmes phrases (trim) que ton script eyebrow
   const phrases = [
     "From field to office",
     "From data to decision",
@@ -676,84 +675,103 @@ $(window).on("load", function () {
   );
   if (!visuals.length) return;
 
-  const forceOpacity = (el, v) => el.style.setProperty("opacity", String(v), "important");
+  const DURATION = 0.45;
+  let currentValue = null;
+
+  function forceOpacity(el, value) {
+    el.style.setProperty("opacity", String(value), "important");
+  }
 
   function normalizeLabel(s) {
     return (s || "")
       .trim()
       .replace(/\s+/g, " ")
-      .replace(/[.。۔]+$/g, "");
+      .replace(/[.。।]+$/g, "");
   }
 
-  let activeValue = null;
-  let enforceUntil = 0;
-  let enforcing = false;
+  // ✅ Warm-up: start all videos once (hidden), then NEVER restart them
+  function warmUpAllVideosOnce() {
+    visuals.forEach((wrap) => {
+      const v = wrap.querySelector("video");
+      if (!v) return;
 
-  function applyState(value) {
-    const vStr = String(value);
+      v.muted = true;
+      v.playsInline = true;
+      v.preload = "auto";
 
-    visuals.forEach((el) => {
-      const isActive = el.getAttribute("image") === vStr;
-
-      el.classList.toggle("is-active", isActive);
-      el.setAttribute("aria-hidden", isActive ? "false" : "true");
-      el.style.pointerEvents = isActive ? "auto" : "none";
-
-      // IMPORTANT: on force l’opacité (Webflow/IX peuvent re-écrire inline au même moment)
-      forceOpacity(el, isActive ? 1 : 0);
+      // Try to start playback (muted autoplay usually allowed)
+      try {
+        const p = v.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch (_) {}
     });
   }
 
-  function startEnforceWindow() {
-    enforceUntil = performance.now() + 700; // ~0.7s: couvre le moment du switch/transition
-    if (enforcing) return;
-    enforcing = true;
+  function setInitialState() {
+    visuals.forEach((el) => {
+      el.classList.remove("is-active");
+      el.setAttribute("aria-hidden", "true");
+      el.style.pointerEvents = "none";
+      forceOpacity(el, 0);
+    });
 
-    const tick = () => {
-      if (performance.now() <= enforceUntil && activeValue != null) {
-        applyState(activeValue);
-        requestAnimationFrame(tick);
-      } else {
-        enforcing = false;
-      }
-    };
+    // pick initial: existing .is-active OR image="1"
+    const already = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
+    const startVal = already?.getAttribute("image") || "1";
+    setActiveByValue(startVal, true);
 
-    requestAnimationFrame(tick);
+    // warm up videos after initial paint
+    requestAnimationFrame(warmUpAllVideosOnce);
   }
 
-  function setActiveByValue(value) {
-    activeValue = Number(value) || 1;
+  function setActiveByValue(imageValue, immediate = false) {
+    const val = String(imageValue);
+    if (currentValue === val) return;
 
-    // 1) applique tout de suite (ça laisse la transition CSS d’opacité faire le “smooth”)
-    applyState(activeValue);
+    const next = visuals.find((el) => el.getAttribute("image") === val);
+    if (!next) return;
 
-    // 2) anti-glitch: ré-applique pendant un court window (bats les conflits Webflow/IX)
-    startEnforceWindow();
+    const prev = currentValue
+      ? visuals.find((el) => el.getAttribute("image") === currentValue)
+      : null;
+
+    currentValue = val;
+
+    // Update states
+    visuals.forEach((el) => {
+      const isTarget = el === next;
+      el.classList.toggle("is-active", isTarget);
+      el.setAttribute("aria-hidden", isTarget ? "false" : "true");
+      el.style.pointerEvents = isTarget ? "auto" : "none";
+    });
+
+    // Crossfade only (no play/pause)
+    if (typeof gsap !== "undefined" && !immediate) {
+      if (prev) gsap.to(prev, { opacity: 0, duration: DURATION, ease: "power2.out", overwrite: "auto" });
+      gsap.to(next, { opacity: 1, duration: DURATION, ease: "power2.out", overwrite: "auto" });
+    } else {
+      // immediate / no gsap fallback
+      if (prev) forceOpacity(prev, 0);
+      forceOpacity(next, 1);
+    }
   }
 
   function syncFromAriaLabel() {
     const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
     if (!label) return;
 
-    const idx = phrases.findIndex((p) => p === label);
+    const idx = phrases.indexOf(label);
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // ✅ INIT
-  // Force tout à 0, puis active selon (aria-label) ou sinon la première.
-  visuals.forEach((el) => {
-    el.classList.remove("is-active");
-    el.setAttribute("aria-hidden", "true");
-    el.style.pointerEvents = "none";
-    forceOpacity(el, 0);
-  });
-
+  // INIT
+  setInitialState();
   syncFromAriaLabel();
-  if (!activeValue) setActiveByValue(1);
 
   const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
 })();
+
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
 (function () {
