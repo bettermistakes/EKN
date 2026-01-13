@@ -683,10 +683,16 @@ $(window).on("load", function () {
   function playVideoInside(el) {
     const v = el.querySelector("video");
     if (!v) return;
+
     v.muted = true;
     v.playsInline = true;
+    v.preload = "auto";
 
-    // ✅ forcer relance quand ça redevient visible
+    // ✅ "warm frame" pour éviter flash / frame noir
+    try {
+      if (v.readyState < 2) v.currentTime = 0.01;
+    } catch (_) {}
+
     const p = v.play();
     if (p && typeof p.catch === "function") p.catch(() => {});
   }
@@ -697,27 +703,36 @@ $(window).on("load", function () {
     try { v.pause(); } catch (_) {}
   }
 
-  function setActiveByValue(imageValue) {
-    visuals.forEach((el) => {
-      const isMatch = el.getAttribute("image") === String(imageValue);
-
-      el.classList.toggle("is-active", isMatch);
-      el.setAttribute("aria-hidden", isMatch ? "false" : "true");
-      el.style.pointerEvents = isMatch ? "auto" : "none";
-      forceOpacity(el, isMatch ? 1 : 0);
-
-      // ✅ gérer les vidéos (sinon certaines restent figées / ne reprennent pas)
-      if (isMatch) playVideoInside(el);
-      else pauseVideoInside(el);
-    });
-  }
-
   // ✅ normalise le label (enlève point final + espaces)
   function normalizeLabel(s) {
     return (s || "")
       .trim()
       .replace(/\s+/g, " ")
       .replace(/[.。۔]+$/g, ""); // retire ponctuation finale
+  }
+
+  // ✅ swap en 2 étapes (évite le glitch 1 frame)
+  function setActiveByValue(imageValue) {
+    const target = visuals.find((el) => el.getAttribute("image") === String(imageValue));
+    if (!target) return;
+
+    // 1) Hide all first
+    visuals.forEach((el) => {
+      el.classList.remove("is-active");
+      el.setAttribute("aria-hidden", "true");
+      el.style.pointerEvents = "none";
+      forceOpacity(el, 0);
+      pauseVideoInside(el);
+    });
+
+    // 2) Next frame show target
+    requestAnimationFrame(() => {
+      target.classList.add("is-active");
+      target.setAttribute("aria-hidden", "false");
+      target.style.pointerEvents = "auto";
+      forceOpacity(target, 1);
+      playVideoInside(target);
+    });
   }
 
   function syncFromAriaLabel() {
@@ -728,9 +743,15 @@ $(window).on("load", function () {
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // init
-  syncFromAriaLabel();
-  if (!heroScope.querySelector('.absolute--img.is-active')) setActiveByValue(1);
+  // ✅ init: si une slide est déjà active, on la "relance" proprement
+  const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
+  if (alreadyActive) {
+    const val = alreadyActive.getAttribute("image");
+    setActiveByValue(val || 1);
+  } else {
+    syncFromAriaLabel();
+    if (!heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`)) setActiveByValue(1);
+  }
 
   const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
