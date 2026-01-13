@@ -659,7 +659,7 @@ $(window).on("load", function () {
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = '.absolute--img[image]';
 
-  // ✅ EXACTEMENT les mêmes phrases que ton script eyebrow (trim)
+  // ✅ mêmes phrases (trim) que ton script eyebrow
   const phrases = [
     "From field to office",
     "From data to decision",
@@ -671,68 +671,64 @@ $(window).on("load", function () {
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
   if (!heroScope || !eyebrowEl) return;
 
-  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR))
-    .sort((a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0));
-
+  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR)).sort(
+    (a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0)
+  );
   if (!visuals.length) return;
 
-  function forceOpacity(el, value) {
-    el.style.setProperty("opacity", String(value), "important");
-  }
+  const forceOpacity = (el, v) => el.style.setProperty("opacity", String(v), "important");
 
-  function playVideoInside(el) {
-    const v = el.querySelector("video");
-    if (!v) return;
-
-    v.muted = true;
-    v.playsInline = true;
-    v.preload = "auto";
-
-    // ✅ "warm frame" pour éviter flash / frame noir
-    try {
-      if (v.readyState < 2) v.currentTime = 0.01;
-    } catch (_) {}
-
-    const p = v.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
-  }
-
-  function pauseVideoInside(el) {
-    const v = el.querySelector("video");
-    if (!v) return;
-    try { v.pause(); } catch (_) {}
-  }
-
-  // ✅ normalise le label (enlève point final + espaces)
   function normalizeLabel(s) {
     return (s || "")
       .trim()
       .replace(/\s+/g, " ")
-      .replace(/[.。۔]+$/g, ""); // retire ponctuation finale
+      .replace(/[.。۔]+$/g, "");
   }
 
-  // ✅ swap en 2 étapes (évite le glitch 1 frame)
-  function setActiveByValue(imageValue) {
-    const target = visuals.find((el) => el.getAttribute("image") === String(imageValue));
-    if (!target) return;
+  let activeValue = null;
+  let enforceUntil = 0;
+  let enforcing = false;
 
-    // 1) Hide all first
+  function applyState(value) {
+    const vStr = String(value);
+
     visuals.forEach((el) => {
-      el.classList.remove("is-active");
-      el.setAttribute("aria-hidden", "true");
-      el.style.pointerEvents = "none";
-      forceOpacity(el, 0);
-      pauseVideoInside(el);
-    });
+      const isActive = el.getAttribute("image") === vStr;
 
-    // 2) Next frame show target
-    requestAnimationFrame(() => {
-      target.classList.add("is-active");
-      target.setAttribute("aria-hidden", "false");
-      target.style.pointerEvents = "auto";
-      forceOpacity(target, 1);
-      playVideoInside(target);
+      el.classList.toggle("is-active", isActive);
+      el.setAttribute("aria-hidden", isActive ? "false" : "true");
+      el.style.pointerEvents = isActive ? "auto" : "none";
+
+      // IMPORTANT: on force l’opacité (Webflow/IX peuvent re-écrire inline au même moment)
+      forceOpacity(el, isActive ? 1 : 0);
     });
+  }
+
+  function startEnforceWindow() {
+    enforceUntil = performance.now() + 700; // ~0.7s: couvre le moment du switch/transition
+    if (enforcing) return;
+    enforcing = true;
+
+    const tick = () => {
+      if (performance.now() <= enforceUntil && activeValue != null) {
+        applyState(activeValue);
+        requestAnimationFrame(tick);
+      } else {
+        enforcing = false;
+      }
+    };
+
+    requestAnimationFrame(tick);
+  }
+
+  function setActiveByValue(value) {
+    activeValue = Number(value) || 1;
+
+    // 1) applique tout de suite (ça laisse la transition CSS d’opacité faire le “smooth”)
+    applyState(activeValue);
+
+    // 2) anti-glitch: ré-applique pendant un court window (bats les conflits Webflow/IX)
+    startEnforceWindow();
   }
 
   function syncFromAriaLabel() {
@@ -743,15 +739,17 @@ $(window).on("load", function () {
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // ✅ init: si une slide est déjà active, on la "relance" proprement
-  const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
-  if (alreadyActive) {
-    const val = alreadyActive.getAttribute("image");
-    setActiveByValue(val || 1);
-  } else {
-    syncFromAriaLabel();
-    if (!heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`)) setActiveByValue(1);
-  }
+  // ✅ INIT
+  // Force tout à 0, puis active selon (aria-label) ou sinon la première.
+  visuals.forEach((el) => {
+    el.classList.remove("is-active");
+    el.setAttribute("aria-hidden", "true");
+    el.style.pointerEvents = "none";
+    forceOpacity(el, 0);
+  });
+
+  syncFromAriaLabel();
+  if (!activeValue) setActiveByValue(1);
 
   const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
