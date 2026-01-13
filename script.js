@@ -656,106 +656,45 @@ $(window).on("load", function () {
 // --------------------- ✅ HERO VISUALS SYNC WITH EYEBROW (DIVs + VIDEOS) --------------------- //
 (() => {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
-  const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = '.absolute--img[image]';
+  const ACTIVE_IMAGE = "1";
 
-  // ✅ EXACTEMENT les mêmes phrases que ton script eyebrow (trim)
-  const phrases = [
-    "From field to office",
-    "From data to decision",
-    "From risk to reliability",
-    "From reactive to proactive",
-  ];
+  const hero = document.querySelector(HERO_SCOPE_SELECTOR);
+  if (!hero) return;
 
-  const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
-  const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
-  if (!heroScope || !eyebrowEl) return;
-
-  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR))
-    .sort((a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0));
-
+  const visuals = Array.from(hero.querySelectorAll(VISUAL_SELECTOR));
   if (!visuals.length) return;
 
-  function forceOpacity(el, value) {
-    el.style.setProperty("opacity", String(value), "important");
-  }
+  // Force initial visual state (no load flash)
+  visuals.forEach((el) => {
+    const isFirst = el.getAttribute("image") === ACTIVE_IMAGE;
+    el.style.setProperty("opacity", isFirst ? "1" : "0", "important");
+    el.style.pointerEvents = isFirst ? "auto" : "none";
+    el.setAttribute("aria-hidden", isFirst ? "false" : "true");
+    el.style.willChange = "opacity";
+  });
 
-  function playVideoInside(el) {
-    const v = el.querySelector("video");
-    if (!v) return;
+  // Start all videos once, keep them playing (prevents jump on swap)
+  const videos = visuals
+    .map((el) => el.querySelector("video"))
+    .filter(Boolean);
 
-    v.muted = true;
-    v.playsInline = true;
-    v.preload = "auto";
-
-    // ✅ "warm frame" pour éviter flash / frame noir
+  videos.forEach((v) => {
     try {
-      if (v.readyState < 2) v.currentTime = 0.01;
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute("muted", "");
+      v.setAttribute("playsinline", "");
+      v.preload = "auto";
+
+      // Important: avoid "resume from poster then jump"
+      // -> load metadata asap
+      try { v.load(); } catch (_) {}
+
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
     } catch (_) {}
-
-    const p = v.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
-  }
-
-  function pauseVideoInside(el) {
-    const v = el.querySelector("video");
-    if (!v) return;
-    try { v.pause(); } catch (_) {}
-  }
-
-  // ✅ normalise le label (enlève point final + espaces)
-  function normalizeLabel(s) {
-    return (s || "")
-      .trim()
-      .replace(/\s+/g, " ")
-      .replace(/[.。۔]+$/g, ""); // retire ponctuation finale
-  }
-
-  // ✅ swap en 2 étapes (évite le glitch 1 frame)
-  function setActiveByValue(imageValue) {
-    const target = visuals.find((el) => el.getAttribute("image") === String(imageValue));
-    if (!target) return;
-
-    // 1) Hide all first
-    visuals.forEach((el) => {
-      el.classList.remove("is-active");
-      el.setAttribute("aria-hidden", "true");
-      el.style.pointerEvents = "none";
-      forceOpacity(el, 0);
-      pauseVideoInside(el);
-    });
-
-    // 2) Next frame show target
-    requestAnimationFrame(() => {
-      target.classList.add("is-active");
-      target.setAttribute("aria-hidden", "false");
-      target.style.pointerEvents = "auto";
-      forceOpacity(target, 1);
-      playVideoInside(target);
-    });
-  }
-
-  function syncFromAriaLabel() {
-    const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
-    if (!label) return;
-
-    const idx = phrases.findIndex((p) => p === label);
-    if (idx !== -1) setActiveByValue(idx + 1);
-  }
-
-  // ✅ init: si une slide est déjà active, on la "relance" proprement
-  const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
-  if (alreadyActive) {
-    const val = alreadyActive.getAttribute("image");
-    setActiveByValue(val || 1);
-  } else {
-    syncFromAriaLabel();
-    if (!heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`)) setActiveByValue(1);
-  }
-
-  const observer = new MutationObserver(syncFromAriaLabel);
-  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
-})();
+  });
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
 (function () {
@@ -1817,24 +1756,3 @@ Webflow.push(function() {
 })();
 
 
-// ===================== Video's Loading ===================== //
-
-
-(() => {
-  const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
-  const VISUAL_SELECTOR = '.absolute--img[image]';
-
-  const hero = document.querySelector(HERO_SCOPE_SELECTOR);
-  if (!hero) return;
-
-  const visuals = hero.querySelectorAll(VISUAL_SELECTOR);
-  if (!visuals.length) return;
-
-  visuals.forEach((el) => {
-    const isFirst = el.getAttribute("image") === "1";
-
-    el.style.setProperty("opacity", isFirst ? "1" : "0", "important");
-    el.style.pointerEvents = isFirst ? "auto" : "none";
-    el.setAttribute("aria-hidden", isFirst ? "false" : "true");
-  });
-})();
