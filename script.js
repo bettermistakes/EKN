@@ -1815,3 +1815,26 @@ Webflow.push(function() {
   window.addEventListener("resize", onResize);
   window.addEventListener("orientationchange", onResize);
 })();
+
+
+// ===================== Video's Loading ===================== //
+
+
+(() => {
+  const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
+  const VISUAL_SELECTOR = '.absolute--img[image]';
+
+  const hero = document.querySelector(HERO_SCOPE_SELECTOR);
+  if (!hero) return;
+
+  const visuals = hero.querySelectorAll(VISUAL_SELECTOR);
+  if (!visuals.length) return;
+
+  visuals.forEach((el) => {
+    const isFirst = el.getAttribute("image") === "1";
+
+    el.style.setProperty("opacity", isFirst ? "1" : "0", "important");
+    el.style.pointerEvents = isFirst ? "auto" : "none";
+    el.setAttribute("aria-hidden", isFirst ? "false" : "true");
+  });
+})();
