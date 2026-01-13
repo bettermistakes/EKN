@@ -665,7 +665,7 @@ $(window).on("load", function () {
   const visuals = Array.from(hero.querySelectorAll(VISUAL_SELECTOR));
   if (!visuals.length) return;
 
-  // Force initial visual state (no load flash)
+  // 1) Initial state: only first visible
   visuals.forEach((el) => {
     const isFirst = el.getAttribute("image") === ACTIVE_IMAGE;
     el.style.setProperty("opacity", isFirst ? "1" : "0", "important");
@@ -674,12 +674,11 @@ $(window).on("load", function () {
     el.style.willChange = "opacity";
   });
 
-  // Start all videos once, keep them playing (prevents jump on swap)
-  const videos = visuals
-    .map((el) => el.querySelector("video"))
-    .filter(Boolean);
+  // 2) Start all videos once (no pause later)
+  visuals.forEach((el) => {
+    const v = el.querySelector("video");
+    if (!v) return;
 
-  videos.forEach((v) => {
     try {
       v.muted = true;
       v.playsInline = true;
@@ -687,14 +686,14 @@ $(window).on("load", function () {
       v.setAttribute("playsinline", "");
       v.preload = "auto";
 
-      // Important: avoid "resume from poster then jump"
-      // -> load metadata asap
+      // load metadata early
       try { v.load(); } catch (_) {}
 
       const p = v.play();
       if (p && typeof p.catch === "function") p.catch(() => {});
     } catch (_) {}
   });
+})();
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
 (function () {
