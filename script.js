@@ -657,8 +657,8 @@ $(window).on("load", function () {
 (function () {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
-  const VISUAL_SELECTOR = 'img.absolute--img[image]';
-
+  const VISUAL_SELECTOR = '.absolute--img[image]';
+ 
   const phrases = ["From field to office", "From data to decision", "From risk to reliability", "From reactive to proactive."];
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
