@@ -659,7 +659,6 @@ $(window).on("load", function () {
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
   const VISUAL_SELECTOR = '.absolute--img[image]';
 
-  // Must match eyebrow aria-label (trim)
   const phrases = [
     "From field to office",
     "From data to decision",
@@ -670,49 +669,111 @@ $(window).on("load", function () {
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
   if (!heroScope || !eyebrowEl) return;
+  if (typeof gsap === "undefined") return;
 
   const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR)).sort(
     (a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0)
   );
   if (!visuals.length) return;
 
-  // ---------- helpers ----------
+  const normalizeLabel = (s) =>
+    (s || "").trim().replace(/\s+/g, " ").replace(/[.。۔]+$/g, "");
+
   const forceOpacity = (el, value) => el.style.setProperty("opacity", String(value), "important");
 
-  const normalizeLabel = (s) =>
-    (s || "")
-      .trim()
-      .replace(/\s+/g, " ")
-      .replace(/[.。۔]+$/g, "");
-
-  // ---------- hard init: hide all to avoid load flash ----------
-  function hardInit() {
-    visuals.forEach((el) => {
-      el.classList.remove("is-active");
-      el.setAttribute("aria-hidden", "true");
-      el.style.pointerEvents = "none";
-      forceOpacity(el, 0);
-    });
+  function getVideo(el) {
+    return el ? el.querySelector("video") : null;
   }
 
-  // ---------- show only one ----------
+  function pauseVideo(el) {
+    const v = getVideo(el);
+    if (!v) return;
+    try { v.pause(); } catch (_) {}
+  }
+
+  function playFromStart(el) {
+    const v = getVideo(el);
+    if (!v) return;
+
+    v.muted = true;
+    v.playsInline = true;
+
+    // reset start (prevents mid-loop / random frame)
+    try { v.currentTime = 0.001; } catch (_) {}
+
+    const p = v.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  }
+
+  // Wait until the new video has a rendered frame, then fade in (prevents flash/jump)
+  function waitFirstFrame(el, cb) {
+    const v = getVideo(el);
+    if (!v) return cb();
+
+    // If already has data, proceed fast
+    if (v.readyState >= 2) return cb();
+
+    const onReady = () => {
+      v.removeEventListener("canplay", onReady);
+      cb();
+    };
+    v.addEventListener("canplay", onReady, { once: true });
+  }
+
+  // init: hide all, keep only first visible
+  let activeEl = null;
+  visuals.forEach((el) => {
+    el.classList.remove("is-active");
+    el.setAttribute("aria-hidden", "true");
+    el.style.pointerEvents = "none";
+    gsap.set(el, { autoAlpha: 0 }); // opacity + visibility
+    forceOpacity(el, 0);
+    pauseVideo(el);
+  });
+
   function setActiveByValue(imageValue) {
-    const target = visuals.find((el) => el.getAttribute("image") === String(imageValue));
-    if (!target) return;
+    const nextEl = visuals.find((el) => el.getAttribute("image") === String(imageValue));
+    if (!nextEl || nextEl === activeEl) return;
 
-    // one-frame swap to avoid 1-frame overlap
-    visuals.forEach((el) => {
-      el.classList.remove("is-active");
-      el.setAttribute("aria-hidden", "true");
-      el.style.pointerEvents = "none";
-      forceOpacity(el, 0);
-    });
+    const prevEl = activeEl;
 
-    requestAnimationFrame(() => {
-      target.classList.add("is-active");
-      target.setAttribute("aria-hidden", "false");
-      target.style.pointerEvents = "auto";
-      forceOpacity(target, 1);
+    // Prepare next (still hidden)
+    nextEl.classList.add("is-active");
+    nextEl.setAttribute("aria-hidden", "false");
+    nextEl.style.pointerEvents = "auto";
+    gsap.set(nextEl, { autoAlpha: 0 });
+    forceOpacity(nextEl, 0);
+
+    // Start next video from beginning BEFORE showing it
+    playFromStart(nextEl);
+
+    // Fade only after next has something to display
+    waitFirstFrame(nextEl, () => {
+      gsap.to(nextEl, {
+        autoAlpha: 1,
+        duration: 0.45,
+        ease: "power2.out",
+        overwrite: true,
+        onUpdate: () => forceOpacity(nextEl, 1),
+      });
+
+      if (prevEl) {
+        gsap.to(prevEl, {
+          autoAlpha: 0,
+          duration: 0.45,
+          ease: "power2.out",
+          overwrite: true,
+          onUpdate: () => forceOpacity(prevEl, 0),
+          onComplete: () => {
+            prevEl.classList.remove("is-active");
+            prevEl.setAttribute("aria-hidden", "true");
+            prevEl.style.pointerEvents = "none";
+            pauseVideo(prevEl); // pause AFTER fadeout (no flash)
+          },
+        });
+      }
+
+      activeEl = nextEl;
     });
   }
 
@@ -724,18 +785,10 @@ $(window).on("load", function () {
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // INIT
-  hardInit();
+  // Initial active
+  const preActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`) || visuals[0];
+  setActiveByValue(preActive.getAttribute("image") || 1);
 
-  // If Webflow already set one active, keep it — otherwise fallback to phrase / 1
-  const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
-  if (alreadyActive) setActiveByValue(alreadyActive.getAttribute("image") || 1);
-  else {
-    syncFromAriaLabel();
-    if (!heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`)) setActiveByValue(1);
-  }
-
-  // Observe eyebrow changes (your SplitText script updates aria-label)
   const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
 })();
