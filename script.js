@@ -670,12 +670,13 @@ $(window).on("load", function () {
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
   if (!heroScope || !eyebrowEl) return;
 
-  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR))
-    .sort((a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0));
-
+  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR)).sort(
+    (a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0)
+  );
   if (!visuals.length) return;
 
-  const DURATION_MS = 450; // match your inline transition: opacity 450ms
+  const DURATION = 0.45;
+  let currentValue = null;
 
   function forceOpacity(el, value) {
     el.style.setProperty("opacity", String(value), "important");
@@ -685,73 +686,90 @@ $(window).on("load", function () {
     return (s || "")
       .trim()
       .replace(/\s+/g, " ")
-      .replace(/[.。۔]+$/g, "");
+      .replace(/[.。।]+$/g, "");
   }
 
-  let lastValue = null;
-  let raf1 = null;
-  let raf2 = null;
+  // ✅ Warm-up: start all videos once (hidden), then NEVER restart them
+  function warmUpAllVideosOnce() {
+    visuals.forEach((wrap) => {
+      const v = wrap.querySelector("video");
+      if (!v) return;
 
-  function setActiveByValue(imageValue) {
-    const val = String(imageValue);
-    if (val === lastValue) return;
-    lastValue = val;
+      v.muted = true;
+      v.playsInline = true;
+      v.preload = "auto";
 
-    visuals.forEach((el) => {
-      const isMatch = el.getAttribute("image") === val;
-
-      el.classList.toggle("is-active", isMatch);
-      el.setAttribute("aria-hidden", isMatch ? "false" : "true");
-      el.style.pointerEvents = isMatch ? "auto" : "none";
-
-      // Only visual swap — do NOT pause/play videos inside.
-      forceOpacity(el, isMatch ? 1 : 0);
+      // Try to start playback (muted autoplay usually allowed)
+      try {
+        const p = v.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch (_) {}
     });
   }
 
-  function syncFromAriaLabelStable() {
-    // debounce the read: we wait 2 rAF to avoid any transient state during SplitText DOM swaps
-    if (raf1) cancelAnimationFrame(raf1);
-    if (raf2) cancelAnimationFrame(raf2);
-
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
-        if (!label) return;
-
-        const idx = phrases.indexOf(label);
-        if (idx !== -1) setActiveByValue(idx + 1);
-      });
-    });
-  }
-
-  // Init: force a clean initial state (only first visible if nothing is active)
-  const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
-  if (alreadyActive) {
-    setActiveByValue(alreadyActive.getAttribute("image") || 1);
-  } else {
-    // Force all to 0 first, then show 1 (prevents “random visible” on load)
+  function setInitialState() {
     visuals.forEach((el) => {
       el.classList.remove("is-active");
       el.setAttribute("aria-hidden", "true");
       el.style.pointerEvents = "none";
       forceOpacity(el, 0);
     });
-    setActiveByValue(1);
+
+    // pick initial: existing .is-active OR image="1"
+    const already = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
+    const startVal = already?.getAttribute("image") || "1";
+    setActiveByValue(startVal, true);
+
+    // warm up videos after initial paint
+    requestAnimationFrame(warmUpAllVideosOnce);
   }
 
-  // Keep in sync with eyebrow label
-  syncFromAriaLabelStable();
+  function setActiveByValue(imageValue, immediate = false) {
+    const val = String(imageValue);
+    if (currentValue === val) return;
 
-  const observer = new MutationObserver(syncFromAriaLabelStable);
-  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+    const next = visuals.find((el) => el.getAttribute("image") === val);
+    if (!next) return;
 
-  // Extra: ensure the opacity transition duration matches (in case inline is missing somewhere)
-  visuals.forEach((el) => {
-    if (!el.style.transition) {
-      el.style.transition = `opacity ${DURATION_MS}ms`;
+    const prev = currentValue
+      ? visuals.find((el) => el.getAttribute("image") === currentValue)
+      : null;
+
+    currentValue = val;
+
+    // Update states
+    visuals.forEach((el) => {
+      const isTarget = el === next;
+      el.classList.toggle("is-active", isTarget);
+      el.setAttribute("aria-hidden", isTarget ? "false" : "true");
+      el.style.pointerEvents = isTarget ? "auto" : "none";
+    });
+
+    // Crossfade only (no play/pause)
+    if (typeof gsap !== "undefined" && !immediate) {
+      if (prev) gsap.to(prev, { opacity: 0, duration: DURATION, ease: "power2.out", overwrite: "auto" });
+      gsap.to(next, { opacity: 1, duration: DURATION, ease: "power2.out", overwrite: "auto" });
+    } else {
+      // immediate / no gsap fallback
+      if (prev) forceOpacity(prev, 0);
+      forceOpacity(next, 1);
     }
-  });
+  }
+
+  function syncFromAriaLabel() {
+    const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
+    if (!label) return;
+
+    const idx = phrases.indexOf(label);
+    if (idx !== -1) setActiveByValue(idx + 1);
+  }
+
+  // INIT
+  setInitialState();
+  syncFromAriaLabel();
+
+  const observer = new MutationObserver(syncFromAriaLabel);
+  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
 })();
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
