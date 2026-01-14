@@ -668,8 +668,7 @@ $(window).on("load", function () {
 
   const heroScope = document.querySelector(HERO_SCOPE_SELECTOR);
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
-  if (!heroScope || !eyebrowEl) return;
-  if (typeof gsap === "undefined") return;
+  if (!heroScope || !eyebrowEl || typeof gsap === "undefined") return;
 
   const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR)).sort(
     (a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0)
@@ -679,7 +678,8 @@ $(window).on("load", function () {
   const normalizeLabel = (s) =>
     (s || "").trim().replace(/\s+/g, " ").replace(/[.。۔]+$/g, "");
 
-  const forceOpacity = (el, value) => el.style.setProperty("opacity", String(value), "important");
+  const forceOpacity = (el, v) =>
+    el.style.setProperty("opacity", String(v), "important");
 
   function getVideo(el) {
     return el ? el.querySelector("video") : null;
@@ -697,20 +697,17 @@ $(window).on("load", function () {
 
     v.muted = true;
     v.playsInline = true;
+    v.setAttribute("playsinline", "");
 
-    // reset start (prevents mid-loop / random frame)
     try { v.currentTime = 0.001; } catch (_) {}
 
     const p = v.play();
     if (p && typeof p.catch === "function") p.catch(() => {});
   }
 
-  // Wait until the new video has a rendered frame, then fade in (prevents flash/jump)
   function waitFirstFrame(el, cb) {
     const v = getVideo(el);
     if (!v) return cb();
-
-    // If already has data, proceed fast
     if (v.readyState >= 2) return cb();
 
     const onReady = () => {
@@ -720,47 +717,55 @@ $(window).on("load", function () {
     v.addEventListener("canplay", onReady, { once: true });
   }
 
-  // init: hide all, keep only first visible
+  // ---------- INIT ----------
   let activeEl = null;
+
   visuals.forEach((el) => {
     el.classList.remove("is-active");
     el.setAttribute("aria-hidden", "true");
     el.style.pointerEvents = "none";
-    gsap.set(el, { autoAlpha: 0 }); // opacity + visibility
+    gsap.set(el, { autoAlpha: 0 });
     forceOpacity(el, 0);
     pauseVideo(el);
   });
 
   function setActiveByValue(imageValue) {
-    const nextEl = visuals.find((el) => el.getAttribute("image") === String(imageValue));
+    const nextEl = visuals.find(
+      (el) => el.getAttribute("image") === String(imageValue)
+    );
     if (!nextEl || nextEl === activeEl) return;
 
     const prevEl = activeEl;
 
-    // Prepare next (still hidden)
+    // Préparer la nouvelle vidéo
     nextEl.classList.add("is-active");
     nextEl.setAttribute("aria-hidden", "false");
     nextEl.style.pointerEvents = "auto";
-    gsap.set(nextEl, { autoAlpha: 0 });
+    gsap.set(nextEl, { autoAlpha: 0, scale: 1.01, filter: "blur(10px)" });
     forceOpacity(nextEl, 0);
 
-    // Start next video from beginning BEFORE showing it
     playFromStart(nextEl);
 
-    // Fade only after next has something to display
     waitFirstFrame(nextEl, () => {
+      // Fade IN
       gsap.to(nextEl, {
         autoAlpha: 1,
-        duration: 0.45,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 0.6,
         ease: "power2.out",
         overwrite: true,
         onUpdate: () => forceOpacity(nextEl, 1),
+        clearProps: "filter",
       });
 
+      // Fade OUT précédent
       if (prevEl) {
         gsap.to(prevEl, {
           autoAlpha: 0,
-          duration: 0.45,
+          scale: 1.01,
+          filter: "blur(10px)",
+          duration: 0.6,
           ease: "power2.out",
           overwrite: true,
           onUpdate: () => forceOpacity(prevEl, 0),
@@ -768,7 +773,8 @@ $(window).on("load", function () {
             prevEl.classList.remove("is-active");
             prevEl.setAttribute("aria-hidden", "true");
             prevEl.style.pointerEvents = "none";
-            pauseVideo(prevEl); // pause AFTER fadeout (no flash)
+            pauseVideo(prevEl);
+            gsap.set(prevEl, { scale: 1, clearProps: "filter" });
           },
         });
       }
@@ -785,12 +791,16 @@ $(window).on("load", function () {
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // Initial active
-  const preActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`) || visuals[0];
+  // ---------- START ----------
+  const preActive =
+    heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`) || visuals[0];
   setActiveByValue(preActive.getAttribute("image") || 1);
 
   const observer = new MutationObserver(syncFromAriaLabel);
-  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+  observer.observe(eyebrowEl, {
+    attributes: true,
+    attributeFilter: ["aria-label"],
+  });
 })();
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
