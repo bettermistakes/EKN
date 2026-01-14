@@ -670,36 +670,15 @@ $(window).on("load", function () {
   const eyebrowEl = document.querySelector(EYEBROW_SELECTOR);
   if (!heroScope || !eyebrowEl) return;
 
-  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR)).sort(
-    (a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0)
-  );
+  const visuals = Array.from(heroScope.querySelectorAll(VISUAL_SELECTOR))
+    .sort((a, b) => (+a.getAttribute("image") || 0) - (+b.getAttribute("image") || 0));
+
   if (!visuals.length) return;
 
-  // One-time: ensure video attributes are set (NO play/pause/seek)
-  visuals.forEach((el) => {
-    const v = el.querySelector("video");
-    if (!v) return;
-    v.muted = true;
-    v.playsInline = true;
-    v.setAttribute("playsinline", "");
-    v.preload = "auto";
-  });
+  const DURATION_MS = 450; // match your inline transition: opacity 450ms
 
   function forceOpacity(el, value) {
     el.style.setProperty("opacity", String(value), "important");
-  }
-
-  function setActiveByValue(imageValue) {
-    const targetValue = String(imageValue);
-
-    visuals.forEach((el) => {
-      const isMatch = el.getAttribute("image") === targetValue;
-
-      el.classList.toggle("is-active", isMatch);
-      el.setAttribute("aria-hidden", isMatch ? "false" : "true");
-      el.style.pointerEvents = isMatch ? "auto" : "none";
-      forceOpacity(el, isMatch ? 1 : 0);
-    });
   }
 
   function normalizeLabel(s) {
@@ -709,24 +688,70 @@ $(window).on("load", function () {
       .replace(/[.。۔]+$/g, "");
   }
 
-  function syncFromAriaLabel() {
-    const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
-    if (!label) return;
+  let lastValue = null;
+  let raf1 = null;
+  let raf2 = null;
 
-    const idx = phrases.findIndex((p) => p === label);
-    if (idx !== -1) setActiveByValue(idx + 1);
+  function setActiveByValue(imageValue) {
+    const val = String(imageValue);
+    if (val === lastValue) return;
+    lastValue = val;
+
+    visuals.forEach((el) => {
+      const isMatch = el.getAttribute("image") === val;
+
+      el.classList.toggle("is-active", isMatch);
+      el.setAttribute("aria-hidden", isMatch ? "false" : "true");
+      el.style.pointerEvents = isMatch ? "auto" : "none";
+
+      // Only visual swap — do NOT pause/play videos inside.
+      forceOpacity(el, isMatch ? 1 : 0);
+    });
   }
 
-  // Init: si rien n'est actif => 1
+  function syncFromAriaLabelStable() {
+    // debounce the read: we wait 2 rAF to avoid any transient state during SplitText DOM swaps
+    if (raf1) cancelAnimationFrame(raf1);
+    if (raf2) cancelAnimationFrame(raf2);
+
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
+        if (!label) return;
+
+        const idx = phrases.indexOf(label);
+        if (idx !== -1) setActiveByValue(idx + 1);
+      });
+    });
+  }
+
+  // Init: force a clean initial state (only first visible if nothing is active)
   const alreadyActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`);
-  if (alreadyActive) setActiveByValue(alreadyActive.getAttribute("image") || 1);
-  else {
-    syncFromAriaLabel();
-    if (!heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`)) setActiveByValue(1);
+  if (alreadyActive) {
+    setActiveByValue(alreadyActive.getAttribute("image") || 1);
+  } else {
+    // Force all to 0 first, then show 1 (prevents “random visible” on load)
+    visuals.forEach((el) => {
+      el.classList.remove("is-active");
+      el.setAttribute("aria-hidden", "true");
+      el.style.pointerEvents = "none";
+      forceOpacity(el, 0);
+    });
+    setActiveByValue(1);
   }
 
-  const observer = new MutationObserver(syncFromAriaLabel);
+  // Keep in sync with eyebrow label
+  syncFromAriaLabelStable();
+
+  const observer = new MutationObserver(syncFromAriaLabelStable);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
+
+  // Extra: ensure the opacity transition duration matches (in case inline is missing somewhere)
+  visuals.forEach((el) => {
+    if (!el.style.transition) {
+      el.style.transition = `opacity ${DURATION_MS}ms`;
+    }
+  });
 })();
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
