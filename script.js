@@ -654,6 +654,7 @@ $(window).on("load", function () {
 })();
 
 // --------------------- ✅ HERO VISUALS SYNC WITH EYEBROW (DIVs + VIDEOS) --------------------- //
+// --------------------- ✅ HERO VISUALS SYNC WITH EYEBROW (DIVs + VIDEOS) --------------------- //
 (() => {
   const HERO_SCOPE_SELECTOR = ".section.is--home-hero";
   const EYEBROW_SELECTOR = '[animation="eyebrow"]';
@@ -680,7 +681,7 @@ $(window).on("load", function () {
   const IS_SAFARI = /Safari/i.test(ua) && !/Chrome|CriOS|Edg|OPR/i.test(ua);
 
   const normalizeLabel = (s) =>
-    (s || "").trim().replace(/\s+/g, " ").replace(/[.。۔]+$/g, "");
+    (s || "").trim().replace(/\s+/g, " ").replace(/[.。।]+$/g, "");
 
   const forceOpacity = (el, v) =>
     el.style.setProperty("opacity", String(v), "important");
@@ -702,7 +703,9 @@ $(window).on("load", function () {
   function pauseVideo(el) {
     const v = getVideo(el);
     if (!v) return;
-    try { v.pause(); } catch (_) {}
+    try {
+      v.pause();
+    } catch (_) {}
   }
 
   // Prime: load + tiny seek to force decoding (Safari first-show freeze fix)
@@ -710,7 +713,9 @@ $(window).on("load", function () {
     if (!v || v.__primed) return;
     v.__primed = true;
 
-    try { v.load(); } catch (_) {}
+    try {
+      v.load();
+    } catch (_) {}
 
     const doSeek = () => {
       try {
@@ -725,7 +730,9 @@ $(window).on("load", function () {
 
   function playFromStart(v) {
     if (!v) return;
-    try { v.currentTime = 0.001; } catch (_) {}
+    try {
+      v.currentTime = 0.001;
+    } catch (_) {}
 
     const p = v.play();
     if (p && typeof p.catch === "function") {
@@ -788,7 +795,10 @@ $(window).on("load", function () {
     // Important: avoid display:none (Safari sometimes freezes)
     gsap.set(el, { autoAlpha: 0 });
 
-    forceOpacity(el, 0);
+    // lock opacity only for non-safari (safari needs gsap to control it smoothly)
+    if (!IS_SAFARI) forceOpacity(el, 0);
+    else el.style.removeProperty("opacity");
+
     pauseVideo(el);
   });
 
@@ -803,14 +813,14 @@ $(window).on("load", function () {
     nextEl.setAttribute("aria-hidden", "false");
     nextEl.style.pointerEvents = "auto";
 
-    // SAFARI: no blur filter (common freeze trigger)
+    // SAFARI: keep transition (no blur filter), and don't force opacity with !important
     if (IS_SAFARI) {
       gsap.set(nextEl, { autoAlpha: 0 });
+      nextEl.style.removeProperty("opacity"); // ✅ unlock
     } else {
       gsap.set(nextEl, { autoAlpha: 0, scale: 1.01, filter: "blur(10px)" });
+      forceOpacity(nextEl, 0);
     }
-
-    forceOpacity(nextEl, 0);
 
     if (nextV) {
       setupVideoTag(nextV);
@@ -826,7 +836,6 @@ $(window).on("load", function () {
           duration: 0.6,
           ease: "power2.out",
           overwrite: true,
-          onUpdate: () => forceOpacity(nextEl, 1),
         });
       } else {
         gsap.to(nextEl, {
@@ -846,12 +855,12 @@ $(window).on("load", function () {
         const prevV = getVideo(prevEl);
 
         if (IS_SAFARI) {
+          prevEl.style.removeProperty("opacity"); // ✅ unlock
           gsap.to(prevEl, {
             autoAlpha: 0,
             duration: 0.6,
             ease: "power2.out",
             overwrite: true,
-            onUpdate: () => forceOpacity(prevEl, 0),
             onComplete: () => {
               prevEl.classList.remove("is-active");
               prevEl.setAttribute("aria-hidden", "true");
@@ -905,6 +914,7 @@ $(window).on("load", function () {
   const observer = new MutationObserver(syncFromAriaLabel);
   observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
 })();
+
 
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
