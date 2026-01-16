@@ -675,14 +675,28 @@ $(window).on("load", function () {
   );
   if (!visuals.length) return;
 
+  // Safari detect (simple + safe)
+  const ua = navigator.userAgent;
+  const IS_SAFARI = /Safari/i.test(ua) && !/Chrome|CriOS|Edg|OPR/i.test(ua);
+
   const normalizeLabel = (s) =>
     (s || "").trim().replace(/\s+/g, " ").replace(/[.。۔]+$/g, "");
 
   const forceOpacity = (el, v) =>
     el.style.setProperty("opacity", String(v), "important");
 
-  function getVideo(el) {
-    return el ? el.querySelector("video") : null;
+  const getVideo = (el) => (el ? el.querySelector("video") : null);
+
+  function setupVideoTag(v) {
+    if (!v) return;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute("muted", "");
+    v.setAttribute("playsinline", "");
+    v.preload = "auto";
+    // helps Safari compositing
+    v.style.transform = "translateZ(0)";
+    v.style.backfaceVisibility = "hidden";
   }
 
   function pauseVideo(el) {
@@ -691,92 +705,178 @@ $(window).on("load", function () {
     try { v.pause(); } catch (_) {}
   }
 
-  function playFromStart(el) {
-    const v = getVideo(el);
+  // Prime: load + tiny seek to force decoding (Safari first-show freeze fix)
+  function primeVideo(v) {
+    if (!v || v.__primed) return;
+    v.__primed = true;
+
+    try { v.load(); } catch (_) {}
+
+    const doSeek = () => {
+      try {
+        // tiny seek forces decoding without visible jump
+        v.currentTime = 0.001;
+      } catch (_) {}
+    };
+
+    if (v.readyState >= 1) doSeek();
+    else v.addEventListener("loadedmetadata", doSeek, { once: true });
+  }
+
+  function playFromStart(v) {
     if (!v) return;
-
-    v.muted = true;
-    v.playsInline = true;
-    v.setAttribute("playsinline", "");
-
     try { v.currentTime = 0.001; } catch (_) {}
 
     const p = v.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        // If Safari blocks play until user gesture, retry on first interaction
+        if (v.__needsGesture) return;
+        v.__needsGesture = true;
+
+        const retry = () => {
+          try {
+            v.__needsGesture = false;
+            v.play().catch(() => {});
+          } catch (_) {}
+          window.removeEventListener("pointerdown", retry, true);
+          window.removeEventListener("touchstart", retry, true);
+        };
+
+        window.addEventListener("pointerdown", retry, true);
+        window.addEventListener("touchstart", retry, true);
+      });
+    }
   }
 
-  function waitFirstFrame(el, cb) {
-    const v = getVideo(el);
+  // Wait for real playback (Safari may "canplay" but still freeze visually)
+  function waitPlaying(v, cb) {
     if (!v) return cb();
-    if (v.readyState >= 2) return cb();
 
-    const onReady = () => {
-      v.removeEventListener("canplay", onReady);
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      v.removeEventListener("playing", finish);
+      v.removeEventListener("timeupdate", finish);
       cb();
     };
-    v.addEventListener("canplay", onReady, { once: true });
+
+    // If it's already moving
+    if (!v.paused && v.readyState >= 2) return cb();
+
+    v.addEventListener("playing", finish, { once: true });
+    // fallback: timeupdate means frames are advancing
+    v.addEventListener("timeupdate", finish, { once: true });
+
+    // safety timeout
+    setTimeout(finish, 600);
   }
 
-  // ---------- INIT ----------
+  // ---------- INIT STATES ----------
   let activeEl = null;
 
   visuals.forEach((el) => {
+    const v = getVideo(el);
+    if (v) setupVideoTag(v);
+    if (v) primeVideo(v);
+
     el.classList.remove("is-active");
     el.setAttribute("aria-hidden", "true");
     el.style.pointerEvents = "none";
+
+    // Important: avoid display:none (Safari sometimes freezes)
     gsap.set(el, { autoAlpha: 0 });
+
     forceOpacity(el, 0);
     pauseVideo(el);
   });
 
   function setActiveByValue(imageValue) {
-    const nextEl = visuals.find(
-      (el) => el.getAttribute("image") === String(imageValue)
-    );
+    const nextEl = visuals.find((el) => el.getAttribute("image") === String(imageValue));
     if (!nextEl || nextEl === activeEl) return;
 
     const prevEl = activeEl;
+    const nextV = getVideo(nextEl);
 
-    // Préparer la nouvelle vidéo
     nextEl.classList.add("is-active");
     nextEl.setAttribute("aria-hidden", "false");
     nextEl.style.pointerEvents = "auto";
-    gsap.set(nextEl, { autoAlpha: 0, scale: 1.01, filter: "blur(10px)" });
+
+    // SAFARI: no blur filter (common freeze trigger)
+    if (IS_SAFARI) {
+      gsap.set(nextEl, { autoAlpha: 0 });
+    } else {
+      gsap.set(nextEl, { autoAlpha: 0, scale: 1.01, filter: "blur(10px)" });
+    }
+
     forceOpacity(nextEl, 0);
 
-    playFromStart(nextEl);
+    if (nextV) {
+      setupVideoTag(nextV);
+      primeVideo(nextV);
+      playFromStart(nextV);
+    }
 
-    waitFirstFrame(nextEl, () => {
+    waitPlaying(nextV, () => {
       // Fade IN
-      gsap.to(nextEl, {
-        autoAlpha: 1,
-        scale: 1,
-        filter: "blur(0px)",
-        duration: 0.6,
-        ease: "power2.out",
-        overwrite: true,
-        onUpdate: () => forceOpacity(nextEl, 1),
-        clearProps: "filter",
-      });
-
-      // Fade OUT précédent
-      if (prevEl) {
-        gsap.to(prevEl, {
-          autoAlpha: 0,
-          scale: 1.01,
-          filter: "blur(10px)",
+      if (IS_SAFARI) {
+        gsap.to(nextEl, {
+          autoAlpha: 1,
           duration: 0.6,
           ease: "power2.out",
           overwrite: true,
-          onUpdate: () => forceOpacity(prevEl, 0),
-          onComplete: () => {
-            prevEl.classList.remove("is-active");
-            prevEl.setAttribute("aria-hidden", "true");
-            prevEl.style.pointerEvents = "none";
-            pauseVideo(prevEl);
-            gsap.set(prevEl, { scale: 1, clearProps: "filter" });
-          },
+          onUpdate: () => forceOpacity(nextEl, 1),
         });
+      } else {
+        gsap.to(nextEl, {
+          autoAlpha: 1,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.6,
+          ease: "power2.out",
+          overwrite: true,
+          onUpdate: () => forceOpacity(nextEl, 1),
+          clearProps: "filter",
+        });
+      }
+
+      // Fade OUT prev
+      if (prevEl) {
+        const prevV = getVideo(prevEl);
+
+        if (IS_SAFARI) {
+          gsap.to(prevEl, {
+            autoAlpha: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            overwrite: true,
+            onUpdate: () => forceOpacity(prevEl, 0),
+            onComplete: () => {
+              prevEl.classList.remove("is-active");
+              prevEl.setAttribute("aria-hidden", "true");
+              prevEl.style.pointerEvents = "none";
+              if (prevV) pauseVideo(prevEl);
+            },
+          });
+        } else {
+          gsap.to(prevEl, {
+            autoAlpha: 0,
+            scale: 1.01,
+            filter: "blur(10px)",
+            duration: 0.6,
+            ease: "power2.out",
+            overwrite: true,
+            onUpdate: () => forceOpacity(prevEl, 0),
+            onComplete: () => {
+              prevEl.classList.remove("is-active");
+              prevEl.setAttribute("aria-hidden", "true");
+              prevEl.style.pointerEvents = "none";
+              if (prevV) pauseVideo(prevEl);
+              gsap.set(prevEl, { scale: 1, clearProps: "filter" });
+            },
+          });
+        }
       }
 
       activeEl = nextEl;
@@ -786,22 +886,26 @@ $(window).on("load", function () {
   function syncFromAriaLabel() {
     const label = normalizeLabel(eyebrowEl.getAttribute("aria-label"));
     if (!label) return;
-
     const idx = phrases.findIndex((p) => p === label);
     if (idx !== -1) setActiveByValue(idx + 1);
   }
 
-  // ---------- START ----------
-  const preActive =
-    heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`) || visuals[0];
+  // Prime all videos once DOM is ready (extra safety)
+  requestAnimationFrame(() => {
+    visuals.forEach((el) => {
+      const v = getVideo(el);
+      if (v) primeVideo(v);
+    });
+  });
+
+  // START
+  const preActive = heroScope.querySelector(`${VISUAL_SELECTOR}.is-active`) || visuals[0];
   setActiveByValue(preActive.getAttribute("image") || 1);
 
   const observer = new MutationObserver(syncFromAriaLabel);
-  observer.observe(eyebrowEl, {
-    attributes: true,
-    attributeFilter: ["aria-label"],
-  });
+  observer.observe(eyebrowEl, { attributes: true, attributeFilter: ["aria-label"] });
 })();
+
 
 // --------------------- ✅ Hover Circle Follow Mouse --------------------- //
 (function () {
